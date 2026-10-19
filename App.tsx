@@ -16,7 +16,6 @@ import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
-const OfferLiveTracking = lazy(() => import('@/components/offers/OfferLiveTracking'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionApp'));
 const DownloadsPage = lazy(() => import('@/pages/downloads/DownloadsApp'));
 const TrackShipmentPage = lazy(() => import('@/pages/logistics/TrackShipmentPage'));
@@ -203,7 +202,6 @@ export default function App() {
                                 <Route path="/directory/request/:requestId" element={<Dashboard />} />
                                 <Route path="/marketplace" element={<MarketplacePage />} />
                                 <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} /> */}
-                                <Route path="/offers/track/:id" element={<OfferLiveTracking />} />
 
                                 {/* Public shipment tracking — no auth, for customers with a tracking number */}
                                 <Route path="/track" element={<TrackShipmentPage />} />

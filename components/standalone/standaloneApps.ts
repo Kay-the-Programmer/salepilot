@@ -28,7 +28,7 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'Orders', page: 'orders', route: 'orders', desc: 'Online order management', iconName: 'shopping_bag', requires: 'orders' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
-    // { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing', comingSoon: MARKETING_COMING_SOON },
+    // Marketing Suite is withheld from launch — see MARKETING_ENABLED in utils/entitlements.
     { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Your storefront link, QR & sharing', iconName: 'storefront', requires: 'online-store' },
     { name: 'Marketplace', page: 'directory', route: 'marketplace', desc: 'Shop products from local stores', iconName: 'local_mall', requires: 'directory' },
     { name: 'Business Manager', page: 'businesses', route: 'businesses', desc: 'Run all your businesses from one hub', iconName: 'domain', requires: 'businesses' },

@@ -31,19 +31,6 @@ export type ModuleId = typeof MODULES[keyof typeof MODULES];
  */
 export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !== 'false';
 
-/**
- * DEV OVERRIDE: Social Marketing (Facebook Pages) is free while the team builds/
- * tests. Defaults to FREE; set `VITE_SOCIAL_FREE=false` (and `SOCIAL_FREE=false`
- * on the backend) to re-enable the paid add-on.
- */
-export const SOCIAL_FREE = (import.meta.env?.VITE_SOCIAL_FREE ?? 'true') !== 'false';
-
-/**
- * Product gate for the Marketing Suite (Facebook Pages). Now **launched** — the
- * Discover tile opens the live app. Set `VITE_MARKETING_COMING_SOON=true` to put
- * it back behind the "Coming Soon" lock (tile locked + teaser screen).
- */
-export const MARKETING_COMING_SOON = (import.meta.env?.VITE_MARKETING_COMING_SOON ?? 'false') !== 'false';
 
 /**
  * Apps withheld from the launch. Their tiles are already commented out of
@@ -86,14 +73,8 @@ export const limitsForPlan = (planId?: string | null): PlanLimits =>
 /** Whether a limit allows one more of something. */
 export const withinLimit = (used: number, limit: number): boolean => limit === -1 || used < limit;
 
-/** @deprecated Seats are a plan capacity now — use {@link limitsForPlan}. */
-export const FREE_SEATS = 1;
-
-/**
- * Products allowed on the free core (display hint — backend is authoritative and
- * may override via the FREE_PRODUCT_LIMIT env). Beyond this needs UNLIMITED_PRODUCTS.
- */
-export const FREE_PRODUCT_LIMIT = 100;
+// FREE_SEATS and FREE_PRODUCT_LIMIT are gone: there is no free tier for them to
+// describe. Seats and catalogue size are plan capacities now — see PLAN_LIMITS.
 
 /** Whether a store has a given premium module unlocked. Defaults to locked. */
 export const hasModule = (settings: StoreSettings | null | undefined, moduleId: string): boolean =>

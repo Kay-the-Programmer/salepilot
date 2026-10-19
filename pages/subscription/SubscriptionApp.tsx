@@ -8,15 +8,8 @@ import { api } from '../../services/api';
 import { formatLongDate as formatDate } from '../../utils/date';
 import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscription';
 import { logEvent } from '../../src/utils/analytics';
-import { upsellService } from '../../services/upsellService';
-import { discounted } from '../../components/upsell/offer';
 import '../assistant/assistant.css';
 import './subscription.css';
-
-/** Net add-on price after any live campaign offer — the checkout charges the
- *  same (the server independently applies the discount; this only mirrors it). */
-const netAddonPrice = (a: { id: string; price: number }): number =>
-  discounted(a.price, upsellService.getModuleOffer(a.id)?.discountPct);
 
 const CustomPaymentModal = React.lazy(() => import('../../components/subscription/CustomPaymentModal'));
 
@@ -24,25 +17,14 @@ declare global {
   interface Window { LencoPay: any; }
 }
 
-type View = 'manage' | 'plans' | 'addons';
-
-interface PurchasableAddon {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  owned: boolean;
-  activeUntil: string | null;
-  autoRenew: boolean;
-}
-
-interface AddonCheckout {
-  amount: number;
-  currency: string;
-  moduleIds: string[];
-  label: string;
-}
+/**
+ * The à-la-carte add-on view is gone. Nothing is sold per feature any more —
+ * every tier includes every feature and the tiers differ on capacity — so the
+ * catalogue is empty and the server refuses an add-on charge outright
+ * ("No valid add-ons selected"). A checkout that cannot complete has no
+ * business being reachable, deep link or not.
+ */
+type View = 'manage' | 'plans';
 
 const currencySymbol = (code = 'ZMW') =>
   code === 'USD' ? '$' : code === 'ZMW' ? 'K' : code === 'GBP' ? '£' : code === 'EUR' ? '€' : '';
@@ -78,11 +60,6 @@ const SubscriptionApp: React.FC = () => {
   const stopPollingRef = useRef(false);
   const historyRef = useRef<HTMLDivElement>(null);
 
-  // Add-ons (à-la-carte modules)
-  const [addons, setAddons] = useState<PurchasableAddon[]>([]);
-  const [fetchingAddons, setFetchingAddons] = useState(true);
-  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
-  const [addonCheckout, setAddonCheckout] = useState<AddonCheckout | null>(null);
   const [planAutoRenew, setPlanAutoRenew] = useState<boolean>(true);
 
   useEffect(() => {
@@ -91,11 +68,9 @@ const SubscriptionApp: React.FC = () => {
     setUser(u);
   }, [navigate]);
 
-  // Deep-link from the soft paywall: /subscription?view=addons&module=<id>
+  // Deep-link to the plan list: /subscription?view=plans
   useEffect(() => {
-    if (searchParams.get('view') === 'addons') setView('addons');
-    const m = searchParams.get('module');
-    if (m) setSelectedAddons((prev) => new Set(prev).add(m));
+    if (searchParams.get('view') === 'plans') setView('plans');
   }, [searchParams]);
 
   const fetchPlans = useCallback(async () => {
@@ -120,29 +95,16 @@ const SubscriptionApp: React.FC = () => {
     }
   }, []);
 
-  const fetchAddons = useCallback(async () => {
-    try {
-      const data = await api.get<PurchasableAddon[]>('/subscriptions/addons');
-      setAddons(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.warn('Could not load add-ons', e);
-      setAddons([]);
-    } finally {
-      setFetchingAddons(false);
-    }
-  }, []);
-
   useEffect(() => {
     if (!user) return;
     fetchPlans();
-    fetchAddons();
     if (user.currentStoreId) {
       fetchHistory(user.currentStoreId);
       api.get<{ autoRenew: boolean }>('/subscriptions/auto-renew')
         .then((d) => setPlanAutoRenew(!!d?.autoRenew))
         .catch(() => { /* default on */ });
     }
-  }, [user, fetchPlans, fetchAddons, fetchHistory]);
+  }, [user, fetchPlans, fetchHistory]);
 
   const handleTogglePlanAutoRenew = useCallback(async () => {
     const next = !planAutoRenew;
@@ -162,21 +124,14 @@ const SubscriptionApp: React.FC = () => {
     try {
       const data = await api.get<any>(`/subscriptions/verify/${reference}`);
       if (data.success) {
-        const wasAddon = !!addonCheckout;
-        showToast(wasAddon ? 'Payment successful! Your add-on is now active.' : 'Payment successful! Your subscription is now active.', 'success');
-        logEvent('Subscription', wasAddon ? 'BuyAddon' : 'Subscribe', wasAddon ? addonCheckout?.label : planToPay?.name);
-        // Attribute an upsell conversion if any purchased module was clicked from
-        // an upsell earlier this session (emits upsell_convert).
-        if (wasAddon) upsellService.notePurchaseCompleted(addonCheckout?.moduleIds);
+        showToast('Payment successful! Your subscription is now active.', 'success');
+        logEvent('Subscription', 'Subscribe', planToPay?.name);
         setLoading(false);
         setIsPaymentModalOpen(false);
-        setSelectedAddons(new Set());
-        setAddonCheckout(null);
         const u = getCurrentUser();
         setUser(u);
         if (u?.currentStoreId) fetchHistory(u.currentStoreId);
-        fetchAddons();
-        setView(wasAddon ? 'addons' : 'manage');
+        setView('manage');
       } else if (data.pending) {
         if (retries < 20) setTimeout(() => pollVerification(reference, retries + 1), 3000);
         else { showToast('Payment confirmation is taking longer than expected. Please check back later.', 'warning'); setLoading(false); setIsPaymentModalOpen(false); }
@@ -188,23 +143,23 @@ const SubscriptionApp: React.FC = () => {
       if (retries < 20) setTimeout(() => pollVerification(reference, retries + 1), 3000);
       else { showToast('Failed to verify payment. If you were charged, please contact support.', 'error'); setLoading(false); setIsPaymentModalOpen(false); }
     }
-  }, [planToPay, addonCheckout, showToast, fetchHistory, fetchAddons]);
+  }, [planToPay, showToast, fetchHistory]);
 
   const handlePayment = useCallback(async (method: 'card' | 'mobile-money', phoneNumber?: string) => {
-    const isAddon = !!addonCheckout;
-    if (!isAddon && !planToPay) return;
+    if (!planToPay) return;
     if (!user?.currentStoreId) { showToast('Store context missing. Please re-login.', 'error'); return; }
     setLoading(true);
     try {
-      const response = isAddon
-        ? await api.post<any>('/subscriptions/addons/pay', { moduleIds: addonCheckout!.moduleIds, method, phoneNumber })
-        : await api.post<any>('/subscriptions/pay', { storeId: user.currentStoreId, planId: planToPay!.id, method, phoneNumber, billingCycle: isAnnual ? 'annual' : 'monthly' });
+      const response = await api.post<any>('/subscriptions/pay', {
+        storeId: user.currentStoreId, planId: planToPay.id, method, phoneNumber,
+        billingCycle: isAnnual ? 'annual' : 'monthly',
+      });
       const { reference, lencoResult } = response;
       // Use the backend-computed amount (authoritative for annual pricing + discounts).
       const amount = (typeof response.amount === 'number' && response.amount > 0)
         ? response.amount
-        : (isAddon ? addonCheckout!.amount : planToPay!.price);
-      const currency = isAddon ? addonCheckout!.currency : (planToPay!.currency || 'ZMW');
+        : planToPay.price;
+      const currency = planToPay.currency || 'ZMW';
       setCurrentReference(reference);
       stopPollingRef.current = false;
 
@@ -227,13 +182,12 @@ const SubscriptionApp: React.FC = () => {
       showToast(e.message || 'Failed to process payment. Please try again.', 'error');
       setLoading(false);
     }
-  }, [planToPay, addonCheckout, isAnnual, user, showToast, pollVerification]);
+  }, [planToPay, isAnnual, user, showToast, pollVerification]);
 
   const handleSelectPlan = useCallback((planId: string) => {
     const plan = plans.find((p) => p.id === planId);
     if (!plan) return;
     setSelectedPlan(planId);
-    setAddonCheckout(null);
     setPlanToPay(plan);
     setIsPaymentModalOpen(true);
   }, [plans]);
@@ -254,36 +208,6 @@ const SubscriptionApp: React.FC = () => {
     if (!plan) { setView('plans'); return; }
     handleSelectPlan(plan.id);
   }, [user?.subscriptionPlan, plans, handleSelectPlan]);
-
-  const toggleAddon = useCallback((id: string) => {
-    setSelectedAddons((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }, []);
-
-  const handleToggleAutoRenew = useCallback(async (moduleId: string, autoRenew: boolean) => {
-    // Optimistic update, then persist.
-    setAddons((prev) => prev.map((a) => (a.id === moduleId ? { ...a, autoRenew } : a)));
-    try {
-      await api.patch(`/subscriptions/addons/${moduleId}/auto-renew`, { autoRenew });
-      showToast(autoRenew ? 'Auto-renew turned on.' : 'Auto-renew turned off.', 'success');
-    } catch (e: any) {
-      setAddons((prev) => prev.map((a) => (a.id === moduleId ? { ...a, autoRenew: !autoRenew } : a)));
-      showToast(e?.message || 'Could not update auto-renew.', 'error');
-    }
-  }, [showToast]);
-
-  const handleBuyAddons = useCallback(() => {
-    const chosen = addons.filter((a) => selectedAddons.has(a.id) && !a.owned);
-    if (chosen.length === 0) { showToast('Select at least one add-on to continue.', 'info'); return; }
-    const amount = chosen.reduce((s, a) => s + netAddonPrice(a), 0);
-    const currency = chosen[0].currency || 'ZMW';
-    setPlanToPay(null);
-    setAddonCheckout({ amount, currency, moduleIds: chosen.map((a) => a.id), label: chosen.length === 1 ? chosen[0].name : `${chosen.length} add-ons` });
-    setIsPaymentModalOpen(true);
-  }, [addons, selectedAddons, showToast]);
 
   const handleCancelTransaction = useCallback(async () => {
     if (!currentReference) return;
@@ -389,18 +313,6 @@ const SubscriptionApp: React.FC = () => {
                 subscriptionStatus={user?.subscriptionStatus}
               />
             )}
-            {/* Add-ons are retired: every plan now includes every feature, and
-                the tiers differ on capacity instead. The view is kept, but it
-                is only reachable by an old deep link (?view=addons) — where it
-                shows whatever a store already owns, nothing new to buy, since
-                the catalogue has taken every add-on off sale. */}
-            {view === 'addons' && (
-              <AddonsView
-                addons={addons} fetching={fetchingAddons} selected={selectedAddons}
-                onToggle={toggleAddon} onBuy={handleBuyAddons} loading={loading}
-                onToggleAutoRenew={handleToggleAutoRenew}
-              />
-            )}
           </div>
         </main>
       </div>
@@ -410,11 +322,11 @@ const SubscriptionApp: React.FC = () => {
         <Suspense fallback={null}>
           <CustomPaymentModal
             isOpen={isPaymentModalOpen}
-            onClose={() => { stopPollingRef.current = true; setIsPaymentModalOpen(false); setAddonCheckout(null); }}
+            onClose={() => { stopPollingRef.current = true; setIsPaymentModalOpen(false); }}
             onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
-            planName={addonCheckout ? addonCheckout.label : `${planToPay?.name || ''}${planToPay && isAnnual ? ' — billed yearly' : ''}`}
-            amount={addonCheckout ? addonCheckout.amount : (planToPay ? planChargeAmount(planToPay) : 0)}
-            currency={addonCheckout ? addonCheckout.currency : (planToPay?.currency || 'ZMW')}
+            planName={`${planToPay?.name || ''}${planToPay && isAnnual ? ' — billed yearly' : ''}`}
+            amount={planToPay ? planChargeAmount(planToPay) : 0}
+            currency={planToPay?.currency || 'ZMW'}
             loading={loading}
             onCancelTransaction={handleCancelTransaction}
           />
@@ -731,106 +643,5 @@ const PlansView: React.FC<{
   </div>
 );
 
-/* -------------------------------- Add-ons view ----------------------------- */
-const AddonsView: React.FC<{
-  addons: PurchasableAddon[]; fetching: boolean; selected: Set<string>;
-  onToggle: (id: string) => void; onBuy: () => void; loading: boolean;
-  onToggleAutoRenew: (id: string, v: boolean) => void;
-}> = ({ addons, fetching, selected, onToggle, onBuy, loading, onToggleAutoRenew }) => {
-  const chosen = addons.filter((a) => !a.owned && selected.has(a.id));
-  const total = chosen.reduce((s, a) => s + netAddonPrice(a), 0);
-  const cur = chosen[0]?.currency || addons[0]?.currency || 'ZMW';
-
-  return (
-    <div className="sp-fade-in pb-24">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-[32px] font-bold m3-text-on-surface mb-2">Add-ons — pay only for what you need</h2>
-        <p className="text-base md:text-lg m3-text-on-surface-variant max-w-2xl mx-auto">Unlock individual features à la carte, without jumping to a bigger plan.</p>
-      </div>
-
-      {fetching ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[0, 1, 2, 3].map((i) => <div key={i} className="h-32 rounded-2xl m3-bg-surface-container animate-pulse" />)}
-        </div>
-      ) : addons.length === 0 ? (
-        <div className="text-center py-16 m3-text-on-surface-variant">No add-ons available right now.</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {addons.map((a) => {
-            const isSel = selected.has(a.id);
-            const offer = upsellService.getModuleOffer(a.id);
-            if (a.owned) {
-              // Owned add-ons are not selectable; they show status + an auto-renew switch.
-              return (
-                <div key={a.id} className="bento-card rounded-2xl p-5">
-                  <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
-                    <span className="text-lg font-bold m3-text-primary whitespace-nowrap">{money(a.price, a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span></span>
-                  </div>
-                  <p className="text-sm m3-text-on-surface-variant mb-3">{a.description}</p>
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full m3-bg-primary-container m3-text-on-primary-container">
-                      <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      Active{a.activeUntil ? ` · until ${formatDate(a.activeUntil)}` : ''}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onToggleAutoRenew(a.id, !a.autoRenew)}
-                      className="inline-flex items-center gap-2 text-xs font-semibold m3-text-on-surface-variant active:scale-95 transition"
-                      title={a.autoRenew ? 'Auto-renew is on' : 'Auto-renew is off'}
-                    >
-                      Auto-renew
-                      <span className={`w-9 h-5 rounded-full p-0.5 transition-colors ${a.autoRenew ? 'm3-bg-primary' : 'm3-bg-surface-high'}`}>
-                        <span className="block w-4 h-4 bg-white rounded-full shadow transition-transform" style={{ transform: a.autoRenew ? 'translateX(16px)' : 'translateX(0)' }} />
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              );
-            }
-            return (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => onToggle(a.id)}
-                className={`text-left bento-card rounded-2xl p-5 transition relative ${isSel ? 'ring-2 ring-[var(--c-primary)]' : 'hover:shadow-md'}`}
-              >
-                <div className="flex items-start justify-between gap-3 mb-1.5">
-                  <div className="min-w-0">
-                    <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
-                    {offer?.discountPct ? <span className="inline-block mt-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
-                  </div>
-                  <span className="text-lg font-bold m3-text-primary whitespace-nowrap text-right">
-                    {offer?.discountPct ? <span className="block text-xs m3-text-on-surface-variant line-through font-medium">{money(a.price, a.currency)}</span> : null}
-                    {money(netAddonPrice(a), a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span>
-                  </span>
-                </div>
-                <p className="text-sm m3-text-on-surface-variant mb-3">{a.description}</p>
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${isSel ? 'm3-bg-primary m3-text-on-primary' : 'm3-bg-surface-high m3-text-on-surface-variant'}`}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 15 }}>{isSel ? 'check' : 'add'}</span>
-                  {isSel ? 'Selected' : 'Add'}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {chosen.length > 0 && (
-        <div className="fixed bottom-[84px] lg:bottom-6 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-md">
-          <div className="m3-bg-surface-container shadow-xl rounded-2xl p-4 flex items-center justify-between gap-4 border m3-border-outline-variant">
-            <div>
-              <p className="text-xs m3-text-on-surface-variant">{chosen.length} add-on{chosen.length === 1 ? '' : 's'} selected</p>
-              <p className="text-xl font-bold m3-text-on-surface">{money(total, cur)}<span className="text-sm font-medium m3-text-on-surface-variant">/mo</span></p>
-            </div>
-            <button onClick={onBuy} disabled={loading} className="px-6 py-3 rounded-xl text-sm font-bold m3-bg-primary m3-text-on-primary shadow active:scale-95 transition disabled:opacity-60">
-              {loading ? 'Processing…' : 'Unlock now'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default SubscriptionApp;

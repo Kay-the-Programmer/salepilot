@@ -4,9 +4,8 @@ import {
     hasModule,
     MODULES,
     ModuleId,
-    FREE_PRODUCT_LIMIT,
+    limitsForPlan,
     WHATSAPP_FREE,
-    SOCIAL_FREE,
 } from '../utils/entitlements';
 import { UpsellContextData, UpsellMoment, UpsellSurface, CampaignOffer } from '../utils/upsell';
 import { upsellService, ModulePrice } from '../services/upsellService';
@@ -42,7 +41,6 @@ export interface UpsellSyncInput {
 function makeHasModule(storeSettings: StoreSettings | null): (m: ModuleId) => boolean {
     return (m: ModuleId) => {
         if (m === MODULES.WHATSAPP_MESSAGING && WHATSAPP_FREE) return true;
-        if (m === MODULES.SOCIAL_MARKETING && SOCIAL_FREE) return true;
         // NOTE: Accepting mobile money is gated by the paid "Accept Mobile Money"
         // add-on, not by simply having connected a Lenco key — so we DO upsell the
         // gateway to a store that has a key but hasn't purchased the add-on.
@@ -82,7 +80,10 @@ function buildSnapshot(input: UpsellSyncInput): UpsellContextData {
     const daysActive = Math.max(0, Math.floor((now - firstActive) / DAY_MS));
 
     const ownsModule = makeHasModule(storeSettings);
-    const productCap = ownsModule(MODULES.UNLIMITED_PRODUCTS) ? Infinity : FREE_PRODUCT_LIMIT;
+    // Catalogue ceiling comes from the plan now — there is no free tier to
+    // fall back on, and -1 means the tier has no ceiling at all.
+    const planProducts = limitsForPlan(currentUser?.subscriptionPlan).products;
+    const productCap = planProducts === -1 ? Infinity : planProducts;
 
     // No historical stock-out signal exists; approximate with current out-of-stock.
     const recentStockoutCount = products.filter(p => p.status === 'active' && (p.stock ?? 0) <= 0).length;

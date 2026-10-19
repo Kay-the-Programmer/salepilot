@@ -119,7 +119,7 @@ export interface UpsellContextData {
     daysActive: number;           // days since first sale / first session
 
     /** Owned-module check. NOTE: also returns true for modules under a free-override
-     *  (WHATSAPP_FREE / SOCIAL_FREE) so we never upsell a currently-free feature. */
+     *  so we never upsell a feature the store already has. */
     hasModule: (m: ModuleId) => boolean;
 
     productCount: number;
