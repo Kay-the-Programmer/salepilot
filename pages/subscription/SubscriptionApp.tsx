@@ -238,6 +238,23 @@ const SubscriptionApp: React.FC = () => {
     setIsPaymentModalOpen(true);
   }, [plans]);
 
+  /**
+   * Pay for the plan the shop is ALREADY on — a trial converting, or a lapsed
+   * subscription being renewed. Without this the only way to pay was to pick a
+   * different tier, because the plans grid renders the current one as a
+   * disabled "Current plan": a shop whose till had stopped could upgrade but
+   * not simply settle up.
+   *
+   * Falls back to the plans list if the plan id is unknown (a stale or
+   * superadmin-assigned plan), so the button is never a dead end.
+   */
+  const handlePayCurrentPlan = useCallback(() => {
+    const currentId = user?.subscriptionPlan;
+    const plan = currentId ? plans.find((p) => p.id === currentId) : undefined;
+    if (!plan) { setView('plans'); return; }
+    handleSelectPlan(plan.id);
+  }, [user?.subscriptionPlan, plans, handleSelectPlan]);
+
   const toggleAddon = useCallback((id: string) => {
     setSelectedAddons((prev) => {
       const next = new Set(prev);
@@ -360,7 +377,7 @@ const SubscriptionApp: React.FC = () => {
             {view === 'manage' && (
               <ManageView
                 user={user} firstName={firstName} activePlan={activePlan} history={history}
-                historyRef={historyRef} onChangePlan={goPlans}
+                historyRef={historyRef} onChangePlan={goPlans} onPayCurrentPlan={handlePayCurrentPlan}
                 planAutoRenew={planAutoRenew} onTogglePlanAutoRenew={handleTogglePlanAutoRenew}
               />
             )}
@@ -369,6 +386,7 @@ const SubscriptionApp: React.FC = () => {
                 plans={plans} fetchingPlans={fetchingPlans} isAnnual={isAnnual} setIsAnnual={setIsAnnual}
                 activePlanId={user?.subscriptionPlan} loading={loading} selectedPlan={selectedPlan}
                 onSelect={handleSelectPlan} planPrice={planPrice}
+                subscriptionStatus={user?.subscriptionStatus}
               />
             )}
             {/* Add-ons are retired: every plan now includes every feature, and
@@ -410,14 +428,26 @@ const SubscriptionApp: React.FC = () => {
 const ManageView: React.FC<{
   user: any; firstName: string; activePlan: BackendPlan | null;
   history: SubscriptionHistoryItem[]; historyRef: React.RefObject<HTMLDivElement | null>;
-  onChangePlan: () => void;
+  onChangePlan: () => void; onPayCurrentPlan: () => void;
   planAutoRenew: boolean; onTogglePlanAutoRenew: () => void;
-}> = ({ user, activePlan, history, historyRef, onChangePlan, planAutoRenew, onTogglePlanAutoRenew }) => {
+}> = ({ user, activePlan, history, historyRef, onChangePlan, onPayCurrentPlan, planAutoRenew, onTogglePlanAutoRenew }) => {
   const lastMethod = history.find((h) => h.paymentMethod)?.paymentMethod;
   const statusActive = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
   const isPaidActive = user?.subscriptionStatus === 'active' && !!activePlan;
   const planName = activePlan?.name || (user?.subscriptionPlan ? user.subscriptionPlan : 'Free / Trial');
   const cur = activePlan?.currency || 'ZMW';
+
+  // Paying for the plan you are already on is the common case now that there
+  // is no free tier: a trial converting, or a lapsed shop settling up. It is
+  // the primary action whenever money is actually due, and still offered (as
+  // "Renew early") when it is not, so there is never a screen where a shop
+  // wants to pay and cannot.
+  const paymentDue = user?.subscriptionStatus === 'trial'
+    || user?.subscriptionStatus === 'past_due'
+    || user?.subscriptionStatus === 'canceled';
+  const payLabel = user?.subscriptionStatus === 'trial'
+    ? `Pay for ${planName}`
+    : paymentDue ? `Renew ${planName}` : 'Renew early';
 
   return (
     <div className="sp-fade-in">
@@ -428,7 +458,26 @@ const ManageView: React.FC<{
           <p className="text-sm m3-text-on-surface-variant mt-1">Manage your billing preferences and view your invoice history.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onChangePlan} className="px-5 py-2.5 rounded-xl text-sm font-semibold m3-bg-primary m3-text-on-primary shadow active:scale-95 transition hover:opacity-90">Change plan</button>
+          <button
+            onClick={onChangePlan}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${
+              paymentDue
+                ? 'm3-bg-surface-high m3-text-on-surface'
+                : 'm3-bg-primary m3-text-on-primary shadow'
+            }`}
+          >
+            Change plan
+          </button>
+          <button
+            onClick={onPayCurrentPlan}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${
+              paymentDue
+                ? 'm3-bg-primary m3-text-on-primary shadow'
+                : 'm3-bg-surface-high m3-text-on-surface'
+            }`}
+          >
+            {payLabel}
+          </button>
         </div>
       </div>
 
@@ -562,7 +611,9 @@ const PlansView: React.FC<{
   plans: BackendPlan[]; fetchingPlans: boolean; isAnnual: boolean; setIsAnnual: (b: boolean) => void;
   activePlanId?: string; loading: boolean; selectedPlan: string | null;
   onSelect: (id: string) => void; planPrice: (p: BackendPlan) => number;
-}> = ({ plans, fetchingPlans, isAnnual, setIsAnnual, activePlanId, loading, selectedPlan, onSelect, planPrice }) => (
+  /** Subscription state, so the shop's own tier stays payable on a trial or after a lapse. */
+  subscriptionStatus?: string;
+}> = ({ plans, fetchingPlans, isAnnual, setIsAnnual, activePlanId, loading, selectedPlan, onSelect, planPrice, subscriptionStatus }) => (
   <div className="sp-fade-in">
     {/* Hero */}
     <div className="text-center mb-8">
@@ -591,6 +642,9 @@ const PlansView: React.FC<{
         {plans.map((plan, i) => {
           const featured = plan.id === 'plan_pro';
           const isActive = activePlanId === plan.id;
+          const paymentDue = subscriptionStatus === 'trial'
+            || subscriptionStatus === 'past_due'
+            || subscriptionStatus === 'canceled';
           const cur = plan.currency || 'ZMW';
           return (
             <div key={plan.id} className={`pricing-card rounded-xl p-6 flex flex-col relative ${featured ? 'pricing-card--active md:scale-105 z-10' : 'hover:shadow-lg transition-shadow'}`}>
@@ -618,18 +672,26 @@ const PlansView: React.FC<{
                   </li>
                 ))}
               </ul>
+              {/* The plan a shop is already on is only un-clickable while it
+                  is genuinely paid up. On a trial or after a lapse it must be
+                  payable here too, or the shop can upgrade but never simply
+                  settle up on the tier it chose — the one thing it came to do. */}
               <button
-                disabled={isActive || loading}
+                disabled={(isActive && !paymentDue) || loading}
                 onClick={() => onSelect(plan.id)}
                 className={`w-full py-3 px-5 rounded-xl text-sm font-semibold transition active:scale-95 ${
-                  isActive
+                  isActive && !paymentDue
                     ? 'border-2 m3-border-outline-variant m3-text-on-surface-variant cursor-default'
-                    : featured
+                    : isActive || featured
                       ? 'm3-bg-primary-container m3-text-on-primary-container font-bold shadow hover:shadow-lg'
                       : 'border-2 m3-border-primary m3-text-primary hover:opacity-80'
                 } ${loading && selectedPlan === plan.id ? 'opacity-60' : ''}`}
               >
-                {isActive ? 'Current plan' : loading && selectedPlan === plan.id ? 'Processing…' : featured ? `Upgrade to ${plan.name}` : 'Choose plan'}
+                {loading && selectedPlan === plan.id
+                  ? 'Processing…'
+                  : isActive
+                    ? (paymentDue ? (subscriptionStatus === 'trial' ? `Pay for ${plan.name}` : `Renew ${plan.name}`) : 'Current plan')
+                    : featured ? `Upgrade to ${plan.name}` : 'Choose plan'}
               </button>
             </div>
           );
