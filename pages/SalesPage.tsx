@@ -38,7 +38,6 @@ import {
 import { buildReceiptBytes } from '../utils/receiptEscPos';
 import { useToast } from '../contexts/ToastContext';
 import { restoreAt } from '../utils/listRestore';
-import PosModeToggle from '../components/pos/PosModeToggle';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) is fetched only when the
 // scanner is actually opened, keeping it out of the POS page's initial load.
 const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
@@ -70,10 +69,6 @@ interface SalesPageProps {
     onSaleChanged?: () => void;
     /** Open on a specific view — /pos/history deep-links Sales History & Refunds. */
     initialView?: 'sell' | 'history';
-    /** POS mode (Standard cart POS vs the Quick keypad). When provided, a
-     *  Standard/Quick switch is shown in the top bar while selling. */
-    posMode?: 'standard' | 'quick';
-    onChangePosMode?: (mode: 'standard' | 'quick') => void;
     /** Receipt setup writes store settings; this keeps the app's copy in step
      *  so the next receipt prints the header that was just configured. */
     onSettingsSaved?: (settings: StoreSettings) => void;
@@ -92,8 +87,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     onSaleChanged,
     onLogout,
     initialView,
-    posMode,
-    onChangePosMode,
     onSettingsSaved,
 }) => {
     const navigate = useNavigate();
@@ -810,9 +803,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         </span>
                     )}
 
-                    {posView === 'sell' && posMode && onChangePosMode && (
-                        <PosModeToggle mode={posMode} onChange={onChangePosMode} />
-                    )}
 
                     {/* Simple POS menu — Sell / Sales History / Held / Help */}
                     <div className="sale__menuwrap">

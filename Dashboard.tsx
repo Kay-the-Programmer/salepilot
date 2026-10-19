@@ -7,7 +7,6 @@ import { lazy, Suspense } from 'react';
 
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
-import PosModeToggle from './components/pos/PosModeToggle';
 import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED, HUSTLE_APP_ENABLED } from './utils/entitlements';
 import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
 import type { CampaignDTO } from './utils/upsell';
@@ -145,14 +144,6 @@ export default function Dashboard() {
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Standalone POS shell (/pos) mobile drawer
     const [posDrawerOpen, setPosDrawerOpen] = useState(false);
-    // POS mode — Standard cart checkout vs the Quick keypad (embedded Hustle POS).
-    const [posMode, setPosMode] = useState<'standard' | 'quick'>(
-        () => (typeof localStorage !== 'undefined' && localStorage.getItem('pos.mode') === 'quick') ? 'quick' : 'standard',
-    );
-    const changePosMode = useCallback((m: 'standard' | 'quick') => {
-        setPosMode(m);
-        try { localStorage.setItem('pos.mode', m); } catch { /* ignore */ }
-    }, []);
 
     // Superadmin mode and store selection
     const [superMode, setSuperMode] = useState<'superadmin' | 'store'>(() => {
@@ -1907,23 +1898,12 @@ export default function Dashboard() {
         }
 
         const openPosDrawer = () => setPosDrawerOpen(true);
-        // The Quick keypad (embedded Hustle POS) is only offered while selling —
-        // Sales History and the POS Dashboard always use the standard view.
-        const posSelling = posSection === 'pos' && posParts[2] !== 'history';
-        let posContent: ReactNode;
-        if (posSelling && posMode === 'quick') {
-            posContent = (
-                <HustleApp
-                    embedded
-                    sales={sales}
-                    storeSettings={storeSettings!}
-                    showSnackbar={showSnackbar}
-                    modeSwitch={<PosModeToggle mode={posMode} onChange={changePosMode} />}
-                />
-            );
-        } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} posMode={posMode} onChangePosMode={changePosMode} onSettingsSaved={setStoreSettings} />;
-        }
+        // One till. The Standard/Quick switch and the keypad behind it are gone:
+        // a second checkout mode doubled what had to be kept right on tax,
+        // manager overrides, printing and offline replay.
+        const posContent: ReactNode = (
+            <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} onSettingsSaved={setStoreSettings} />
+        );
 
         return (
             <OnboardingProvider user={currentUser}>
