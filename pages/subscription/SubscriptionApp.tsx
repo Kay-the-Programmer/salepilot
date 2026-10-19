@@ -295,7 +295,6 @@ const SubscriptionApp: React.FC = () => {
 
   const goPlans = () => setView('plans');
   const goManage = () => setView('manage');
-  const goAddons = () => setView('addons');
   const goBilling = () => { setView('manage'); requestAnimationFrame(() => historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
 
   if (!user) return null;
@@ -303,7 +302,6 @@ const SubscriptionApp: React.FC = () => {
   const navItems: { id: string; icon: string; label: string; onClick: () => void; active: boolean }[] = [
     { id: 'manage', icon: 'card_membership', label: 'My Subscription', onClick: goManage, active: view === 'manage' },
     { id: 'plans', icon: 'upgrade', label: 'Plans', onClick: goPlans, active: view === 'plans' },
-    { id: 'addons', icon: 'extension', label: 'Add-ons', onClick: goAddons, active: view === 'addons' },
     { id: 'billing', icon: 'receipt_long', label: 'Billing History', onClick: goBilling, active: false },
   ];
 
@@ -316,7 +314,6 @@ const SubscriptionApp: React.FC = () => {
         navItems={[
           { icon: 'card_membership', label: 'Plan', active: view === 'manage', onClick: goManage },
           { icon: 'upgrade', label: 'Plans', active: view === 'plans', onClick: goPlans },
-          { icon: 'extension', label: 'Add-ons', active: view === 'addons', onClick: goAddons },
           { icon: 'receipt_long', label: 'Billing', active: false, onClick: goBilling },
         ]}
         onExit={() => navigate('/')}
@@ -363,7 +360,7 @@ const SubscriptionApp: React.FC = () => {
             {view === 'manage' && (
               <ManageView
                 user={user} firstName={firstName} activePlan={activePlan} history={history}
-                historyRef={historyRef} onChangePlan={goPlans} onBrowseAddons={goAddons}
+                historyRef={historyRef} onChangePlan={goPlans}
                 planAutoRenew={planAutoRenew} onTogglePlanAutoRenew={handleTogglePlanAutoRenew}
               />
             )}
@@ -374,6 +371,11 @@ const SubscriptionApp: React.FC = () => {
                 onSelect={handleSelectPlan} planPrice={planPrice}
               />
             )}
+            {/* Add-ons are retired: every plan now includes every feature, and
+                the tiers differ on capacity instead. The view is kept, but it
+                is only reachable by an old deep link (?view=addons) — where it
+                shows whatever a store already owns, nothing new to buy, since
+                the catalogue has taken every add-on off sale. */}
             {view === 'addons' && (
               <AddonsView
                 addons={addons} fetching={fetchingAddons} selected={selectedAddons}
@@ -408,9 +410,9 @@ const SubscriptionApp: React.FC = () => {
 const ManageView: React.FC<{
   user: any; firstName: string; activePlan: BackendPlan | null;
   history: SubscriptionHistoryItem[]; historyRef: React.RefObject<HTMLDivElement | null>;
-  onChangePlan: () => void; onBrowseAddons: () => void;
+  onChangePlan: () => void;
   planAutoRenew: boolean; onTogglePlanAutoRenew: () => void;
-}> = ({ user, activePlan, history, historyRef, onChangePlan, onBrowseAddons, planAutoRenew, onTogglePlanAutoRenew }) => {
+}> = ({ user, activePlan, history, historyRef, onChangePlan, planAutoRenew, onTogglePlanAutoRenew }) => {
   const lastMethod = history.find((h) => h.paymentMethod)?.paymentMethod;
   const statusActive = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
   const isPaidActive = user?.subscriptionStatus === 'active' && !!activePlan;
@@ -426,7 +428,6 @@ const ManageView: React.FC<{
           <p className="text-sm m3-text-on-surface-variant mt-1">Manage your billing preferences and view your invoice history.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onBrowseAddons} className="px-5 py-2.5 rounded-xl text-sm font-semibold m3-bg-surface-high m3-text-on-surface active:scale-95 transition hover:opacity-90">Browse add-ons</button>
           <button onClick={onChangePlan} className="px-5 py-2.5 rounded-xl text-sm font-semibold m3-bg-primary m3-text-on-primary shadow active:scale-95 transition hover:opacity-90">Change plan</button>
         </div>
       </div>

@@ -58,7 +58,35 @@ export const MARKETING_COMING_SOON = (import.meta.env?.VITE_MARKETING_COMING_SOO
 export const MARKETING_ENABLED = (import.meta.env?.VITE_MARKETING_ENABLED ?? 'false') !== 'false';
 export const LOGISTICS_ENABLED = (import.meta.env?.VITE_LOGISTICS_ENABLED ?? 'false') !== 'false';
 
-/** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
+/**
+ * Plan capacity — mirrors `s-back/src/services/plan-limits.ts`. Every tier
+ * includes every feature now, so the tiers differ on how much: shops, staff
+ * logins, products, AI. `-1` means unlimited.
+ *
+ * The server is authoritative (it answers 402 PLAN_LIMIT); this mirror is only
+ * so the UI can show a meter and disable a button before the round trip.
+ */
+export interface PlanLimits {
+    stores: number;
+    seats: number;
+    products: number;
+    aiRequests: number;
+}
+
+export const PLAN_LIMITS: Record<string, PlanLimits> = {
+    plan_basic: { stores: 1, seats: 2, products: 500, aiRequests: 50 },
+    plan_pro: { stores: 1, seats: 6, products: -1, aiRequests: 500 },
+    plan_enterprise: { stores: -1, seats: -1, products: -1, aiRequests: -1 },
+};
+
+/** Capacity for a plan id — the entry tier when it is unknown or missing. */
+export const limitsForPlan = (planId?: string | null): PlanLimits =>
+    (planId && PLAN_LIMITS[planId]) ? PLAN_LIMITS[planId] : PLAN_LIMITS.plan_basic;
+
+/** Whether a limit allows one more of something. */
+export const withinLimit = (used: number, limit: number): boolean => limit === -1 || used < limit;
+
+/** @deprecated Seats are a plan capacity now — use {@link limitsForPlan}. */
 export const FREE_SEATS = 1;
 
 /**

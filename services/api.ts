@@ -189,12 +189,31 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
         message = body.message;
       }
     } catch (_) { }
-    // Entitlement paywall: a 402 with a `module` means the feature is a locked
-    // premium add-on. Broadcast it so a global host can offer an in-context
-    // upgrade, then still throw so the calling feature fails gracefully.
-    if (resp.status === 402 && body && typeof body === 'object' && body.module && typeof window !== 'undefined') {
+    // 402s come in three shapes now that SalePilot is a paid product:
+    //
+    //  • SUBSCRIPTION_REQUIRED — the trial or subscription has lapsed past its
+    //    grace. Nothing in the shop works until they pay, so this is not an
+    //    in-context upsell; it takes over the screen.
+    //  • PLAN_LIMIT — they are inside their plan but at a ceiling (shops,
+    //    staff logins, products). Offers an upgrade to a larger tier.
+    //  • module — legacy per-feature lock. Kept because the gates still exist
+    //    and a store mid-migration may still hit one.
+    //
+    // Each is broadcast for a global host to present, then still thrown so the
+    // calling feature fails gracefully.
+    if (resp.status === 402 && body && typeof body === 'object' && typeof window !== 'undefined') {
       try {
-        window.dispatchEvent(new CustomEvent('salepilot:paywall', { detail: { module: body.module, message } }));
+        if (body.code === 'SUBSCRIPTION_REQUIRED') {
+          window.dispatchEvent(new CustomEvent('salepilot:subscription-required', {
+            detail: { message, subscriptionStatus: body.subscriptionStatus, endedAt: body.endedAt },
+          }));
+        } else if (body.code === 'PLAN_LIMIT') {
+          window.dispatchEvent(new CustomEvent('salepilot:plan-limit', {
+            detail: { limit: body.limit, allowed: body.allowed, used: body.used, message },
+          }));
+        } else if (body.module) {
+          window.dispatchEvent(new CustomEvent('salepilot:paywall', { detail: { module: body.module, message } }));
+        }
       } catch (_) { }
     }
     // Dead session: the stored token is missing, expired or has been revoked.

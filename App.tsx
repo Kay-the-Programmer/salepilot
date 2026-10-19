@@ -6,6 +6,8 @@ import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
+import SubscriptionRequiredHost from './components/SubscriptionRequiredHost';
+import TrialBanner from './components/TrialBanner';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
 import CommandPalette from './components/CommandPalette';
 import SessionExpiredHost from './components/SessionExpiredHost';
@@ -242,6 +244,12 @@ export default function App() {
 
                     {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
                     <PaywallHost />
+
+                    {/* Lapsed trial/subscription takeover + plan-ceiling nudge */}
+                    <SubscriptionRequiredHost />
+
+                    {/* Warns before the trial/subscription runs out, and through grace */}
+                    <TrialBanner />
 
                     {/* Global feedback capture — floating trigger + modal for any signed-in user */}
                     <FeedbackWidget />

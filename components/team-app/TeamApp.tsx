@@ -3,7 +3,7 @@ import { User, StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
 import { useConfirm } from '../ui/useConfirm';
-import { hasModule, MODULES, FREE_SEATS } from '../../utils/entitlements';
+import { limitsForPlan, withinLimit } from '../../utils/entitlements';
 import { TeamShell, TeamSection } from './TeamShell';
 import TeamMembers from './TeamMembers';
 import TeamRoles from './TeamRoles';
@@ -26,11 +26,11 @@ interface TeamAppProps {
 
 /**
  * Standalone User Manager. Admin-only. Reuses the existing user save/delete
- * logic; adding a member beyond the free seat needs the Team Members add-on,
- * enforced both here (UX) and on the backend (402).
+ * logic; adding a member beyond the plan's seat capacity needs a larger plan,
+ * enforced both here (UX) and on the backend (402 PLAN_LIMIT).
  */
 export const TeamApp: React.FC<TeamAppProps> = ({
-    section, user, users, storeSettings, onNavigate, onExit, onLogout, onSaveUser, onDeleteUser,
+    section, user, users, onNavigate, onExit, onLogout, onSaveUser, onDeleteUser,
 }) => {
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<User | null>(null);
@@ -47,8 +47,11 @@ export const TeamApp: React.FC<TeamAppProps> = ({
     }, [toast]);
 
     const overview = useMemo(() => buildTeamOverview(users), [users]);
-    const entitled = hasModule(storeSettings, MODULES.TEAM_MEMBERS);
-    const canAdd = entitled || overview.total < FREE_SEATS;
+    // Staff logins are a plan capacity, not an add-on: every tier can manage a
+    // team, the entry tier just holds fewer logins (owner + one cashier).
+    const seatLimit = limitsForPlan(user?.subscriptionPlan).seats;
+    const entitled = seatLimit === -1;
+    const canAdd = withinLimit(overview.total, seatLimit);
 
     const openAdd = () => {
         if (!canAdd) { setUpgradeOpen(true); return; }
@@ -90,7 +93,7 @@ export const TeamApp: React.FC<TeamAppProps> = ({
                 overview={overview}
                 currentUser={user}
                 entitled={entitled}
-                freeSeats={FREE_SEATS}
+                freeSeats={seatLimit === -1 ? Infinity : seatLimit}
                 onAdd={openAdd}
                 onEdit={openEdit}
                 onDelete={handleDelete}

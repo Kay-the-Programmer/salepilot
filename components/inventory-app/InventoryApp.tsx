@@ -7,25 +7,29 @@ import InventoryDashboard from './InventoryDashboard';
 import InventoryAlerts from './InventoryAlerts';
 import ClosingStockReport from './ClosingStockReport';
 import { buildInventoryOverview } from './inventoryModel';
-import { hasModule, MODULES, FREE_PRODUCT_LIMIT } from '../../utils/entitlements';
+import { limitsForPlan } from '../../utils/entitlements';
 import { can } from '../../utils/rbac';
 import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './inventory.css';
 
 /**
- * Proactive freemium product-cap meter. Appears as the store approaches the free
- * limit and turns into a hard "limit reached" prompt at the cap, deep-linking to
- * the Unlimited Products add-on. Hidden when the store already has it.
+ * Proactive product-capacity meter. Appears as the shop approaches its plan's
+ * catalogue ceiling and turns into a hard "limit reached" prompt at the cap,
+ * pointing at the larger plans. Hidden on a plan with no ceiling.
+ *
+ * Capacity, not features, is what separates the tiers — so this nudges towards
+ * a bigger plan rather than an add-on.
  */
-const ProductCapBanner: React.FC<{ count: number; storeSettings: StoreSettings | null }> = ({ count, storeSettings }) => {
+const ProductCapBanner: React.FC<{ count: number; planId?: string | null }> = ({ count, planId }) => {
     const navigate = useNavigate();
-    if (hasModule(storeSettings, MODULES.UNLIMITED_PRODUCTS)) return null;
-    if (count < Math.floor(FREE_PRODUCT_LIMIT * 0.8)) return null; // only nudge near the cap
+    const { products: cap } = limitsForPlan(planId);
+    if (cap === -1) return null; // this plan has no ceiling
+    if (count < Math.floor(cap * 0.8)) return null; // only nudge near the cap
 
-    const reached = count >= FREE_PRODUCT_LIMIT;
-    const pct = Math.min(100, Math.round((count / FREE_PRODUCT_LIMIT) * 100));
-    const goUnlock = () => navigate(`/subscription?view=addons&module=${MODULES.UNLIMITED_PRODUCTS}`);
+    const reached = count >= cap;
+    const pct = Math.min(100, Math.round((count / cap) * 100));
+    const goUnlock = () => navigate('/subscription?view=plans');
 
     return (
         <div style={{ margin: '0 16px 12px', padding: '14px 16px', borderRadius: 16, border: '1px solid var(--c-outline-variant)', background: reached ? 'var(--c-error-container, #fde7e7)' : 'var(--c-surface-container, #f6f3ee)' }}>
@@ -35,11 +39,11 @@ const ProductCapBanner: React.FC<{ count: number; storeSettings: StoreSettings |
                         {reached ? "You've reached your product limit" : 'Approaching your product limit'}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--c-on-surface-variant)' }}>
-                        {count} of {FREE_PRODUCT_LIMIT} products used{reached ? ' — unlock Unlimited Products to add more.' : '.'}
+                        {count} of {cap} products used{reached ? ' — move to a larger plan to add more.' : '.'}
                     </div>
                 </div>
                 <button type="button" onClick={goUnlock} className="crm-btn crm-btn--filled" style={{ whiteSpace: 'nowrap' }}>
-                    <Icon name="bolt" size={18} /> Get Unlimited
+                    <Icon name="bolt" size={18} /> See plans
                 </button>
             </div>
             <div style={{ marginTop: 10, height: 6, borderRadius: 999, background: 'var(--c-surface-high, #e7e2da)', overflow: 'hidden' }}>
@@ -165,7 +169,7 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             onExit={onExit}
             onLogout={onLogout}
         >
-            <ProductCapBanner count={products.length} storeSettings={storeSettings} />
+            <ProductCapBanner count={products.length} planId={user?.subscriptionPlan} />
             {/* Contextual inline upsell — stockouts / heavy manual entry. The product
                 cap is handled by the richer ProductCapBanner meter above. */}
             <UpsellInline ids={['stockout_repeat', 'bulk_manual_adds']} placement="inventory" className="mx-4 mb-3" />
