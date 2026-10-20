@@ -173,20 +173,20 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                 <div className="crm-rail__brand">
                     <span className="crm-bar__logo"><Icon name="receipt_long" size={22} fill={1} /></span>
                     <div className="crm-rail__brand-text">
-                        <span className="crm-rail__brand-title">SalePilot Expenses</span>
+                        <span className="crm-rail__brand-title">Expenses</span>
                         <span className="crm-rail__brand-sub">Record spending</span>
                     </div>
                 </div>
 
                 <nav className="crm-rail__nav">
                     <button type="button" className="crm-rail__item is-active" aria-current="page">
-                        <Icon name="receipt_long" size={22} fill={1} /> My Expenses
+                        <Icon name="receipt_long" size={22} fill={1} />My Expenses
                     </button>
                 </nav>
 
                 <div className="crm-rail__foot">
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
-                        <Icon name="apps" size={22} /> SalePilot Apps
+                        <Icon name="apps" size={22} /> Menu
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
@@ -208,7 +208,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                     <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
                     <div className="crm-bar__actions">
                         <AppNavMenu
-                            items={[{ icon: 'receipt_long', label: 'My Expenses', active: true, onClick: () => {} }]}
+                            items={[{ icon: 'receipt_long', label: 'Expenses', active: true, onClick: () => { } }]}
                             onExit={onExit}
                             onLogout={onLogout}
                             triggerClassName="crm-iconbtn"
@@ -221,9 +221,9 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                 <main className="sp-assistant p-4 sm:p-6 overflow-y-auto">
                     <div className="max-w-5xl mx-auto">
                         <div className="mb-5">
-                            <h1 className="text-xl font-bold m3-text-on-surface">My Expenses</h1>
+                            <h1 className="text-xl font-bold m3-text-on-surface">Store Expenses</h1>
                             <p className="text-sm m3-text-on-surface-variant mt-0.5">
-                                Record money you spend for the store. Only you and the store owner can see these.
+                                Record money spent for the store operations.
                             </p>
                         </div>
 
