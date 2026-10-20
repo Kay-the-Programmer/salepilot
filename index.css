@@ -11,6 +11,35 @@
   box-sizing: border-box;
 }
 
+/* ============================================================
+   Keyboard focus
+   ============================================================
+   Nothing in the app drew a focus ring on a button. Inputs were fine —
+   they pair `focus:outline-none` with a `focus:ring` — but buttons
+   inherited the reset's `outline-style: none` and nothing replaced it, so
+   tabbing through the till moved an invisible cursor. That is unusable
+   without a mouse, and it is the state a cashier lands in the moment a
+   touchscreen stops responding and they reach for a keyboard.
+
+   `:focus-visible` rather than `:focus` so a mouse click does not leave a
+   ring behind — the browser shows it for keyboard and assistive input, and
+   suppresses it for pointers. Declared here, once, so every control gets
+   it without each screen remembering to. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid rgb(var(--color-primary, 0 43 107));
+  outline-offset: 2px;
+  /* The ring must stay visible on a dark surface and on a primary-coloured
+     button, where a navy outline alone would disappear. */
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.85);
+  border-radius: inherit;
+}
+
+@media (prefers-contrast: more) {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-width: 4px;
+  }
+}
+
 html,
 body,
 #root {
