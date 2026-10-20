@@ -13,17 +13,15 @@ import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetail
 import SuperAdminNotifications from '../../pages/superadmin/SuperAdminNotifications';
 import SuperAdminSubscriptions from '../../pages/superadmin/SuperAdminSubscriptions';
 import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
-import SuperAdminCampaigns from '../../pages/superadmin/SuperAdminCampaigns';
 import SuperAdminEmails from '../../pages/superadmin/SuperAdminEmails';
 import SuperAdminFeedback from '../../pages/superadmin/SuperAdminFeedback';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
 import SuperAdminDownloads from '../../pages/superadmin/SuperAdminDownloads';
 import WhatsAppConversationsPage from '../../pages/WhatsAppConversationsPage';
 import WhatsAppSettingsPage from '../../pages/WhatsAppSettingsPage';
-import { useToast } from '../../contexts/ToastContext';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'emails' | 'feedback' | 'whatsapp' | 'whatsapp-settings' | 'downloads' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'emails' | 'feedback' | 'whatsapp' | 'whatsapp-settings' | 'downloads' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -44,7 +42,6 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'broadcasts', label: 'Broadcasts', icon: 'campaign',        route: '/superadmin/notifications' },
     { id: 'billing',    label: 'Billing',    icon: 'payments',        route: '/superadmin/subscriptions' },
     { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
-    { id: 'campaigns',  label: 'Campaigns',  icon: 'ads_click',       route: '/superadmin/campaigns' },
     { id: 'emails',     label: 'Emails',     icon: 'mail',            route: '/superadmin/emails' },
     { id: 'feedback',   label: 'Feedback',   icon: 'reviews',         route: '/superadmin/feedback' },
     { id: 'whatsapp',   label: 'WhatsApp',   icon: 'chat',            route: '/superadmin/whatsapp' },
@@ -59,7 +56,6 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'notifications': return 'broadcasts';
         case 'subscriptions': return 'billing';
         case 'catalog': return 'catalog';
-        case 'campaigns': return 'campaigns';
         case 'emails': return 'emails';
         case 'feedback': return 'feedback';
         case 'whatsapp': return 'whatsapp';
@@ -82,7 +78,6 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
 }) => {
     const navigate = useNavigate();
     const { openAppSwitcher } = useAppSwitcher();
-    const { showToast } = useToast();
     const active = sectionForSub(subPath);
 
     let content: React.ReactNode;
@@ -99,9 +94,6 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
         case 'catalog':
             content = <SuperAdminCatalog />;
             break;
-        case 'campaigns':
-            content = <SuperAdminCampaigns />;
-            break;
         case 'emails':
             content = <SuperAdminEmails />;
             break;
@@ -109,10 +101,10 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             content = <SuperAdminFeedback />;
             break;
         case 'whatsapp':
-            content = <WhatsAppConversationsPage showSnackbar={showToast} currentUser={user} superMode="superadmin" />;
+            content = <WhatsAppConversationsPage currentUser={user} superMode="superadmin" />;
             break;
         case 'whatsapp-settings':
-            content = <WhatsAppSettingsPage storeSettings={null} showSnackbar={showToast} />;
+            content = <WhatsAppSettingsPage storeSettings={null} />;
             break;
         case 'downloads':
             content = <SuperAdminDownloads />;

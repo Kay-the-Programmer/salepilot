@@ -1,3 +1,4 @@
+import { totalRevenue } from '../../utils/revenue';
 import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import type {
   Account, JournalEntry, Sale, Expense, SupplierInvoice, StoreSettings,
@@ -19,6 +20,7 @@ import ChartOfAccountsView from '../../components/accounting/views/ChartOfAccoun
 import JournalView from '../../components/accounting/views/JournalView';
 import FinancialStatementsView from '../../components/accounting/views/FinancialStatementsView';
 import TaxReportView from '../../components/accounting/views/TaxReportView';
+import { useToast } from '../../contexts/ToastContext';
 
 // Modals (lazy — only loaded when opened).
 // One modal now handles both one-time and recurring expenses.
@@ -86,6 +88,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
   onSaveRecurringExpense, onDeleteRecurringExpense,
   user, onExit, onLogout,
 }) => {
+  const { showToast } = useToast();
   const [tab, setTab] = useState<Tab>('overview');
   const [range, setRange] = useState<DateRange>(defaultDateRange);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
@@ -131,9 +134,11 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
     const endMs = range.end.getTime() + 86400000; // include the whole end day
     const inRange = (v?: string) => { const t = tsOf(v); return t >= startMs && t <= endMs; };
     const periodSales = sales.filter((s) => inRange(s.timestamp) && s.fulfillmentStatus !== 'cancelled');
-    // Revenue is net of sales tax AND discounts — the same definition as the
-    // backend summary and reports endpoints.
-    const revenue = periodSales.reduce((a, s) => a + ((s.subtotal || 0) - (s.discount || 0)), 0);
+    // Revenue is net of sales tax AND discounts — one definition, in
+    // `utils/revenue`, shared with the dashboard and the backend's SQL.
+    // Gross of returns on purpose: a refund is reported in the period it
+    // happens, on its own line, not netted back against the original sale.
+    const revenue = totalRevenue(periodSales);
     // Cost of goods sold = per-line cost × quantity captured at time of sale.
     const cogs = periodSales.reduce(
       (a, s) => a + (s.cart || []).reduce((c, i) => c + (i.costPrice || 0) * (i.quantity || 0), 0),
@@ -171,7 +176,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const y = d.getFullYear(), m = d.getMonth();
       // Income = net revenue (ex-tax, net of discounts), consistent with the KPI above.
-      const income = sales.filter((s) => inMonth(s.timestamp, y, m) && s.fulfillmentStatus !== 'cancelled').reduce((a, s) => a + ((s.subtotal || 0) - (s.discount || 0)), 0);
+      const income = totalRevenue(sales.filter((s) => inMonth(s.timestamp, y, m)));
       const expense = expenses.filter((e) => inMonth(e.date, y, m)).reduce((a, e) => a + (e.amount || 0), 0);
       out.push({ label: MONTHS[m], income, expense });
     }
@@ -219,7 +224,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
       window.location.reload();
     } catch (err: any) {
       console.error('Error adjusting account:', err);
-      alert(err.message || 'Error adjusting account balance');
+      showToast(err.message || 'Error adjusting account balance', 'error');
     }
   };
   const openExpenseModal = (m: 'one-time' | 'recurring', expense: Expense | null = null, recurring: RecurringExpense | null = null) => {

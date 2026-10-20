@@ -30,7 +30,7 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<Supplier | null>(null);
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     const statsById = useMemo(() => {
         const map = new Map<string, { orders: number; openOrders: number; spend: number; products: number }>();
@@ -96,7 +96,6 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
                     onSave={handleSave}
                     supplierToEdit={editing}
                 />
-                {confirmDialog}
             </>
         );
     }
@@ -182,7 +181,6 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
                 supplierToEdit={editing}
             />
 
-            {confirmDialog}
         </main>
     );
 };

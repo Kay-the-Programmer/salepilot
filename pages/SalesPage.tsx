@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
-import { SnackbarType } from '../App';
 import { api } from '@/services/api';
 import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '../utils/currency';
 import TourGuide, { hasSeenPosTour } from '../components/TourGuide';
@@ -59,7 +58,6 @@ interface SalesPageProps {
     customers: Customer[];
     onProcessSale: (sale: Sale) => Promise<Sale | null>;
     isLoading: boolean;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
     onOpenSidebar?: () => void;
     onLogout?: () => void;
@@ -80,7 +78,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     customers,
     onProcessSale,
     isLoading,
-    showSnackbar,
     storeSettings,
     categories,
     onProcessReturn,
@@ -90,7 +87,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     onSettingsSaved,
 }) => {
     const navigate = useNavigate();
-    // Used directly (rather than through the `showSnackbar` prop) where a toast
+    // Used directly (rather than through a prop) where a toast
     // needs to carry an Undo button, which the prop's signature cannot express.
     const { showToast } = useToast();
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -132,7 +129,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         const newSale = await onProcessSale(saleData);
         if (!newSale) return;
         if (type === 'invoice') {
-            showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
+            showToast(`Invoice created for ${selectedCustomer?.name}`, 'success');
         } else {
             // Fill receipt-only fields the server/offline queue may omit.
             const completed: Sale = {
@@ -178,7 +175,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 } catch (err) {
                     // The sale is already banked — say so, then fall through to
                     // the dialog so a receipt can still be handed over.
-                    showSnackbar(
+                    showToast(
                         err instanceof PrinterError ? err.message : 'Could not reach the printer.',
                         'error',
                     );
@@ -332,7 +329,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     { ...existingItem, quantity: newQty },
                     ...prev.filter(item => item.productId !== product.id)
                 ]);
-                showSnackbar(`Added another "${product.name}" to cart`, 'success');
+                showToast(`Added another "${product.name}" to cart`, 'success');
             } else {
                 // Prepend new item to the top
                 setCart(prev => [
@@ -349,14 +346,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     },
                     ...prev
                 ]);
-                showSnackbar(`Added "${product.name}" to cart`, 'success');
+                showToast(`Added "${product.name}" to cart`, 'success');
             }
         } else {
             // Show out-of-stock modal instead of just snackbar
             setOutOfStockProduct(product);
             setShowOutOfStockModal(true);
         }
-    }, [cart, getStepFor, roundQty, showSnackbar]);
+    }, [cart, getStepFor, roundQty, showToast]);
 
     /**
      * Take a line off the sale, with a way back.
@@ -394,13 +391,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
             return;
         }
         if (clamped > itemToUpdate.stock + 1e-9) {
-            showSnackbar(`Cannot exceed available stock of ${itemToUpdate.stock}`, 'error');
+            showToast(`Cannot exceed available stock of ${itemToUpdate.stock}`, 'error');
             return;
         }
         setCart(prev => prev.map(item => item.productId === productId
             ? { ...item, quantity: clamped }
             : item));
-    }, [cart, roundQty, removeFromCart, showSnackbar]);
+    }, [cart, roundQty, removeFromCart, showToast]);
 
     const clearCart = useCallback(() => {
         if (cart.length === 0) return;
@@ -411,24 +408,24 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setCustomerPhone('');
         setAppliedStoreCredit(0);
         setCashReceived('');
-        showSnackbar('Cart cleared', 'info');
+        showToast('Cart cleared', 'info');
     }, [cart.length]);
 
     const handleHoldSale = () => {
         if (cart.length === 0) return;
         setHeldSales([...heldSales, cart]);
         clearCart();
-        showSnackbar('Sale held for later', 'info');
+        showToast('Sale held for later', 'info');
     };
 
     const handleRecallSale = (index: number) => {
         if (cart.length > 0) {
-            showSnackbar("Please complete or hold current sale first", 'error');
+            showToast("Please complete or hold current sale first", 'error');
             return;
         }
         setCart(heldSales[index]);
         setHeldSales(heldSales.filter((_, i) => i !== index));
-        showSnackbar(`Held sale #${index + 1} recalled`, 'success');
+        showToast(`Held sale #${index + 1} recalled`, 'success');
     };
 
     const filteredProducts = useMemo(() => {
@@ -478,7 +475,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             // Scanned something we already know about but haven't priced. Say so
             // rather than falling through to an external lookup that would offer
             // to add it a second time.
-            showSnackbar(`${product.name} has no selling price yet. Set a price in Inventory before selling it.`, 'info');
+            showToast(`${product.name} has no selling price yet. Set a price in Inventory before selling it.`, 'info');
             return;
         }
         if (product) {
@@ -499,21 +496,21 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         costPrice: 0,
                         categoryId: undefined
                     });
-                    showSnackbar('Product found online! Confirm details to add it.', 'success');
+                    showToast('Product found online! Confirm details to add it.', 'success');
                     navigate('/inv/items');
                 } else {
-                    showSnackbar('No product found for scanned code', 'error');
+                    showToast('No product found for scanned code', 'error');
                 }
             } catch (err: any) {
                 // 404 from backend means not found externally either
                 if (err.message && err.message.includes('404')) {
-                    showSnackbar('No product found locally or online', 'error');
+                    showToast('No product found locally or online', 'error');
                 } else {
-                    showSnackbar('No product found for scanned code', 'error');
+                    showToast('No product found for scanned code', 'error');
                 }
             }
         }
-    }, [products, addToCart, showSnackbar]);
+    }, [products, addToCart, showToast]);
 
     // Keep ref current so stableScanCallback always delegates to latest handleContinuousScan
     useEffect(() => {
@@ -595,18 +592,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const handleApplyStoreCredit = () => {
         if (finalAppliedCredit > 0) {
             setAppliedStoreCredit(0);
-            showSnackbar('Store credit removed', 'info');
+            showToast('Store credit removed', 'info');
         } else {
             const customerCredit = selectedCustomer?.storeCredit || 0;
             const creditToApply = Math.min(totalBeforeCredit, customerCredit);
             setAppliedStoreCredit(creditToApply);
-            showSnackbar(`${formatCurrency(creditToApply, storeSettings)} store credit applied`, 'success');
+            showToast(`${formatCurrency(creditToApply, storeSettings)} store credit applied`, 'success');
         }
     };
 
     const processTransaction = async (type: 'paid' | 'invoice', reference?: string) => {
         if (cart.length === 0) {
-            showSnackbar('Cart is empty', 'error');
+            showToast('Cart is empty', 'error');
             return;
         }
 
@@ -702,7 +699,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 return;
             }
             console.error('Transaction failed:', error);
-            showSnackbar('Transaction failed. Please try again.', 'error');
+            showToast('Transaction failed. Please try again.', 'error');
         } finally {
             setIsProcessing(false);
         }
@@ -731,25 +728,25 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         console.log('Payment still pending, retrying in 3s...');
                         setTimeout(() => handleLencoVerification(reference, retries + 1), 3000);
                     } else {
-                        showSnackbar('Payment confirmation timed out. Please check your transaction history later.', 'warning');
+                        showToast('Payment confirmation timed out. Please check your transaction history later.', 'warning');
                         setIsVerifyingPayment(false);
                     }
                 } else {
                     setVerifyingMessage('Payment verified!');
-                    showSnackbar('Payment verified successfully!', 'success');
+                    showToast('Payment verified successfully!', 'success');
                     setIsVerifyingPayment(false);
                     processTransaction('paid', reference);
                 }
             } else {
-                showSnackbar(verificationResult.message || 'Payment verification failed', 'error');
+                showToast(verificationResult.message || 'Payment verification failed', 'error');
                 setIsVerifyingPayment(false);
             }
         } catch (err: any) {
             console.error('Lenco verification error:', err);
-            showSnackbar('Failed to verify payment. Please contact support.', 'error');
+            showToast('Failed to verify payment. Please contact support.', 'error');
             setIsVerifyingPayment(false);
         }
-    }, [processTransaction, showSnackbar]);
+    }, [processTransaction, showToast]);
 
     // Manual mobile-money confirmation — the store collected on its own till.
     // The operator transaction ID is kept verbatim on the sale for reconciliation,
@@ -769,13 +766,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
         try {
             stopPollingRef.current = true;
             setIsVerifyingPayment(false);
-            showSnackbar('Cancelling transaction...', 'info');
+            showToast('Cancelling transaction...', 'info');
 
             const response = await api.post<any>('/payments/lenco/cancel', { reference: lencoReference });
             if (response.status) {
-                showSnackbar('Transaction cancelled successfully. If a USSD prompt appears on your phone, please decline it manually.', 'success');
+                showToast('Transaction cancelled successfully. If a USSD prompt appears on your phone, please decline it manually.', 'success');
             } else {
-                showSnackbar(response.message || 'Error notifying backend of cancellation', 'warning');
+                showToast(response.message || 'Error notifying backend of cancellation', 'warning');
             }
         } catch (err) {
             console.error('Error cancelling Lenco verification:', err);
@@ -981,7 +978,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     storeSettings={storeSettings}
                     customers={customers}
                     onProcessReturn={onProcessReturn}
-                    showSnackbar={showSnackbar}
                     onStartSelling={() => setPosView('sell')}
                     userRole={user?.role}
                     onSaleChanged={onSaleChanged}
@@ -1066,7 +1062,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 onLencoSuccess={(response) => {
                                     if (storeSettings.lencoPublicKey) {
                                         processTransaction('paid', response.reference);
-                                        showSnackbar('Payment confirmed via Merchant Account', 'success');
+                                        showToast('Payment confirmed via Merchant Account', 'success');
                                     } else {
                                         handleLencoVerification(response.reference);
                                     }
@@ -1074,13 +1070,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 onConfirmationPending={(response) => {
                                     if (storeSettings.lencoPublicKey) {
                                         setCartView('payment');
-                                        showSnackbar('Payment initiated. Please confirm on your device.', 'info');
+                                        showToast('Payment initiated. Please confirm on your device.', 'info');
                                     } else {
                                         handleLencoVerification(response.reference);
                                     }
                                 }}
                                 onManualConfirm={handleManualMobileMoneyConfirm}
-                                onUpgrade={() => showSnackbar('Payment Gateway is a premium add-on — manage it from Settings → Subscription.', 'info')}
+                                onUpgrade={() => showToast('Payment Gateway is a premium add-on — manage it from Settings → Subscription.', 'info')}
                                 onBack={() => setCartView('payment')}
                                 onCloseMobile={() => setMobileCartOpen(false)}
                             />
@@ -1275,7 +1271,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onClose={() => { markReceiptSetupDone(storeSettings?.storeId); setShowReceiptSetup(false); }}
                 settings={storeSettings}
                 onSaved={onSettingsSaved}
-                showSnackbar={showSnackbar}
             />
 
             <CashDrawerModal
@@ -1297,10 +1292,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     setIsProcessing(true);
                     try {
                         await submitSale({ ...held.sale, overrideId });
-                        showSnackbar(`Approved by ${authorizedBy}`, 'success');
+                        showToast(`Approved by ${authorizedBy}`, 'success');
                     } catch (e) {
                         console.error('Approved sale still failed:', e);
-                        showSnackbar('That approval was not accepted. Ask a manager again.', 'error');
+                        showToast('That approval was not accepted. Ask a manager again.', 'error');
                     } finally {
                         setIsProcessing(false);
                     }
@@ -1312,7 +1307,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     isOpen={showReceiptModal}
                     onClose={() => { setShowReceiptModal(false); focusSearch(); }}
                     saleData={lastSale}
-                    showSnackbar={showSnackbar}
                     storeSettings={storeSettings}
                 />
             )}
@@ -1335,7 +1329,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 product={lowStockProduct!}
                 user={user}
                 storeSettings={storeSettings}
-                showSnackbar={showSnackbar}
             />
 
             {/* Verification Loading Overlay */}

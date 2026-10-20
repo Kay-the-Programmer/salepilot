@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { SnackbarType } from '../App';
 import { registerStoreAndRefreshUser, checkStoreNameAvailability } from '../services/storesService';
 import { login, register, verifyRegistration } from '../services/authService';
 import { User } from '../types';
@@ -19,10 +18,10 @@ import {
     HiOutlineEyeSlash,
 } from 'react-icons/hi2';
 import { sanitizePhone, phoneError as phoneErrorFor, PHONE_MAX_DIGITS } from '../utils/phone';
+import { useToast } from '../contexts/ToastContext';
 
 interface StoreRegistrationPageProps {
     onCompleted: (user: User) => void;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
     requireAccount?: boolean;
 }
 
@@ -51,9 +50,9 @@ const emailIsValid = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
     onCompleted,
-    showSnackbar,
     requireAccount = false
 }) => {
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     const steps = useMemo(
@@ -146,11 +145,11 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
             const accountName = ownerName.trim() || email.trim().split('@')[0];
             await register(accountName, email.trim(), password, referralCode.trim() || undefined);
             setIsPendingOtp(true);
-            showSnackbar('Verification code sent to your email.', 'info');
+            showToast('Verification code sent to your email.', 'info');
         } catch (err: any) {
             const msg = err?.message ?? 'Could not create your account.';
             setError(msg);
-            showSnackbar(msg, 'error');
+            showToast(msg, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -169,7 +168,7 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
         } catch (err: any) {
             const msg = err?.message ?? 'Verification failed. Please try again.';
             setError(msg);
-            showSnackbar(msg, 'error');
+            showToast(msg, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -180,12 +179,12 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
         setError(null);
         try {
             const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address, isWholesale);
-            showSnackbar(`Store "${store.name}" created successfully! 🎉`, 'success');
+            showToast(`Store "${store.name}" created successfully! 🎉`, 'success');
             onCompleted(user);
         } catch (err: any) {
             const msg = err?.message || 'Failed to register store';
             setError(msg);
-            showSnackbar(msg, 'error');
+            showToast(msg, 'error');
         } finally {
             setIsLoading(false);
         }

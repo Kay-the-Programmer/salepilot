@@ -30,7 +30,7 @@ const INPUT = 'w-full px-3 py-2 rounded-lg border border-brand-border bg-surface
  */
 const SuperAdminDownloads: React.FC = () => {
     const { showToast } = useToast();
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     const [releases, setReleases] = useState<DesktopRelease[]>([]);
     const [loading, setLoading] = useState(true);
@@ -317,7 +317,6 @@ const SuperAdminDownloads: React.FC = () => {
                 )}
             </section>
 
-            {confirmDialog}
         </div>
     );
 };

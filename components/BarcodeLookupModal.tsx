@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import XMarkIcon from './icons/XMarkIcon';
 import { Button } from './ui/Button';
 import { InputField } from './ui/InputField';
+import {
+    XMarkIcon,
+} from './icons';
 
 interface BarcodeLookupModalProps {
     isOpen: boolean;

@@ -13,8 +13,10 @@ import {
   HiOutlineInformationCircle,
   HiOutlineXMark
 } from 'react-icons/hi2';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function CustomerDashboard() {
+  const { showToast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -96,10 +98,10 @@ export default function CustomerDashboard() {
       );
 
       setShowCancelConfirm(false);
-      alert('Order cancelled successfully');
+      showToast('Order cancelled successfully', 'success');
     } catch (error) {
       console.error('Failed to cancel order:', error);
-      alert('Failed to cancel order. Please try again.');
+      showToast('Failed to cancel order. Please try again.', 'error');
     } finally {
       setIsCancelling(false);
     }

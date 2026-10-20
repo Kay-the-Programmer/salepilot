@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import XMarkIcon from './icons/XMarkIcon';
-import CameraIcon from './icons/CameraIcon';
+import {
+    CameraIcon,
+    XMarkIcon,
+} from './icons';
 
 interface CameraCaptureModalProps {
     isOpen: boolean;

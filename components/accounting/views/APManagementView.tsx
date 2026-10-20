@@ -2,15 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { SupplierInvoice, PurchaseOrder, StoreSettings, SupplierPayment, Supplier } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 import { toneClass, toneDot } from '../../ui/StatusPill';
-import PlusIcon from '../../icons/PlusIcon';
-import DocumentChartBarIcon from '../../icons/DocumentChartBarIcon';
-import BuildingOfficeIcon from '../../icons/BuildingOfficeIcon';
-import EllipsisVerticalIcon from '../../icons/EllipsisVerticalIcon';
-import EyeIcon from '../../icons/EyeIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
-import BanknotesIcon from '../../icons/BanknotesIcon';
-import CalendarIcon from '../../icons/CalendarIcon';
 import UnifiedRecordPaymentModal from '../UnifiedRecordPaymentModal';
+import {
+    BanknotesIcon,
+    BuildingOfficeIcon,
+    CalculatorIcon,
+    CalendarIcon,
+    DocumentChartBarIcon,
+    EllipsisVerticalIcon,
+    EyeIcon,
+    PlusIcon,
+} from '../../icons';
 
 interface APManagementViewProps {
     supplierInvoices: SupplierInvoice[];

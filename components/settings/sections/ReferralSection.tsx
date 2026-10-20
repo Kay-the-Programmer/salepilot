@@ -1,19 +1,20 @@
 import React from 'react';
 import { User } from '../../../types';
 import '../../../pages/assistant/assistant.css';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface ReferralSectionProps {
     user: User;
-    showSnackbar: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
-const ReferralSection: React.FC<ReferralSectionProps> = ({ user, showSnackbar }) => {
+const ReferralSection: React.FC<ReferralSectionProps> = ({ user }) => {
+    const { showToast } = useToast();
     const referralCode = user.referralCode || 'NOT_FOUND';
     const referralLink = `${window.location.origin}/register?ref=${referralCode}`;
 
     const copyToClipboard = (text: string, message: string) => {
         navigator.clipboard.writeText(text);
-        showSnackbar(message, 'success');
+        showToast(message, 'success');
     };
 
     const steps = [

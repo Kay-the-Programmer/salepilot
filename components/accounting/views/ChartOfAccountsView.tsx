@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Account, AccountType, StoreSettings, RecurringExpense } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import PlusIcon from '../../icons/PlusIcon';
-import PencilIcon from '../../icons/PencilIcon';
-import TrashIcon from '../../icons/TrashIcon';
-import ChevronDownIcon from '../../icons/ChevronDownIcon';
-import EllipsisVerticalIcon from '../../icons/EllipsisVerticalIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
-import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
-import ScaleIcon from '../../icons/Scale';
 import AccountFormModal from '../modals/AccountFormModal';
+import {
+    CalendarDaysIcon,
+    ChevronDownIcon,
+    EllipsisVerticalIcon,
+    MagnifyingGlassIcon,
+    PencilIcon,
+    PlusIcon,
+    ScaleIcon,
+    TrashIcon,
+} from '../../icons';
 
 interface ChartOfAccountsViewProps {
     accounts: Account[];

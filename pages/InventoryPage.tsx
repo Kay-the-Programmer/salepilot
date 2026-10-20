@@ -22,7 +22,6 @@ import { buildProductCsv, downloadCsv } from '../components/products/csv';
 import { takePendingNewProduct } from '../utils/pendingProduct';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
-import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
 import InventoryHeader from '../components/inventory/InventoryHeader';
 import InventoryMobileShell from '../components/inventory/InventoryMobileShell';
@@ -106,8 +105,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [stockAdjustInitialReason, setStockAdjustInitialReason] = useState<string | undefined>(undefined);
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
     const [productToPrint, setProductToPrint] = useState<Product | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
     const [isManualLookupOpen, setIsManualLookupOpen] = useState(false);
 
@@ -133,7 +130,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
     // ── Bulk selection ──
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
     const [bulkIds, setBulkIds] = useState<Set<string>>(new Set());
     const [bulkPriceOpen, setBulkPriceOpen] = useState(false);
     const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false);
@@ -167,9 +164,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
 
-    // Discard Modal State
-    const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-    const [pendingProductId, setPendingProductId] = useState<string | null>(null);
     const isProductFormDirtyRef = useRef(false);
 
     const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
@@ -500,50 +494,34 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setProductToPrint(null);
     };
 
-    const handleOpenDeleteModal = (product: Product) => {
-        setProductToDelete(product);
-        setIsDeleteModalOpen(true);
+    const handleOpenDeleteModal = async (product: Product) => {
+        const ok = await confirm({
+            title: 'Delete Product',
+            message: <p>Are you sure you want to permanently delete "<strong>{product.name}</strong>"? This action cannot be undone.</p>,
+            confirmLabel: 'Delete',
+            danger: true,
+        });
+        if (!ok) return;
+        onDeleteProduct(product.id);
+        logEvent('Inventory', 'delete_product', product.id);
+        handleBackToList();
     };
 
-    const handleCloseDeleteModal = () => {
-        setProductToDelete(null);
-        setIsDeleteModalOpen(false);
-    };
-
-    const handleConfirmDelete = () => {
-        if (productToDelete) {
-            onDeleteProduct(productToDelete.id);
-            logEvent('Inventory', 'delete_product', productToDelete.id);
-            handleBackToList();
+    const handleSelectProduct = async (product: Product) => {
+        if (isEditingProduct && editingProduct && !editingProduct.id && isProductFormDirtyRef.current) {
+            // A half-filled new product is the only thing here worth asking
+            // about: switching away loses it, and nothing else does.
+            const ok = await confirm({
+                title: 'Discard New Product?',
+                message: 'Are you sure you want to discard this new product? Any unsaved changes will be lost.',
+                confirmLabel: 'Discard and View Details',
+                danger: true,
+            });
+            if (!ok) return;
         }
-        handleCloseDeleteModal();
-    };
-
-    const handleSelectProduct = (product: Product) => {
-        if (isEditingProduct && editingProduct && !editingProduct.id) {
-            if (isProductFormDirtyRef.current) {
-                setPendingProductId(product.id);
-                setIsDiscardModalOpen(true);
-            } else {
-                setSelectedProductId(product.id);
-                setIsEditingProduct(false);
-                setEditingProduct(null);
-            }
-        } else {
-            setSelectedProductId(product.id);
-            setIsEditingProduct(false);
-            setEditingProduct(null);
-        }
-    };
-
-    const handleConfirmDiscard = () => {
-        setIsDiscardModalOpen(false);
+        setSelectedProductId(product.id);
         setIsEditingProduct(false);
         setEditingProduct(null);
-        if (pendingProductId) {
-            setSelectedProductId(pendingProductId);
-            setPendingProductId(null);
-        }
     };
 
     const handleSelectCategory = (categoryId: string) => {
@@ -1106,17 +1084,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             </div>
 
             {/* Modals */}
-            <ConfirmationModal
-                isOpen={isDiscardModalOpen}
-                onClose={() => setIsDiscardModalOpen(false)}
-                onConfirm={handleConfirmDiscard}
-                title="Discard New Product?"
-                message="Are you sure you want to discard this new product? Any unsaved changes will be lost."
-                confirmText="Discard and View Details"
-                cancelText="Cancel"
-                confirmButtonClass="bg-danger hover:bg-danger/90"
-            />
-
             {canManageProducts && isStockModalOpen && (
                 <StockAdjustmentModal
                     isOpen={isStockModalOpen}
@@ -1159,17 +1126,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         'success',
                     );
                 }}
-            />
-
-            <ConfirmationModal
-                isOpen={isDeleteModalOpen}
-                onClose={handleCloseDeleteModal}
-                onConfirm={handleConfirmDelete}
-                title="Delete Product"
-                message={
-                    <p>Are you sure you want to permanently delete "<strong>{productToDelete?.name}</strong>"? This action cannot be undone.</p>
-                }
-                confirmText="Delete"
             />
 
             {isScanModalOpen && (
@@ -1308,7 +1264,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onApply={applyBulkCategory}
                 busy={bulkBusy}
             />
-            {confirmDialog}
 
         </div>
     );

@@ -2,17 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Expense, RecurringExpense, Account, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 import { api } from '../../../services/api';
-import PlusIcon from '../../icons/PlusIcon';
-import PencilIcon from '../../icons/PencilIcon';
-import TrashIcon from '../../icons/TrashIcon';
-import BanknotesIcon from '../../icons/BanknotesIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
-import CalendarIcon from '../../icons/CalendarIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
-import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
-import RefreshIcon from '../../icons/RefreshIcon';
 import LoadingSpinner from '../../LoadingSpinner';
 import RecurringExpensesView from './RecurringExpensesView';
+import {
+    BanknotesIcon,
+    CalculatorIcon,
+    CalendarDaysIcon,
+    CalendarIcon,
+    MagnifyingGlassIcon,
+    PencilIcon,
+    PlusIcon,
+    RefreshIcon,
+    TrashIcon,
+} from '../../icons';
 
 interface ExpensesViewProps {
     expenses: Expense[]; // Still receive from parent for initial/sync

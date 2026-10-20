@@ -1,8 +1,10 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Customer } from '../../types';
-import UserCircleIcon from '../icons/UserCircleIcon';
-import XMarkIcon from '../icons/XMarkIcon';
+import {
+    UserCircleIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface CustomerSelectProps {
     customers: Customer[];

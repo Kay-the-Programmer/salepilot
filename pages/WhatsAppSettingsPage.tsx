@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react';
 import { StoreSettings, WhatsAppConfig } from '../types';
 import { api } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../contexts/ToastContext';
 
 interface WhatsAppSettingsPageProps {
     storeSettings: StoreSettings | null;
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
 }
 
-export default function WhatsAppSettingsPage({ showSnackbar }: WhatsAppSettingsPageProps) {
+export default function WhatsAppSettingsPage({ }: WhatsAppSettingsPageProps) {
+    const { showToast } = useToast();
     const [config, setConfig] = useState<WhatsAppConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -43,9 +44,9 @@ export default function WhatsAppSettingsPage({ showSnackbar }: WhatsAppSettingsP
         setIsSaving(true);
         try {
             await api.put('/whatsapp/config', config);
-            showSnackbar('WhatsApp configuration saved', 'success');
+            showToast('WhatsApp configuration saved', 'success');
         } catch (error: any) {
-            showSnackbar(error.message || 'Failed to save config', 'error');
+            showToast(error.message || 'Failed to save config', 'error');
         } finally {
             setIsSaving(false);
         }

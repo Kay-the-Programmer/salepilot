@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Account, Expense, RecurringExpense, StoreSettings } from '../../types';
 import {
     XMarkIcon,
@@ -18,6 +17,15 @@ import {
     RefreshIcon,
 } from '../icons';
 import { toDateInputValue } from '../../utils/date';
+import { useToast } from '../../contexts/ToastContext';
+import {
+    QUICK_CATEGORY_NAMES,
+    buildExpensePayload,
+    expenseAccountsOf,
+    paymentAccountsOf,
+    validateExpenseDraft,
+} from './expenseModel';
+import { Modal } from '../ui/Modal';
 
 type Mode = 'one-time' | 'recurring';
 
@@ -36,16 +44,26 @@ interface ExpenseFormModalProps {
     initialMode?: Mode;
 }
 
-const QUICK_CATEGORIES = [
-    { id: 'rent', name: 'Rent', icon: BuildingOfficeIcon },
-    { id: 'utilities', name: 'Utilities', icon: BoltIcon },
-    { id: 'supplies', name: 'Supplies', icon: ShoppingBagIcon },
-    { id: 'salaries', name: 'Salaries', icon: UsersIcon },
-    { id: 'transport', name: 'Transport', icon: TruckIcon },
-    { id: 'marketing', name: 'Marketing', icon: SparklesIcon },
-    { id: 'taxes', name: 'Taxes', icon: CurrencyDollarIcon },
-    { id: 'other', name: 'Other', icon: EllipsisVerticalIcon },
-];
+/**
+ * The quick-pick categories, with an icon each. The names come from
+ * `expenseModel` so this form and the staff Expenses app offer the same set;
+ * only the icon is this form's business.
+ */
+const CATEGORY_ICON: Record<string, typeof BuildingOfficeIcon> = {
+    Rent: BuildingOfficeIcon,
+    Utilities: BoltIcon,
+    Supplies: ShoppingBagIcon,
+    Salaries: UsersIcon,
+    Transport: TruckIcon,
+    Marketing: SparklesIcon,
+    Taxes: CurrencyDollarIcon,
+    Other: EllipsisVerticalIcon,
+};
+const QUICK_CATEGORIES = QUICK_CATEGORY_NAMES.map(name => ({
+    id: name.toLowerCase(),
+    name,
+    icon: CATEGORY_ICON[name] ?? EllipsisVerticalIcon,
+}));
 
 // One field language for the whole form.
 const FIELD = 'w-full px-4 py-3 rounded-xl text-sm font-semibold bg-surface-variant text-brand-text border border-brand-border focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all';
@@ -61,6 +79,7 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) 
 const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     isOpen, onClose, accounts, storeSettings, onSave, onSaveRecurring, expenseToEdit, recurringToEdit, initialMode,
 }) => {
+    const { showToast } = useToast();
     const [mode, setMode] = useState<Mode>('one-time');
     const [showOptional, setShowOptional] = useState(false);
     const [formData, setFormData] = useState({
@@ -79,10 +98,8 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     const symbol = storeSettings?.currency?.symbol ?? '';
     const isEditing = !!(expenseToEdit || recurringToEdit);
 
-    const expenseAccounts = React.useMemo(() => accounts.filter(a => a.type === 'expense'), [accounts]);
-    const paymentAccounts = React.useMemo(() => accounts.filter(a =>
-        a.subType === 'cash' || a.subType === 'accounts_payable'
-    ), [accounts]);
+    const expenseAccounts = React.useMemo(() => expenseAccountsOf(accounts), [accounts]);
+    const paymentAccounts = React.useMemo(() => paymentAccountsOf(accounts), [accounts]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -134,21 +151,40 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.amount || parseFloat(formData.amount) <= 0) { alert('Please enter a valid amount'); return; }
-        if (!formData.expenseAccountId || !formData.paymentAccountId) { alert('Please select both expense and payment accounts'); return; }
+        const amount = parseFloat(formData.amount);
+        // Same rules as the staff Expenses app — see `expenseModel`. Description
+        // is allowed to be blank here because this form falls back to naming the
+        // expense after its account, which the staff form does not do.
+        const complaint = validateExpenseDraft({
+            amount,
+            description: formData.description || 'placeholder',
+            expenseAccountId: formData.expenseAccountId,
+            paymentAccountId: formData.paymentAccountId,
+        });
+        if (complaint) { showToast(complaint, 'error'); return; }
 
         const expenseAccount = accounts.find(a => a.id === formData.expenseAccountId);
         const paymentAccount = accounts.find(a => a.id === formData.paymentAccountId);
-        if (!expenseAccount || !paymentAccount) { alert('Invalid account selection'); return; }
+        if (!expenseAccount || !paymentAccount) { showToast('Invalid account selection', 'error'); return; }
+
+        const payload = buildExpensePayload({
+            date: formData.date,
+            description: formData.description,
+            amount,
+            expenseAccountId: formData.expenseAccountId,
+            paymentAccountId: formData.paymentAccountId,
+            reference: formData.reference,
+            category: formData.category || undefined,
+        }, accounts);
 
         const common = {
-            amount: parseFloat(formData.amount),
-            expenseAccountId: formData.expenseAccountId,
+            amount: payload.amount,
+            expenseAccountId: payload.expenseAccountId,
             expenseAccountName: expenseAccount.name,
-            paymentAccountId: formData.paymentAccountId,
+            paymentAccountId: payload.paymentAccountId,
             paymentAccountName: paymentAccount.name,
-            category: formData.category || undefined,
-            reference: formData.reference || undefined,
+            category: payload.category,
+            reference: payload.reference,
         };
 
         if (mode === 'recurring') {
@@ -187,14 +223,8 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     const expenseName = accounts.find(a => a.id === formData.expenseAccountId)?.name || 'Expense';
     const paymentName = accounts.find(a => a.id === formData.paymentAccountId)?.name || 'Payment';
 
-    return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
-            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
-
-            <div
-                className="relative bg-surface w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
-                onClick={(e) => e.stopPropagation()}
-            >
+    return (
+        <Modal open onClose={onClose} size="lg" sheet ariaLabel="Record expense">
                 <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
                     {/* Header */}
                     <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
@@ -388,9 +418,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>,
-        document.body
+        </Modal>
     );
 };
 

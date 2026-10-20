@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { SupplierInvoice, PurchaseOrder, Supplier, StoreSettings } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
-import ChevronDownIcon from '../icons/ChevronDownIcon';
 import { toDateInputValue } from '../../utils/date';
+import {
+    ChevronDownIcon,
+    ClipboardDocumentListIcon,
+    XMarkIcon,
+} from '../icons';
+import { useToast } from '../../contexts/ToastContext';
+import { Modal } from '../ui/Modal';
 
 interface SupplierInvoiceFormModalProps {
     isOpen: boolean;
@@ -39,6 +42,7 @@ const getInitialState = (po?: PurchaseOrder): Partial<SupplierInvoice> => ({
 });
 
 const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isOpen, onClose, onSave, invoiceToEdit, purchaseOrders, suppliers, storeSettings }) => {
+    const { showToast } = useToast();
     const [invoice, setInvoice] = useState<Partial<SupplierInvoice>>(getInitialState());
     const [selectedSupplierId, setSelectedSupplierId] = useState('');
 
@@ -95,7 +99,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            alert('Please fill in all required fields.');
+            showToast('Please fill in all required fields.', 'error');
             return;
         }
 
@@ -111,14 +115,8 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
         onClose();
     };
 
-    return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
-            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
-
-            <div
-                className="relative bg-surface w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
-                onClick={(e) => e.stopPropagation()}
-            >
+    return (
+        <Modal open onClose={onClose} size="lg" sheet ariaLabel="Supplier invoice">
                 <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
                     {/* Header */}
                     <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
@@ -248,9 +246,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>,
-        document.body
+        </Modal>
     );
 };
 

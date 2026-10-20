@@ -2,7 +2,7 @@ import React from 'react';
 import { Product, User, StoreSettings } from '../../types';
 import { api, buildAssetUrl } from '@/services/api';
 import { BellAlertIcon, ShoppingCartIcon } from '../icons';
-import { SnackbarType } from '../../App';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LowStockAlertModalProps {
     isOpen: boolean;
@@ -10,7 +10,6 @@ interface LowStockAlertModalProps {
     product: Product;
     user: User;
     storeSettings: StoreSettings;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
 }
 
 const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
@@ -18,9 +17,9 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
     onClose,
     product,
     user,
-    storeSettings,
-    showSnackbar
+    storeSettings
 }) => {
+    const { showToast } = useToast();
     if (!isOpen) return null;
 
     const stockCount = typeof (product as any).stock === 'number'
@@ -37,11 +36,11 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
                 requestedBy: user.email || user.name,
                 storeId: user.currentStoreId
             });
-            showSnackbar(`Admin notified about low stock for "${product.name}"`, 'success');
+            showToast(`Admin notified about low stock for "${product.name}"`, 'success');
             onClose();
         } catch (error) {
             console.error('Failed to send low stock notification:', error);
-            showSnackbar('Failed to send notification. Please try again.', 'error');
+            showToast('Failed to send notification. Please try again.', 'error');
         }
     };
 

@@ -89,7 +89,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
     user, storeSettings, customers, products, onExit, onLogout,
 }) => {
     const { openAppSwitcher } = useAppSwitcher();
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     const [tab, setTab] = useState<DocType>('quotation');
     const [docs, setDocs] = useState<SalesDocument[]>([]);
@@ -491,7 +491,6 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                 />
             )}
 
-            {confirmDialog}
 
             {toast && (
                 <div className="sp-assistant fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-[60]">

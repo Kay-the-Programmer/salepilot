@@ -1,13 +1,16 @@
+import { totalRevenue } from '../../../utils/revenue';
 import React, { useState, useMemo } from 'react';
 import { Sale, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import ArrowTrendingUpIcon from '../../icons/ArrowTrendingUpIcon';
-import BanknotesIcon from '../../icons/BanknotesIcon';
-import ReceiptPercentIcon from '../../icons/ReceiptPercentIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
-import InformationCircleIcon from '../../icons/InformationCircleIcon';
 import { toDateInputValue } from '../../../utils/date';
+import {
+    ArrowTrendingUpIcon,
+    BanknotesIcon,
+    CalculatorIcon,
+    CalendarDaysIcon,
+    InformationCircleIcon,
+    ReceiptPercentIcon,
+} from '../../icons';
 
 interface TaxReportViewProps {
     sales: Sale[];
@@ -36,7 +39,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
             return saleDate >= start && saleDate <= end;
         });
 
-        const totalSales = relevantSales.reduce((sum, s) => sum + ((s.subtotal || 0) - (s.discount || 0)), 0);
+        const totalSales = totalRevenue(relevantSales);
         const totalTax = relevantSales.reduce((sum, s) => sum + (s.tax || 0), 0);
         const totalTransactions = relevantSales.reduce((sum, s) => sum + (s.total || 0), 0);
 

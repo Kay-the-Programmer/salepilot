@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, Category, Supplier, StoreSettings } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
-import SparklesIcon from '../icons/SparklesIcon';
-import XMarkIcon from '../icons/XMarkIcon';
-import CameraIcon from '../icons/CameraIcon';
 import CameraCaptureModal from '../CameraCaptureModal';
-import ArrowUpTrayIcon from '../icons/ArrowUpTrayIcon';
 import SupplierFormModal from '../suppliers/SupplierFormModal';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
 const UnifiedScannerModal = lazy(() => import('../UnifiedScannerModal'));
-import ArrowLeftIcon from '../icons/ArrowLeftIcon';
 import { useProductForm } from '../../hooks/useProductForm';
 import { formatCurrency } from '@/utils/currency';
 import { useToast } from '../../contexts/ToastContext';
+import {
+    ArrowLeftIcon,
+    ArrowUpTrayIcon,
+    CameraIcon,
+    SparklesIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface ProductEditFormProps {
     product: Product;
@@ -35,6 +37,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     onAddCategory,
     onDirtyChange
 }) => {
+    const { showToast } = useToast();
     const {
         product,
         setProduct, // Still needed for some direct updates
@@ -71,7 +74,6 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const { showToast } = useToast();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
@@ -174,7 +176,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
             setIsSupplierModalOpen(false);
         } catch (err: any) {
             console.error("Failed to create supplier:", err);
-            alert("Failed to create supplier: " + err.message);
+            showToast("Failed to create supplier: " + err.message, 'error');
         }
     };
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
-import XMarkIcon from './icons/XMarkIcon';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import {
+    XMarkIcon,
+} from './icons';
 
 interface EditProfileModalProps {
     isOpen: boolean;

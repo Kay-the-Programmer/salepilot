@@ -2,23 +2,23 @@ import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import JsBarcode from 'jsbarcode';
 import { Sale, StoreSettings } from '@/types.ts';
-import { SnackbarType } from '../../App';
 import { formatCurrency } from '@/utils/currency.ts';
 import PosIcon from './PosIcon';
 import salepilotLogo from '@/assets/salepilot.png';
 import PrinterSettingsModal from './PrinterSettingsModal';
 import { buildReceiptBytes, receiptCode } from '../../utils/receiptEscPos';
 import { PrinterError, PrinterStatus, getOpenDrawer, getPaperWidth, getPrinterStatus, isSupported, printBytes, reconnect } from '../../services/thermalPrinter';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ReceiptModalProps {
     isOpen: boolean;
     onClose: () => void;
     saleData: Sale;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
 }
 
-const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, showSnackbar, storeSettings }) => {
+const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, storeSettings }) => {
+    const { showToast } = useToast();
     const { transactionId, timestamp, cart, total, subtotal, tax, discount, customerName, customerPhone, attendedBy, storeCreditUsed } = saleData;
     const modalPrintAreaRef = useRef<HTMLDivElement>(null);
     const barcodeRef = useRef<HTMLCanvasElement>(null);
@@ -126,7 +126,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         } catch (err) {
             // The sale is already banked. Say what went wrong and leave the
             // browser dialog as the way to still hand over a receipt.
-            showSnackbar(
+            showToast(
                 err instanceof PrinterError ? err.message : 'Could not reach the printer.',
                 'error',
             );
@@ -139,7 +139,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
         const printWindow = window.open('', '', 'height=600,width=400');
         if (!printWindow) {
-            showSnackbar("Could not open print window. Please check your browser's pop-up settings.", "error");
+            showToast("Could not open print window. Please check your browser's pop-up settings.", "error");
             return;
         }
 

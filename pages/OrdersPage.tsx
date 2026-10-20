@@ -4,7 +4,7 @@ import SocketService from '../services/socketService';
 import { Sale, StoreSettings, Payment } from '../types';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+import { useConfirm } from '../components/ui/useConfirm';
 import Pagination from '../components/ui/Pagination';
 
 // New Modular Components
@@ -14,17 +14,18 @@ import OrdersFilterBar from '../components/orders/OrdersFilterBar';
 import OrdersList from '../components/orders/OrdersList';
 import OrderDetailContent from '../components/orders/OrderDetailContent';
 import { HiOutlineXMark, HiOutlineBanknotes, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
+import { useToast } from '../contexts/ToastContext';
 
 
 
 interface OrdersPageProps {
     onOpenSidebar?: () => void;
     storeSettings: StoreSettings;
-    showSnackbar: (message: string, type: 'success' | 'error' | 'info' | 'sync') => void;
     onDataRefresh?: () => void;
 }
 
-export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh }: OrdersPageProps) {
+export default function OrdersPage({ storeSettings, onDataRefresh }: OrdersPageProps) {
+    const { showToast } = useToast();
     const [orders, setOrders] = useState<Sale[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -39,17 +40,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     const [pageSize, setPageSize] = useState(20);
     const [total, setTotal] = useState(0);
 
-    const [confirmModal, setConfirmModal] = useState<{
-        isOpen: boolean;
-        title: string;
-        message: string;
-        onConfirm: () => void;
-    }>({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: () => { }
-    });
+    const { confirm } = useConfirm();
 
     useEffect(() => {
         fetchOrders();
@@ -70,7 +61,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
         const handleNewOrder = (data: any) => {
             console.log('Real-time order received:', data);
-            showSnackbar('New online order received!', 'info');
+            showToast('New online order received!', 'info');
             fetchOrders();
             onDataRefresh?.();
         };
@@ -106,7 +97,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
-            showSnackbar('Failed to fetch orders', 'error');
+            showToast('Failed to fetch orders', 'error');
         } finally {
             setLoading(false);
         }
@@ -115,7 +106,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     const handleMarkAsPaid = async (order: Sale) => {
         const remaining = Number(order.total) - Number(order.amountPaid || 0);
         if (remaining <= 0.01) {
-            showSnackbar('Order is already fully paid.', 'info');
+            showToast('Order is already fully paid.', 'info');
             return;
         }
         setPaymentOrder(order);
@@ -133,37 +124,36 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                 setSelectedOrder(updatedOrder);
             }
             setPaymentOrder(null);
-            showSnackbar('Payment recorded successfully!', 'success');
+            showToast('Payment recorded successfully!', 'success');
             onDataRefresh?.();
         } catch (error: any) {
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to record payment';
-            showSnackbar(errorMessage, 'error');
+            showToast(errorMessage, 'error');
         }
     };
 
     const proceedWithUpdateStatus = async (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
         try {
             await api.put(`/sales/${orderId}/fulfillment`, { status: newStatus });
             fetchOrders();
             if (selectedOrder && selectedOrder.transactionId === orderId) {
                 setSelectedOrder({ ...selectedOrder, fulfillmentStatus: newStatus });
             }
-            showSnackbar(`Order marked as ${newStatus}!`, 'success');
+            showToast(`Order marked as ${newStatus}!`, 'success');
             onDataRefresh?.();
         } catch (error: any) {
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
-            showSnackbar(errorMessage, 'error');
+            showToast(errorMessage, 'error');
         }
     };
 
-    const updateStatus = (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
-        setConfirmModal({
-            isOpen: true,
+    const updateStatus = async (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
+        const ok = await confirm({
             title: 'Update Order Status',
             message: `Are you sure you want to mark this order as ${newStatus}?`,
-            onConfirm: () => proceedWithUpdateStatus(orderId, newStatus)
+            confirmLabel: 'Update Status',
         });
+        if (ok) await proceedWithUpdateStatus(orderId, newStatus);
     };
 
     const filteredOrders = useMemo(() => {
@@ -306,20 +296,10 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                     order={paymentOrder}
                     onSave={handleSavePayment}
                     storeSettings={storeSettings}
-                    showSnackbar={showSnackbar}
                 />
             )}
 
-            <ConfirmationModal
-                isOpen={confirmModal.isOpen}
-                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                onConfirm={confirmModal.onConfirm}
-                title={confirmModal.title}
-                message={confirmModal.message}
-                confirmText="Update Status"
-                confirmButtonClass="bg-sp-navy hover:bg-sp-navy-light rounded-lg font-bold uppercase tracking-widest text-xs"
-                variant="floating"
-            />
+
         </div>
     );
 }

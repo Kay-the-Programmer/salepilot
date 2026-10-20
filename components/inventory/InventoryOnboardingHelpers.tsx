@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Product, Supplier } from '../../types';
 import { ONBOARDING_HELPERS } from '../../services/onboardingService';
 import OnboardingHelper from '../../components/onboarding/OnboardingHelper';
-import TruckIcon from '../../components/icons/TruckIcon';
+import {
+    TruckIcon,
+} from '../../components/icons';
 
 interface InventoryOnboardingHelpersProps {
     products: Product[];

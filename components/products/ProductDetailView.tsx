@@ -3,18 +3,20 @@ import { Product, Category, Supplier, StoreSettings, User } from '@/types.ts';
 import { formatCurrency } from '@/utils/currency';
 import { buildAssetUrl } from '@/services/api';
 import ProductDetailHeader from './detail/ProductDetailHeader';
-import PencilIcon from '@/components/icons/PencilIcon';
-import AdjustmentsHorizontalIcon from '@/components/icons/AdjustmentsHorizontalIcon';
-import ShoppingCartIcon from '@/components/icons/ShoppingCartIcon';
-import PrinterIcon from '@/components/icons/PrinterIcon';
-import ArchiveBoxIcon from '@/components/icons/ArchiveBoxIcon';
-import RestoreIcon from '@/components/icons/RestoreIcon';
-import TrashIcon from '@/components/icons/TrashIcon';
-import CubeIcon from '@/components/icons/CubeIcon';
-import TruckIcon from '@/components/icons/TruckIcon';
-import ChartBarIcon from '@/components/icons/ChartBarIcon';
-import ExclamationTriangleIcon from '@/components/icons/ExclamationTriangleIcon';
-import CheckCircleIcon from '@/components/icons/CheckCircleIcon';
+import {
+    AdjustmentsHorizontalIcon,
+    ArchiveBoxIcon,
+    ChartBarIcon,
+    CheckCircleIcon,
+    CubeIcon,
+    ExclamationTriangleIcon,
+    PencilIcon,
+    PrinterIcon,
+    RestoreIcon,
+    ShoppingCartIcon,
+    TrashIcon,
+    TruckIcon,
+} from '@/components/icons';
 
 const asNumber = (val: any) => {
   const n = typeof val === 'number' ? val : parseFloat(val);

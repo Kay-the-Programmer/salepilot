@@ -35,7 +35,7 @@
 /* Roles reference cards */
 .team-roles { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 768px) { .team-roles { grid-template-columns: repeat(3, 1fr); } }
-.team-rolecard { background: var(--c-surface-lowest); border: 1px solid rgba(26, 26, 46, 0.05); border-radius: var(--c-radius-lg); box-shadow: var(--c-elev-1); padding: 22px; }
+.team-rolecard { padding: 22px; }
 .team-rolecard__icon { width: 48px; height: 48px; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .team-rolecard__icon--p { background: rgba(0, 43, 107, 0.1); color: var(--c-primary); }
 .team-rolecard__icon--s { background: rgba(255, 165, 53, 0.14); color: var(--c-secondary); }

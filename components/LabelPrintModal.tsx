@@ -3,9 +3,11 @@ import React, { useEffect, useRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
 import { Product, StoreSettings } from '../types';
-import XMarkIcon from './icons/XMarkIcon';
 import { formatCurrency } from '../utils/currency';
 import { Button } from './ui/Button';
+import {
+    XMarkIcon,
+} from './icons';
 
 interface LabelPrintModalProps {
     isOpen: boolean;

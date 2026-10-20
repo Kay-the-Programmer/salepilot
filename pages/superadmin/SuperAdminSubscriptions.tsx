@@ -22,6 +22,7 @@ import {
     ChevronRightIcon,
     EyeIcon
 } from '../../components/icons';
+import { useToast } from '../../contexts/ToastContext';
 
 // Types
 interface StoreRow {
@@ -130,6 +131,7 @@ const paymentRowMeta = (s?: string): { tone: PillTone; label: string } => {
 
 const SuperAdminSubscriptions: React.FC = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [stores, setStores] = useState<StoreRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
@@ -278,7 +280,7 @@ const SuperAdminSubscriptions: React.FC = () => {
             setManageStore(null);
             await loadStores();
         } catch (err: any) {
-            alert('Failed to update subscription: ' + (err.message || 'Unknown error'));
+            showToast('Failed to update subscription: ' + (err.message || 'Unknown error'), 'error');
         } finally {
             setSavingManage(false);
         }
@@ -302,7 +304,7 @@ const SuperAdminSubscriptions: React.FC = () => {
             loadPayments();
         } catch (err: any) {
             console.error(err);
-            alert("Failed to record payment: " + (err.message || 'Unknown error'));
+            showToast("Failed to record payment: " + (err.message || 'Unknown error'), 'error');
         } finally {
             setProcessing(false);
         }

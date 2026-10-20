@@ -85,6 +85,14 @@ export interface ModalProps {
      * is wired up as the name in that case).
      */
     ariaLabel?: string;
+    /**
+     * Bottom sheet on phones, centred card from `sm` up — the treatment the
+     * accounting and order dialogs already used. It is a prop rather than a
+     * second component because the only thing that differs is where the card
+     * sits and how it animates in; everything a dialog has to get right
+     * (focus, Esc, scroll lock, the portal) is the same either way.
+     */
+    sheet?: boolean;
 }
 
 /**
@@ -115,6 +123,7 @@ export function Modal({
     zIndexClass = 'z-50',
     ariaLabel,
     align = 'center',
+    sheet = false,
 }: ModalProps) {
     const cardRef = useRef<HTMLDivElement>(null);
     // The element that had focus before the dialog opened, so it can be given
@@ -197,7 +206,10 @@ export function Modal({
     // classic "modal doesn't show / appears off-screen" bug).
     return createPortal(
         <div
-            className={`fixed inset-0 ${zIndexClass} flex justify-center p-4 bg-warm-900/50 backdrop-blur-sm ${align === 'top' ? 'items-start pt-[10vh]' : 'items-center'}`}
+            className={`fixed inset-0 ${zIndexClass} flex justify-center bg-warm-900/50 backdrop-blur-sm ${
+                sheet ? 'items-end sm:items-center p-0 sm:p-4'
+                      : `p-4 ${align === 'top' ? 'items-start pt-[10vh]' : 'items-center'}`
+            }`}
             onClick={() => { if (closeOnBackdrop && !disabled) onClose(); }}
         >
             <div
@@ -211,7 +223,11 @@ export function Modal({
                 aria-label={title === undefined ? ariaLabel : undefined}
                 tabIndex={-1}
                 onKeyDownCapture={onKeyDownCapture}
-                className={`bg-surface border border-brand-border rounded-2xl shadow-xl w-full ${SIZE[size]} max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 outline-none ${className}`}
+                className={`bg-surface w-full ${SIZE[size]} flex flex-col overflow-hidden outline-none ${
+                    sheet
+                        ? 'rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[95vh] animate-slide-up sm:animate-scale-up'
+                        : 'border border-brand-border rounded-2xl shadow-xl max-h-[90vh] animate-in fade-in zoom-in-95 duration-200'
+                } ${className}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {title !== undefined && (

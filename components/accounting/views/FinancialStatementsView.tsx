@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Account, JournalEntry, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import ArrowTrendingUpIcon from '../../icons/ArrowTrendingUpIcon';
-import ArrowTrendingDownIcon from '../../icons/ArrowTrendingDownIcon';
-import ChartBarIcon from '../../icons/ChartBarIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
 import { toDateInputValue } from '../../../utils/date';
+import {
+    ArrowTrendingDownIcon,
+    ArrowTrendingUpIcon,
+    CalculatorIcon,
+    CalendarDaysIcon,
+    ChartBarIcon,
+} from '../../icons';
 
 interface FinancialStatementsViewProps {
     accounts: Account[];

@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import SocketService from './services/socketService';
-import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
 import Logo from './assets/logo.png';
 import { lazy, Suspense } from 'react';
 
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
-import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED, HUSTLE_APP_ENABLED } from './utils/entitlements';
+import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED } from './utils/entitlements';
 import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
-import type { CampaignDTO } from './utils/upsell';
+import { useConfirm } from './components/ui/useConfirm';
 import { ROLE_PAGES } from './utils/rbac';
 
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
@@ -31,7 +30,6 @@ const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
 const ExpensesApp = lazy(() => import('@/components/expenses-app/ExpensesApp'));
 const SalesDocsApp = lazy(() => import('@/components/sales-docs/SalesDocsApp'));
 const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
-const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
@@ -64,15 +62,11 @@ import PriorityNotificationModal from './components/PriorityNotificationModal';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { logEvent } from './src/utils/analytics';
-import { useUpsellSync } from './contexts/UpsellContext';
-import { upsellService } from './services/upsellService';
-import { notificationService } from './services/notificationService';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
 const getSuperModeKey = (userId?: string) => userId ? `salePilot.superMode.${userId}` : 'salePilot.superMode';
 
-// SnackbarType now imported from App.tsx
 
 // Role → page access. Sourced from the single canonical RBAC map in
 // utils/rbac.ts so the route guard here and the app switcher
@@ -107,13 +101,13 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     quotes: 'sales-docs',
     fleet: 'logistics',
     po: 'purchase-orders',
-    hustle: 'sales',
     config: 'settings',
     superadmin: 'superadmin',
 };
 
 
 export default function Dashboard() {
+    const { showToast } = useToast();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -141,6 +135,10 @@ export default function Dashboard() {
     // Logout confirmation is mounted by LogoutModalProvider (a parent of every
     // Dashboard branch) so it shows from the standalone app shells too.
     const { requestLogout } = useLogoutModal();
+    // Deletes handled at this level (expenses, recurring expenses, accounts)
+    // ask here. `confirmDialog` rides along in `accountOverlays`, which every
+    // branch already renders, so the prompt reaches whichever app is open.
+    const { confirm } = useConfirm();
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Standalone POS shell (/pos) mobile drawer
     const [posDrawerOpen, setPosDrawerOpen] = useState(false);
@@ -170,10 +168,13 @@ export default function Dashboard() {
     // App.tsx). Dashboard used to render its own one-shot snackbar here, but that
     // renderer only existed in the main-shell branch — every standalone app
     // (POS, CRM, Procure, …) called showSnackbar into the void.
-    const { showToast } = useToast();
-    const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
-        showToast(message, type);
-    }, [showToast]);
+    //
+    // `showSnackbar` used to be defined here as a one-line alias for
+    // `showToast` and then handed down through twenty-five files as a prop.
+    // Two names for one function is one too many: half the app reached for the
+    // prop and the other half for the hook, and a component that wanted a
+    // toast had to check which half it was in. Everything calls `useToast`
+    // now, including this file.
 
     useEffect(() => {
         const handler = (e: Event) => {
@@ -200,7 +201,7 @@ export default function Dashboard() {
         installPrompt.userChoice.then((choiceResult: { outcome: string }) => {
             if (choiceResult.outcome === 'accepted') {
                 logEvent('System', 'Install PWA');
-                showSnackbar('SalePilot has been installed!', 'success');
+                showToast('SalePilot has been installed!', 'success');
             }
             setInstallPrompt(null);
         });
@@ -210,67 +211,6 @@ export default function Dashboard() {
     const location = useLocation();
     const { openAppSwitcher } = useAppSwitcher();
 
-    // Suppress all proactive upsell while a sale is in progress (POS sale flow).
-    const isMidSale = (() => {
-        const seg = location.pathname.split('/')[1] || '';
-        return seg === 'sales' || seg === 'hustle' || location.pathname === '/pos';
-    })();
-
-    // Keep the contextual upsell engine's data snapshot in sync with the store.
-    // (A hook — runs before this component's many early returns, so every app
-    //  branch can read it via useUpsell.)
-    useUpsellSync({
-        currentUser,
-        storeSettings,
-        products,
-        customers,
-        sales,
-        users,
-        isMidSale,
-        storeCount: systemStores.length || 1,
-    });
-
-    // Load live add-on prices once authenticated, so upsell copy can show real
-    // Kwacha prices (cached for offline by the service). Prices are never hardcoded.
-    useEffect(() => {
-        if (!currentUser) return;
-        api.get<Array<{ id: string; price: number; currency: string }>>('/subscriptions/addons')
-            .then(list => upsellService.setPricing(list))
-            .catch(() => { /* keep last-cached pricing */ });
-        // Load Super-Admin-authored upsell campaigns (offers / A-B / scheduling).
-        // The engine merges these over its built-in defaults; on failure it keeps
-        // the last-cached set, and absent any cache falls back to the defaults.
-        api.get<{ campaigns: CampaignDTO[] }>('/subscriptions/upsell-campaigns')
-            .then(res => upsellService.setCampaigns(res?.campaigns))
-            .catch(() => { /* keep last-cached campaigns / built-in defaults */ });
-    }, [currentUser]);
-
-    // Record upsell funnel events server-side (in addition to GA4) so the Super
-    // Admin marketing analytics has data. Fire-and-forget — telemetry never blocks UI.
-    useEffect(() => {
-        upsellService.setEventSink((name, params) => {
-            // Conversions/revenue are derived server-side from real payments; only
-            // send the top-of-funnel signals (impression / click / dismiss).
-            if (name === 'upsell_convert') return;
-            api.post('/subscriptions/upsell-events', { name, ...params }).catch(() => { /* ignore */ });
-        });
-        return () => upsellService.setEventSink(null);
-    }, []);
-
-    // High-value data moment delivered as a single local push (dormant_customers
-    // only). Fires at most once per session, never prompts for permission, and
-    // honours cooldown/budget via the engine.
-    const pushFiredRef = useRef(false);
-    useEffect(() => {
-        if (pushFiredRef.current) return;
-        const m = upsellService.getEligible('push');
-        if (!m) return;
-        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-        pushFiredRef.current = true;
-        notificationService
-            .showLocalNotification(m.headline, { body: m.body, data: { url: '/crm', momentId: m.id, module: m.module } })
-            .then(ok => { if (ok) upsellService.recordShown(m); });
-    }, [products, customers, sales, currentUser, isMidSale]);
 
     const hasAccess = (page: string, role: User['role']) => {
         const seg = page.split('/')[0];
@@ -370,7 +310,7 @@ export default function Dashboard() {
         if (pending === 0) { setPendingSyncCount(0); return; }
 
         setIsSyncing(true);
-        if (!opts?.silent) showSnackbar('Syncing offline changes…', 'sync');
+        if (!opts?.silent) showToast('Syncing offline changes…', 'sync');
 
         const { succeeded, failed, deadLettered, remaining } = await syncOfflineMutations();
 
@@ -383,18 +323,18 @@ export default function Dashboard() {
 
         if (succeeded > 0 || deadLettered > 0) {
             if (deadLettered > 0) {
-                showSnackbar(
+                showToast(
                     `Synced ${succeeded} change${succeeded === 1 ? '' : 's'}. ${deadLettered} couldn't be saved and need attention.`,
                     'error'
                 );
             } else {
-                showSnackbar(`Synced ${succeeded} offline change${succeeded === 1 ? '' : 's'}.`, 'success');
+                showToast(`Synced ${succeeded} offline change${succeeded === 1 ? '' : 's'}.`, 'success');
             }
             fetchData(); // Refetch to reconcile with the server's canonical state.
         } else if (failed > 0 && !opts?.silent) {
-            showSnackbar(`Still offline — ${remaining} change${remaining === 1 ? '' : 's'} will retry automatically.`, 'info');
+            showToast(`Still offline — ${remaining} change${remaining === 1 ? '' : 's'} will retry automatically.`, 'info');
         }
-    }, [showSnackbar, fetchData]);
+    }, [showToast, fetchData]);
 
     // React to connectivity changes (custom event bridged from online/offline).
     useEffect(() => {
@@ -477,7 +417,7 @@ export default function Dashboard() {
                 return;
             }
 
-            showSnackbar(`New Request: ${data.title} - ${data.description?.substring(0, 30)}...`, 'info');
+            showToast(`New Request: ${data.title} - ${data.description?.substring(0, 30)}...`, 'info');
             // Play notification sound if desired
             if (Notification.permission === 'granted') {
                 new Notification('New Deal Request', {
@@ -492,7 +432,7 @@ export default function Dashboard() {
         return () => {
             socket.off('new_request', handleNewRequest);
         };
-    }, [currentUser, showSnackbar]);
+    }, [currentUser, showToast]);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -597,7 +537,7 @@ export default function Dashboard() {
             localStorage.setItem(key, desired);
         } catch (_) { /* ignore storage errors */ }
         navigate(`/${desired}`);
-        showSnackbar(`Welcome back, ${user.name}!`, 'success');
+        showToast(`Welcome back, ${user.name}!`, 'success');
     };
 
     // Completion callback shared by both registration entry points (the
@@ -617,7 +557,7 @@ export default function Dashboard() {
         logout();
         setCurrentUser(null);
         logEvent('Auth', 'Logout');
-        showSnackbar('You have been logged out.', 'info');
+        showToast('You have been logged out.', 'info');
     };
 
     const handleLogout = () => {
@@ -641,14 +581,14 @@ export default function Dashboard() {
         try {
             const result = await api.put<StoreSettings>('/settings', settings);
             if ((result as any).offline) {
-                showSnackbar('Offline: Settings change queued.', 'info');
+                showToast('Offline: Settings change queued.', 'info');
             } else {
                 setStoreSettings(result);
-                showSnackbar('Store settings updated successfully!', 'success');
+                showToast('Store settings updated successfully!', 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -670,8 +610,7 @@ export default function Dashboard() {
             setProducts(prev => isNew
                 ? [saved, ...prev]
                 : prev.map(p => (p.id === saved.id ? saved : p)));
-            if (isNew) upsellService.recordManualAdd();
-            showSnackbar(`Product ${isNew ? 'added' : 'updated'} successfully!`, 'success');
+            showToast(`Product ${isNew ? 'added' : 'updated'} successfully!`, 'success');
             logEvent('Inventory', isNew ? 'Create Product' : 'Update Product');
             try { await dbService.put('products', saved); } catch (_) { /* cache best-effort */ }
             return saved;
@@ -681,24 +620,22 @@ export default function Dashboard() {
             const savedProduct = await api.post<Product & { offline?: boolean }>('/products', productData);
 
             if ((savedProduct as any).offline) {
-                showSnackbar(`Offline: New product "${(productData as any).name}" queued.`, 'info');
+                showToast(`Offline: New product "${(productData as any).name}" queued.`, 'info');
                 const tempProduct = { ...(productData as any), id: `offline_${Date.now()}`, imageUrls: [] } as Product;
                 setProducts(prev => [tempProduct, ...prev]);
-                upsellService.recordManualAdd();
                 // Persist to IndexedDB so details remain available after reload while offline
                 try { await dbService.put('products', tempProduct); } catch (_) { }
                 return tempProduct;
             }
 
-            showSnackbar('Product added successfully!', 'success');
+            showToast('Product added successfully!', 'success');
             logEvent('Inventory', 'Create Product');
             setProducts(prev => [savedProduct as Product, ...prev]);
-            upsellService.recordManualAdd();
             return savedProduct as Product;
         } catch (err: any) {
             // The error message from the backend is more user-friendly
             const message = err.response?.data?.message || err.message;
-            showSnackbar(message, 'error');
+            showToast(message, 'error');
             throw err;
         }
     };
@@ -707,13 +644,13 @@ export default function Dashboard() {
         try {
             const result = await api.delete(`/products/${productId}`);
             if ((result as any).offline) {
-                showSnackbar('Offline: Product deletion queued.', 'info');
+                showToast('Offline: Product deletion queued.', 'info');
             } else {
-                showSnackbar('Product permanently deleted.', 'success');
+                showToast('Product permanently deleted.', 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -721,13 +658,13 @@ export default function Dashboard() {
         try {
             const result = await api.patch<Product & { offline?: boolean }>(`/products/${productId}/archive`, {});
             if ((result as any).offline) {
-                showSnackbar('Offline: Product status change queued.', 'info');
+                showToast('Offline: Product status change queued.', 'info');
             } else {
-                showSnackbar(`Product ${result.status === 'archived' ? 'archived' : 'restored'}.`, 'info');
+                showToast(`Product ${result.status === 'archived' ? 'archived' : 'restored'}.`, 'info');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -740,12 +677,12 @@ export default function Dashboard() {
             const result = await api.patch(`/products/${productId}/stock`, { newQuantity: newStock, reason: 'Quick adjustment' });
 
             if ((result as any).offline) {
-                showSnackbar('Offline: Stock change queued.', 'info');
+                showToast('Offline: Stock change queued.', 'info');
             } else {
                 fetchData(); // Sync with server state
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
             setProducts(await api.get('/products')); // Revert on error
         }
     };
@@ -764,7 +701,7 @@ export default function Dashboard() {
             setProducts(nextProducts);
             setCategories(nextCategories);
         } catch (err: any) {
-            showSnackbar(err?.message || 'Could not refresh the catalogue.', 'error');
+            showToast(err?.message || 'Could not refresh the catalogue.', 'error');
         }
     };
 
@@ -772,13 +709,13 @@ export default function Dashboard() {
         try {
             const result = await api.patch(`/products/${productId}/stock`, { newQuantity, reason });
             if ((result as any).offline) {
-                showSnackbar('Offline: Stock adjustment queued.', 'info');
+                showToast('Offline: Stock adjustment queued.', 'info');
             } else {
                 setProducts(await api.get('/products'));
-                showSnackbar('Stock adjusted successfully.', 'success');
+                showToast('Stock adjusted successfully.', 'success');
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -794,7 +731,7 @@ export default function Dashboard() {
 
             const result = await api.post<Sale>('/sales', saleWithId);
             if ((result as any).offline) {
-                showSnackbar('Offline: sale saved on this device and queued for sync.', 'info');
+                showToast('Offline: sale saved on this device and queued for sync.', 'info');
 
                 const currentStoreId = currentUser?.currentStoreId;
 
@@ -838,13 +775,13 @@ export default function Dashboard() {
                 setPendingSyncCount(c => c + 1);
                 return pendingSale;
             } else {
-                showSnackbar('Sale completed successfully!', 'success');
+                showToast('Sale completed successfully!', 'success');
                 logEvent('Sales', 'Process Sale', `Total: ${sale.total}`);
                 fetchData();
                 return result;
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
             return null;
         }
     };
@@ -875,9 +812,9 @@ export default function Dashboard() {
         try {
             const result = await api.post<Sale>(`/sales/${saleId}/payments`, payment);
             if ((result as any).offline) {
-                showSnackbar('Offline: Payment record queued.', 'info');
+                showToast('Offline: Payment record queued.', 'info');
             } else {
-                showSnackbar('Payment recorded.', 'success');
+                showToast('Payment recorded.', 'success');
                 // Re-sync to ensure amounts and payments list are consistent with server (IDs, timestamps)
                 fetchData();
             }
@@ -885,7 +822,7 @@ export default function Dashboard() {
             // Rollback optimistic update on error
             setSales(previousSales);
             setCustomers(previousCustomers);
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -893,13 +830,13 @@ export default function Dashboard() {
         try {
             const result = await api.post<Return>('/returns', returnInfo);
             if ((result as any).offline) {
-                showSnackbar('Offline: Return queued for sync.', 'info');
+                showToast('Offline: Return queued for sync.', 'info');
             } else {
-                showSnackbar('Return processed successfully!', 'success');
+                showToast('Return processed successfully!', 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -913,13 +850,13 @@ export default function Dashboard() {
             const isUpdating = currentState.some(e => e.id === item.id);
             const result = await (isUpdating ? api.put(`${endpoint}/${item.id}`, item) : api.post(endpoint, item));
             if ((result as any).offline) {
-                showSnackbar(`Offline: ${entityName} changes queued.`, 'info');
+                showToast(`Offline: ${entityName} changes queued.`, 'info');
             } else {
-                showSnackbar(`${entityName} ${isUpdating ? 'updated' : 'saved'}!`, 'success');
+                showToast(`${entityName} ${isUpdating ? 'updated' : 'saved'}!`, 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -933,33 +870,43 @@ export default function Dashboard() {
     const handleSaveRecurringExpense = createSaveHandler('Recurring Expense', '/recurring-expenses', recurringExpenses);
 
     const handleDeleteExpense = async (expenseId: string) => {
-        if (window.confirm('Are you sure you want to delete this expense? This will also reverse its journal entry.')) {
+        if (await confirm({
+            title: 'Delete expense?',
+            message: 'This also reverses the journal entry it posted.',
+            confirmLabel: 'Delete',
+            danger: true,
+        })) {
             try {
                 const result = await api.delete(`/expenses/${expenseId}`);
                 if ((result as any).offline) {
-                    showSnackbar('Offline: Expense deletion queued.', 'info');
+                    showToast('Offline: Expense deletion queued.', 'info');
                 } else {
-                    showSnackbar('Expense deleted successfully.', 'success');
+                    showToast('Expense deleted successfully.', 'success');
                     fetchData();
                 }
             } catch (err: any) {
-                showSnackbar(err.message, 'error');
+                showToast(err.message, 'error');
             }
         }
     };
 
     const handleDeleteRecurringExpense = async (expenseId: string) => {
-        if (window.confirm('Are you sure you want to delete this recurring expense? Future expenses will no longer be generated.')) {
+        if (await confirm({
+            title: 'Delete recurring expense?',
+            message: 'Expenses already recorded are kept; no new ones will be generated.',
+            confirmLabel: 'Delete',
+            danger: true,
+        })) {
             try {
                 const result = await api.delete(`/recurring-expenses/${expenseId}`);
                 if ((result as any).offline) {
-                    showSnackbar('Offline: Deletion queued.', 'info');
+                    showToast('Offline: Deletion queued.', 'info');
                 } else {
-                    showSnackbar('Recurring expense deleted.', 'success');
+                    showToast('Recurring expense deleted.', 'success');
                     fetchData();
                 }
             } catch (err: any) {
-                showSnackbar(err.message, 'error');
+                showToast(err.message, 'error');
             }
         }
     };
@@ -971,41 +918,41 @@ export default function Dashboard() {
         try {
             const result = await api.delete(`/categories/${categoryId}?cascade=true`) as any;
             if (result?.offline) {
-                showSnackbar('Offline: Deletion queued.', 'info');
+                showToast('Offline: Deletion queued.', 'info');
                 return;
             }
             const subs = result?.subCategories ?? 0;
             const unfiled = result?.affectedProducts ?? 0;
-            showSnackbar(
+            showToast(
                 'Category deleted'
                     + (subs > 0 ? ` with ${subs} sub-categor${subs === 1 ? 'y' : 'ies'}` : '')
                     + (unfiled > 0 ? `. ${unfiled} product${unfiled === 1 ? '' : 's'} left uncategorised` : ''),
                 'success'
             );
             fetchData();
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+        } catch (err: any) { showToast(err.message, 'error'); }
     };
 
     const handleDeleteCustomer = async (customerId: string) => {
         try {
             const result = await api.delete(`/customers/${customerId}`);
-            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            if ((result as any).offline) { showToast('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showToast(err.message, 'error'); }
     };
 
     const handleDeleteSupplier = async (supplierId: string) => {
         try {
             const result = await api.delete(`/suppliers/${supplierId}`);
-            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            if ((result as any).offline) { showToast('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showToast(err.message, 'error'); }
     };
 
     const handleDeletePurchaseOrder = async (poId: string) => {
         try {
             const result = await api.delete(`/purchase-orders/${poId}`);
-            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+            if ((result as any).offline) { showToast('Offline: Deletion queued.', 'info'); } else { fetchData(); }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
             throw err;
         }
     };
@@ -1019,13 +966,13 @@ export default function Dashboard() {
             const result = await api.post(`/purchase-orders/${poId}/receive`, receivedItems);
 
             if ((result as any).offline) {
-                showSnackbar('Offline: Stock reception queued.', 'info');
+                showToast('Offline: Stock reception queued.', 'info');
             } else {
-                showSnackbar('Stock received into inventory.', 'success');
+                showToast('Stock received into inventory.', 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -1051,14 +998,14 @@ export default function Dashboard() {
                 setStockTakeSession(offlineSession);
                 await dbService.put('settings', offlineSession, 'activeStockTake');
                 navigate('/inv/stock-takes');
-                showSnackbar('Offline: Stock take started. Changes will sync when back online.', 'info');
+                showToast('Offline: Stock take started. Changes will sync when back online.', 'info');
             } else {
                 setStockTakeSession(result as StockTakeSession);
                 navigate('/inv/stock-takes');
-                showSnackbar('New stock take session started.', 'info');
+                showToast('New stock take session started.', 'info');
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -1080,7 +1027,7 @@ export default function Dashboard() {
                 setStockTakeSession(result as StockTakeSession);
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -1091,12 +1038,12 @@ export default function Dashboard() {
             // Clear local offline session if any
             await dbService.put('settings', null as any, 'activeStockTake');
             if ((result as any)?.offline) {
-                showSnackbar('Offline: Cancellation queued.', 'info');
+                showToast('Offline: Cancellation queued.', 'info');
             } else {
-                showSnackbar('Stock take cancelled.', 'info');
+                showToast('Stock take cancelled.', 'info');
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -1106,13 +1053,13 @@ export default function Dashboard() {
             setStockTakeSession(null);
             await dbService.put('settings', null as any, 'activeStockTake');
             if ((result as any)?.offline) {
-                showSnackbar('Offline: Finalization queued. Inventory will update once online.', 'info');
+                showToast('Offline: Finalization queued. Inventory will update once online.', 'info');
             } else {
-                showSnackbar('Stock take complete and inventory updated.', 'success');
+                showToast('Stock take complete and inventory updated.', 'success');
                 fetchData();
             }
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
         }
     };
 
@@ -1123,9 +1070,9 @@ export default function Dashboard() {
             await saveUser(payload, currentUser.id);
             const updatedUser = { ...currentUser, ...userData };
             setCurrentUser(updatedUser);
-            showSnackbar('Profile updated successfully!', 'success');
+            showToast('Profile updated successfully!', 'success');
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
             throw err; // Propagate error to modal
         }
     };
@@ -1133,33 +1080,38 @@ export default function Dashboard() {
     const handleChangePassword = async (passwordData: { currentPassword: string, newPassword: string }) => {
         try {
             await changePassword(passwordData);
-            showSnackbar('Password changed successfully!', 'success');
+            showToast('Password changed successfully!', 'success');
         } catch (err: any) {
-            showSnackbar(err.message, 'error');
+            showToast(err.message, 'error');
             throw err; // Propagate error to modal
         }
     };
 
     // --- Accounting Handlers ---
     const handleDeleteAccount = async (accountId: string) => {
-        if (window.confirm('Are you sure you want to delete this account?')) {
+        if (await confirm({
+            title: 'Delete this account?',
+            message: 'Postings already made to it are kept in the journal.',
+            confirmLabel: 'Delete',
+            danger: true,
+        })) {
             try {
                 const result = await api.delete(`/accounting/accounts/${accountId}`);
-                if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-            } catch (err: any) { showSnackbar(err.message, 'error'); }
+                if ((result as any).offline) { showToast('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+            } catch (err: any) { showToast(err.message, 'error'); }
         }
     };
     const handleAddManualJournalEntry = async (entry: Omit<JournalEntry, 'id'>) => {
         try {
             const result = await api.post('/accounting/journal-entries', entry);
-            if ((result as any).offline) { showSnackbar('Offline: Journal entry queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            if ((result as any).offline) { showToast('Offline: Journal entry queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showToast(err.message, 'error'); }
     };
     const handleRecordSupplierPayment = async (invoiceId: string, payment: Omit<SupplierPayment, 'id'>) => {
         try {
             const result = await api.post(`/accounting/supplier-invoices/${invoiceId}/payments`, payment);
-            if ((result as any).offline) { showSnackbar('Offline: Supplier payment queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            if ((result as any).offline) { showToast('Offline: Supplier payment queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showToast(err.message, 'error'); }
     };
 
     // Superadmin mode switch + active-store selection — formerly housed in the
@@ -1189,10 +1141,10 @@ export default function Dashboard() {
                 const merged = { ...stored, currentStoreId: storeId } as User;
                 localStorage.setItem('salePilotUser', JSON.stringify(merged));
                 setCurrentUser(merged);
-                showSnackbar('Store context updated.', 'success');
+                showToast('Store context updated.', 'success');
             }
         } catch (err: any) {
-            showSnackbar(err.message || 'Failed to set current store', 'error');
+            showToast(err.message || 'Failed to set current store', 'error');
         }
     };
 
@@ -1206,11 +1158,11 @@ export default function Dashboard() {
         if (location.pathname === '/register') {
             return (
                 <Suspense fallback={<LoadingSpinner />}>
-                    <StoreRegistrationPage requireAccount onCompleted={finishRegistration} showSnackbar={showSnackbar} />
+                    <StoreRegistrationPage requireAccount onCompleted={finishRegistration} />
                 </Suspense>
             );
         }
-        return <LoginPage onLogin={handleLogin} showSnackbar={showSnackbar} />;
+        return <LoginPage onLogin={handleLogin} />;
     }
 
     // Authenticated but store-less (e.g. first Google sign-in) → the SAME
@@ -1222,7 +1174,7 @@ export default function Dashboard() {
         }
         return (
             <Suspense fallback={<LoadingSpinner />}>
-                <StoreRegistrationPage onCompleted={finishRegistration} showSnackbar={showSnackbar} />
+                <StoreRegistrationPage onCompleted={finishRegistration} />
             </Suspense>
         );
     }
@@ -1331,9 +1283,9 @@ export default function Dashboard() {
                                             const updated = { ...currentUser, isVerified: true };
                                             setCurrentUser(updated);
                                             try { localStorage.setItem('salePilotUser', JSON.stringify(updated)); } catch { }
-                                            showSnackbar('Your email is already verified!', 'success');
+                                            showToast('Your email is already verified!', 'success');
                                         } else {
-                                            showSnackbar(err.message || 'Failed to resend email.', 'error');
+                                            showToast(err.message || 'Failed to resend email.', 'error');
                                         }
                                     }
                                 }}
@@ -1354,7 +1306,7 @@ export default function Dashboard() {
                     setCurrentUser(updatedUser);
                     try { localStorage.setItem('salePilotUser', JSON.stringify(updatedUser)); } catch { }
                     setShowOtpModal(false);
-                    showSnackbar('Email verified successfully!', 'success');
+                    showToast('Email verified successfully!', 'success');
                 }}
             />
             <PriorityNotificationModal />
@@ -1496,35 +1448,20 @@ export default function Dashboard() {
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>
                     <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <SettingsApp settings={storeSettings!} user={currentUser} showSnackbar={showSnackbar} onSave={handleSaveSettings} onSettingsSaved={setStoreSettings} />
+                        <SettingsApp settings={storeSettings!} user={currentUser} onSave={handleSaveSettings} onSettingsSaved={setStoreSettings} />
                     </Suspense>
                 </NotificationProvider>
             </OnboardingProvider>
         );
     }
 
-    // ── Standalone Hustle POS app (/hustle) ──
-    const hustleParts = location.pathname.split('/');
-    if (hustleParts[1] === 'hustle' && currentUser) {
-        // Withheld from launch — see HUSTLE_APP_ENABLED. The keypad lives on as
-        // the POS's "Quick" mode, so this redirects to the till rather than
-        // home: someone who typed /hustle wants to sell.
-        if (!HUSTLE_APP_ENABLED) return <Navigate to="/pos" replace />;
-        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
-        if (!allowed.includes('sales')) return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <HustleApp
-                            sales={sales}
-                            storeSettings={storeSettings!}
-                            showSnackbar={showSnackbar}
-                        />
-                    </Suspense>
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
+    // ── Legacy /hustle → the one till (/pos) ──
+    // Hustle was a second checkout: its own keypad, its own cart, its own
+    // printing path. It is gone rather than hidden behind a flag, because a
+    // till that nobody opens is a till nobody keeps right on tax, manager
+    // overrides or offline replay. Someone who types /hustle wants to sell.
+    if (location.pathname.split('/')[1] === 'hustle') {
+        return <Navigate to="/pos" replace />;
     }
 
     // ── Legacy /po → merged into the Purchase Orders hub (/procure/lists) ──
@@ -1699,7 +1636,6 @@ export default function Dashboard() {
                             onUpgrade={() => navigate('/subscription')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
-                            showSnackbar={showSnackbar}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1722,7 +1658,6 @@ export default function Dashboard() {
                             user={currentUser}
                             storeSettings={storeSettings}
                             onLogout={handleLogout}
-                            showSnackbar={showSnackbar}
                             onStoreSwitched={(u) => {
                                 // Soft switch: swap the user in state (keeping the token) so the
                                 // currentStoreId effect refetches all store data — no reload/logout.
@@ -1753,7 +1688,6 @@ export default function Dashboard() {
                             user={currentUser}
                             storeSettings={storeSettings}
                             onLogout={handleLogout}
-                            showSnackbar={showSnackbar}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1788,7 +1722,6 @@ export default function Dashboard() {
                             onDeletePurchaseOrder={handleDeletePurchaseOrder}
                             onReceivePOItems={handleReceivePOItems}
                             onSaveProduct={handleSaveProduct}
-                            showSnackbar={showSnackbar}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
@@ -1902,7 +1835,7 @@ export default function Dashboard() {
         // a second checkout mode doubled what had to be kept right on tax,
         // manager overrides, printing and offline replay.
         const posContent: ReactNode = (
-            <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} onSettingsSaved={setStoreSettings} />
+            <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} onSettingsSaved={setStoreSettings} />
         );
 
         return (
@@ -1975,7 +1908,7 @@ export default function Dashboard() {
                 <NotificationProvider user={currentUser}>
                     <Suspense fallback={suspenseFallback}>
                         <StandaloneShell title="Orders" onBack={() => navigate('/')}>
-                            <OrdersPage storeSettings={storeSettings!} onOpenSidebar={openAppSwitcher} showSnackbar={showSnackbar} onDataRefresh={fetchData} />
+                            <OrdersPage storeSettings={storeSettings!} onOpenSidebar={openAppSwitcher} onDataRefresh={fetchData} />
                         </StandaloneShell>
                     </Suspense>
                     {accountOverlays}
@@ -2009,7 +1942,7 @@ export default function Dashboard() {
                 <NotificationProvider user={currentUser}>
                     <Suspense fallback={suspenseFallback}>
                         {pathParts[2] === 'request' && pathParts[3]
-                            ? <MarketplaceRequestActionPage requestId={pathParts[3]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />
+                            ? <MarketplaceRequestActionPage requestId={pathParts[3]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} />
                             : <MarketplacePage />}
                     </Suspense>
                     {accountOverlays}

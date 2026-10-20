@@ -4,22 +4,22 @@ import { api } from '../services/api';
 import { getCurrentUser } from '../services/authService';
 import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineShoppingBag, HiOutlineClock } from 'react-icons/hi2';
 import { formatCurrency } from '../utils/currency';
+import { useToast } from '../contexts/ToastContext';
 
 interface MarketplaceRequestActionPageProps {
     requestId: string;
     products: Product[];
     storeSettings: StoreSettings | null;
     onBack: () => void;
-    showSnackbar: (msg: string, type?: any) => void;
 }
 
 const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> = ({
     requestId,
     products,
     storeSettings,
-    onBack,
-    showSnackbar
+    onBack
 }) => {
+    const { showToast } = useToast();
     const [request, setRequest] = useState<MarketplaceRequest | null>(null);
     const [loading, setLoading] = useState(true);
     const [offerPrice, setOfferPrice] = useState('');
@@ -36,7 +36,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
             setRequest(data);
         } catch (error) {
             console.error('Failed to fetch request:', error);
-            showSnackbar('Failed to load request details', 'error');
+            showToast('Failed to load request details', 'error');
         } finally {
             setLoading(false);
         }
@@ -54,10 +54,10 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
                 sellerPrice: parseFloat(offerPrice),
                 productId: selectedProductId === 'custom' ? null : selectedProductId
             });
-            showSnackbar('Offer submitted successfully!', 'success');
+            showToast('Offer submitted successfully!', 'success');
             onBack();
         } catch (error) {
-            showSnackbar('Failed to submit offer', 'error');
+            showToast('Failed to submit offer', 'error');
         } finally {
             setSubmitting(false);
         }

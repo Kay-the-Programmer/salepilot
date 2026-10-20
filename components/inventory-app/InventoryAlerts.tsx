@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { num } from '../crm/crmModel';
-import { hasModule, MODULES } from '../../utils/entitlements';
-import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
 import { InventoryOverview, thresholdFor } from './inventoryModel';
 
 interface InventoryAlertsProps {
@@ -17,9 +15,10 @@ interface InventoryAlertsProps {
 export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, storeSettings, onGeneratePO, onViewItems }) => {
     const { lowStockItems, lowStockCount, outOfStockCount, criticalCount } = overview;
 
-    // Auto-generating purchase orders from low-stock alerts is a premium add-on.
-    const poUnlocked = hasModule(storeSettings, MODULES.AUTO_REORDER);
-    const [showUpsell, setShowUpsell] = useState(false);
+    // Generating a PO from the alerts used to be gated behind an `auto_reorder`
+    // add-on. Nothing is sold per feature now — every tier includes everything
+    // — so the button is just a button, and whether the shop may use it at all
+    // is the subscription's business, enforced server side.
 
     return (
         <main className="crm-main crm-section-fade">
@@ -32,15 +31,9 @@ export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, stor
                     <button
                         className="crm-btn crm-btn--filled"
                         type="button"
-                        onClick={() => (poUnlocked ? onGeneratePO() : setShowUpsell(true))}
-                        title={poUnlocked ? undefined : 'Premium add-on — tap to unlock'}
+                        onClick={onGeneratePO}
                     >
-                        <Icon name={poUnlocked ? 'shopping_cart' : 'lock'} size={20} /> Generate PO
-                        {!poUnlocked && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, marginLeft: 4, padding: '1px 7px', borderRadius: 999, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', background: '#ffe2b8', color: '#8a5a00' }}>
-                                Premium
-                            </span>
-                        )}
+                        <Icon name="shopping_cart" size={20} /> Generate PO
                     </button>
                 )}
             </div>
@@ -89,17 +82,6 @@ export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, stor
                 )}
             </div>
 
-            <PremiumUpgradeModal
-                isOpen={showUpsell}
-                onClose={() => setShowUpsell(false)}
-                title="Unlock Smart Reorder"
-                description="Turn low-stock alerts into ready-to-send purchase orders in one tap — a premium add-on you can unlock for a small monthly fee."
-                bullets={[
-                    'Auto-build POs from items below their reorder point',
-                    'Group by supplier with suggested quantities',
-                    'Restock before you run out of bestsellers',
-                ]}
-            />
         </main>
     );
 };

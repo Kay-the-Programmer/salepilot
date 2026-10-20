@@ -186,7 +186,7 @@
 .proc-bento { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 44px; }
 @media (min-width: 560px) { .proc-bento { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .proc-bento { grid-template-columns: repeat(4, 1fr); } }
-.proc-stat-card { min-height: 156px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 22px; border-radius: var(--c-radius-lg); background: var(--c-surface-lowest); border: 1px solid rgba(26,26,46,0.05); box-shadow: var(--c-elev-1); }
+.proc-stat-card { min-height: 156px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 22px; }
 .proc-stat-card__label { font-size: 14px; font-weight: 600; color: var(--c-on-surface-variant); }
 .proc-stat-card__value { font-size: 34px; line-height: 1; font-weight: 700; letter-spacing: -0.01em; color: var(--c-on-bg); }
 .proc-stat-card__value--p { color: var(--c-primary); }

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
-import XMarkIcon from './icons/XMarkIcon';
-import ArrowLeftIcon from './icons/ArrowLeftIcon';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import {
+    ArrowLeftIcon,
+    XMarkIcon,
+} from './icons';
 
 interface StockAdjustmentModalProps {
     isOpen: boolean;

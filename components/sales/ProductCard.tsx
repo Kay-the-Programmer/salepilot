@@ -3,11 +3,11 @@ import { Product, CartItem, StoreSettings } from '../../types';
 import { buildAssetUrl } from '@/services/api';
 import { formatCurrency } from '../../utils/currency';
 import {
-    ShoppingCartIcon,
     BellAlertIcon,
-    PlusIcon
+    MinusIcon,
+    PlusIcon,
+    ShoppingCartIcon,
 } from '../icons';
-import MinusIcon from '../icons/MinusIcon';
 import PosIcon from './PosIcon';
 
 interface ProductCardProps {

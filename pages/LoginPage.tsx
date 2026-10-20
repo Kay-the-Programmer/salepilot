@@ -1,6 +1,5 @@
 import { useState, FormEvent } from 'react';
 import { User } from '../types';
-import { SnackbarType } from '../App';
 import { login, loginWithGoogle } from '../services/authService';
 import { signInWithGoogle } from '../services/firebase/auth';
 import VerifyEmailOtpModal from '../components/VerifyEmailOtpModal';
@@ -8,10 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { HiOutlineEye, HiOutlineEyeSlash } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
+import { useToast } from '../contexts/ToastContext';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
 }
 
 /**
@@ -20,7 +19,8 @@ interface LoginPageProps {
  * there. A first-time Google user has no store yet, so onLogin → Dashboard
  * routes them to /register to finish setting up their store.
  */
-export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
+export default function LoginPage({ onLogin }: LoginPageProps) {
+    const { showToast } = useToast();
     const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
@@ -52,12 +52,12 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             if (err?.status === 403 && (err?.body?.code === 'EMAIL_NOT_VERIFIED' || err?.body?.requiresVerification)) {
                 setPendingVerifyEmail(err?.body?.email || email);
                 setError(null);
-                showSnackbar('Please verify your email to continue — we sent you a code.', 'info');
+                showToast('Please verify your email to continue — we sent you a code.', 'info');
                 return;
             }
             const msg = err?.message ?? 'An unexpected error occurred.';
             setError(msg);
-            showSnackbar(msg, 'error');
+            showToast(msg, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +79,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') return;
             const msg = err?.message ?? 'Google Sign-In failed. Please try again.';
             setError(msg);
-            showSnackbar(msg, 'error');
+            showToast(msg, 'error');
         } finally {
             setIsGoogleLoading(false);
         }
@@ -106,7 +106,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                     } catch (e: any) {
                         const msg = e?.message ?? 'Sign-in failed after verification. Please try again.';
                         setError(msg);
-                        showSnackbar(msg, 'error');
+                        showToast(msg, 'error');
                     } finally {
                         setIsLoading(false);
                     }

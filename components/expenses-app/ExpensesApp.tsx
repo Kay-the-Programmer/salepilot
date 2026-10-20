@@ -7,6 +7,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import RailThemeButton from '../standalone/RailThemeButton';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
+import { useToast } from '../../contexts/ToastContext';
 import LoadingSpinner from '../LoadingSpinner';
 import Logo from '../../assets/logo.png';
 import '../crm/crm.css';
@@ -14,12 +15,15 @@ import '../crm/crm.css';
 // utilities used below (same import AccountingShell makes).
 import '../../pages/assistant/assistant.css';
 import { toDateInputValue } from '../../utils/date';
+import {
+    ON_ACCOUNT,
+    accountForMethod,
+    accountLabel,
+    buildExpensePayload,
+    type ExpenseAccountChoice,
+} from '../accounting/expenseModel';
 
-interface ExpenseAccountOption {
-    id: string;
-    name: string;
-    number?: string;
-}
+type ExpenseAccountOption = ExpenseAccountChoice;
 
 interface ExpenseRow {
     id: string;
@@ -43,7 +47,6 @@ const FIELD =
 const LABEL = 'block text-xs font-semibold m3-text-on-surface-variant mb-1.5';
 
 const today = () => toDateInputValue(new Date());
-const accountLabel = (a: ExpenseAccountOption) => (a.number ? `${a.number} · ${a.name}` : a.name);
 
 /**
  * Expense recording for staff.
@@ -54,26 +57,8 @@ const accountLabel = (a: ExpenseAccountOption) => (a.number ? `${a.number} · ${
  * backend scopes every read here to the signed-in user, so this view can only
  * ever show that person's own expenses.
  */
-/** Not a tender — the expense is unpaid and posts to Accounts Payable. */
-const ON_ACCOUNT = 'On account (pay later)';
-
-/**
- * Which ledger account the money leaves.
- *
- * The chart offers only Cash and Accounts Payable as ways to pay (the backend's
- * PAYMENT_SUB_TYPES), so every tender that moves money now — cash, mobile
- * money, bank — posts against Cash, and only "on account" posts to Payables.
- * The tender's own name rides along on the expense, so "paid by MTN" survives
- * that simplification.
- */
-const accountForMethod = (accounts: ExpenseAccountOption[], method: string): string => {
-    if (accounts.length === 0) return '';
-    const wantPayable = method === ON_ACCOUNT;
-    const match = accounts.find(a => a.name.toLowerCase().includes('payable') === wantPayable);
-    return (match || accounts[0]).id;
-};
-
 export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, onExit, onLogout }) => {
+    const { showToast } = useToast();
     const { openAppSwitcher } = useAppSwitcher();
 
     const [expenseAccounts, setExpenseAccounts] = useState<ExpenseAccountOption[]>([]);
@@ -83,7 +68,6 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [toast, setToast] = useState<string | null>(null);
 
     const [date, setDate] = useState(today());
     const [description, setDescription] = useState('');
@@ -143,12 +127,6 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
         })();
     }, [loadAccounts, loadExpenses]);
 
-    useEffect(() => {
-        if (!toast) return;
-        const t = setTimeout(() => setToast(null), 2800);
-        return () => clearTimeout(t);
-    }, [toast]);
-
     const parsedAmount = useMemo(() => {
         const n = parseFloat(amount);
         return Number.isFinite(n) && n > 0 ? n : null;
@@ -162,26 +140,24 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
         setSaving(true);
         setError(null);
         try {
-            const expenseAccount = expenseAccounts.find(a => a.id === expenseAccountId);
-            const paymentAccount = paymentAccounts.find(a => a.id === paymentAccountId);
-            await api.post('/expenses', {
-                date,
-                description: description.trim(),
-                amount: parsedAmount,
-                expenseAccountId,
-                expenseAccountName: expenseAccount?.name,
-                paymentAccountId,
-                paymentAccountName: paymentAccount?.name,
-                paymentMethod: paymentMethod === ON_ACCOUNT ? undefined : paymentMethod,
-                category: expenseAccount?.name,
-                reference: reference.trim() || undefined,
-            });
+            await api.post('/expenses', buildExpensePayload(
+                {
+                    date,
+                    description,
+                    amount: parsedAmount,
+                    expenseAccountId,
+                    paymentAccountId,
+                    paymentMethod,
+                    reference,
+                },
+                [...expenseAccounts, ...paymentAccounts],
+            ));
             setDescription('');
             setAmount('');
             setReference('');
             setDate(today());
             await loadExpenses();
-            setToast('Expense recorded');
+            showToast('Expense recorded', 'success');
         } catch (err: any) {
             setError(err?.message || 'Could not save the expense.');
         } finally {
@@ -407,11 +383,6 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                 </main>
             </div>
 
-            {toast && (
-                <div className="sp-assistant fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-50">
-                    {toast}
-                </div>
-            )}
         </div>
     );
 };

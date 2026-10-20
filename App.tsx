@@ -1,11 +1,10 @@
-export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
 import { lazy, Suspense, useEffect } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
+import { ConfirmProvider } from './components/ui/useConfirm';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
-import PaywallHost from './components/PaywallHost';
 import SubscriptionRequiredHost from './components/SubscriptionRequiredHost';
 import TrialBanner from './components/TrialBanner';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
@@ -62,6 +61,7 @@ export default function App() {
     return (
         <ThemeProvider>
             <ToastProvider>
+                <ConfirmProvider>
                 <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-950 transition-colors duration-200">
                     <TitleBar />
                     <div className="flex-1 overflow-auto">
@@ -244,8 +244,6 @@ export default function App() {
 
                     {/* Theme control now lives in each app's top bar / nav rail (no floating switch). */}
 
-                    {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
-                    <PaywallHost />
 
                     {/* Lapsed trial/subscription takeover + plan-ceiling nudge */}
                     <SubscriptionRequiredHost />
@@ -262,6 +260,7 @@ export default function App() {
                     {/* Signs the user out and explains why when a token stops being accepted */}
                     <SessionExpiredHost />
                 </div>
+                </ConfirmProvider>
 
             </ToastProvider>
         </ThemeProvider>

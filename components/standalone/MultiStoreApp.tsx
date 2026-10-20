@@ -16,12 +16,12 @@ import AppNavMenu from './AppNavMenu';
 import RailThemeButton from './RailThemeButton';
 import Logo from '../../assets/logo.png';
 import '../crm/crm.css';
+import { useToast } from '../../contexts/ToastContext';
 
 interface MultiStoreAppProps {
     user: User;
     storeSettings: StoreSettings | null;
     onLogout: () => void;
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
     /** Soft store switch: Dashboard swaps the user in state so every store-scoped screen refetches — no reload, no logout. */
     onStoreSwitched?: (user: User) => void;
 }
@@ -69,7 +69,8 @@ const DeltaBadge: React.FC<{ cur: number; prev: number }> = ({ cur, prev }) => {
     );
 };
 
-export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, showSnackbar, onStoreSwitched }) => {
+export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, onStoreSwitched }) => {
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [section, setSection] = useState<BizSection>('overview');
 
@@ -91,7 +92,7 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, sh
 
     const load = () => {
         setLoading(true);
-        getMyStores().then(setStores).catch(() => showSnackbar('Could not load your businesses.', 'error')).finally(() => setLoading(false));
+        getMyStores().then(setStores).catch(() => showToast('Could not load your businesses.', 'error')).finally(() => setLoading(false));
     };
     const loadSummary = (d = days) => {
         setSummaryLoading(true);
@@ -133,21 +134,21 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, sh
         try {
             const refreshed = await switchStore(s.id);
             applySwitchedUser(refreshed, s.id);
-            showSnackbar(`Switched to ${s.name}.`, 'success');
+            showToast(`Switched to ${s.name}.`, 'success');
             if (thenOpen) { navigate('/dash'); return; }
             // Stay in the hub — refresh both lists so the Active badge moves.
             load();
             loadSummary();
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not switch business.', 'error');
+            showToast(e?.message || 'Could not switch business.', 'error');
         } finally {
             setSwitching(null);
         }
     };
 
     const create = async () => {
-        if (form.name.trim().length < 2) { showSnackbar('Enter a business name (min 2 characters).', 'error'); return; }
-        if (nameTaken) { showSnackbar('That business name is already taken.', 'error'); return; }
+        if (form.name.trim().length < 2) { showToast('Enter a business name (min 2 characters).', 'error'); return; }
+        if (nameTaken) { showToast('That business name is already taken.', 'error'); return; }
         setCreating(true);
         try {
             const { store, user: refreshed } = await registerStoreAndRefreshUser(
@@ -157,13 +158,13 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, sh
                 form.address.trim() || undefined,
             );
             applySwitchedUser(refreshed, store.id); // backend makes the new store active
-            showSnackbar(`${store.name} created and set as your active business.`, 'success');
+            showToast(`${store.name} created and set as your active business.`, 'success');
             setForm({ name: '', type: '', phone: '', address: '' });
             setShowForm(false);
             load();
             loadSummary();
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not create the business.', 'error');
+            showToast(e?.message || 'Could not create the business.', 'error');
         } finally { setCreating(false); }
     };
 

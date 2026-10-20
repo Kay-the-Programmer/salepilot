@@ -7,7 +7,7 @@ import Logo from '../../assets/logo.png';
 interface StandaloneTopBarProps {
     /** The current app's own sections, surfaced in the right-hand menu. */
     navItems?: AppNavItem[];
-    /** Route of this app, to highlight it in the app switcher (e.g. 'hustle'). */
+    /** Route of this app, to highlight it in the app switcher (e.g. 'crm'). */
     currentRoute?: string;
     /** "Full SalePilot App" — leave the standalone app. */
     onExit?: () => void;

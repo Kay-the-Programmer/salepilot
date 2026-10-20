@@ -4,7 +4,6 @@ import PosIcon from '../sales/PosIcon';
 import ReceiptPaper from './ReceiptPaper';
 import { api } from '../../services/api';
 import type { Sale, StoreSettings } from '../../types';
-import type { SnackbarType } from '../../App';
 import { COLUMNS } from '../../utils/escpos';
 import { PaperWidth, buildReceiptBytes } from '../../utils/receiptEscPos';
 import {
@@ -22,6 +21,7 @@ import {
     requestUsbPrinter,
     setPaperWidth,
 } from '../../services/thermalPrinter';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * Sets up a shop's receipt in four short steps, with the receipt on screen the
@@ -52,7 +52,6 @@ interface ReceiptSetupWizardProps {
     settings: StoreSettings;
     /** Lets a parent that holds settings in state refresh after the save. */
     onSaved?: (settings: StoreSettings) => void;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
 }
 
 const SETUP_DONE_KEY = 'salepilot.receiptSetup.done';
@@ -142,8 +141,8 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
     onClose,
     settings,
     onSaved,
-    showSnackbar,
-}) => {
+    }) => {
+    const { showToast } = useToast();
     const [step, setStep] = useState(0);
     const [draft, setDraft] = useState<StoreSettings>(settings);
     const [paper, setPaper] = useState<PaperWidth>(80);
@@ -199,7 +198,7 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
             markReceiptSetupDone(draft.storeId);
             return true;
         } catch {
-            showSnackbar('Could not save your receipt settings. Check your connection and try again.', 'error');
+            showToast('Could not save your receipt settings. Check your connection and try again.', 'error');
             return false;
         } finally {
             setBusy(false);
@@ -211,7 +210,7 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
         setUsbBlocked(false);
         try {
             const p = await request();
-            showSnackbar(`Connected to ${p.label}.`, 'success');
+            showToast(`Connected to ${p.label}.`, 'success');
         } catch (err) {
             // A printer Windows is holding is not a retry — it is a dead end in
             // the browser, and the only thing worth doing is naming the way out.
@@ -219,7 +218,7 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
             if (err instanceof PrinterError && err.kind === 'usb-blocked-windows') {
                 setUsbBlocked(true);
             } else {
-                showSnackbar(
+                showToast(
                     err instanceof PrinterError ? err.message : 'Could not connect to that printer.',
                     'error',
                 );
@@ -236,9 +235,9 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
         try {
             setPaperWidth(paper);
             await printBytes(buildReceiptBytes(SAMPLE_SALE, draft, { paperWidth: paper }));
-            showSnackbar('Test receipt sent — check the paper.', 'success');
+            showToast('Test receipt sent — check the paper.', 'success');
         } catch (err) {
-            showSnackbar(
+            showToast(
                 err instanceof PrinterError ? err.message : 'Could not reach the printer.',
                 'error',
             );
@@ -249,7 +248,7 @@ const ReceiptSetupWizard: React.FC<ReceiptSetupWizardProps> = ({
 
     const finish = async () => {
         if (await persist()) {
-            showSnackbar('Receipt setup saved.', 'success');
+            showToast('Receipt setup saved.', 'success');
             onClose();
         }
     };

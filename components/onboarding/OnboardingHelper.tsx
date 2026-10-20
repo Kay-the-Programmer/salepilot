@@ -1,7 +1,9 @@
 import { ReactNode } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
-import XMarkIcon from '../icons/XMarkIcon';
-import ArrowRightIcon from '../icons/ArrowRightIcon';
+import {
+    ArrowRightIcon,
+    XMarkIcon,
+} from '../icons';
 
 export interface OnboardingHelperProps {
     helperId: string;

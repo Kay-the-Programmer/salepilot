@@ -5,6 +5,7 @@ import StandaloneShell from '../../components/standalone/StandaloneShell';
 import { computePoTotals, newPoIdentifiers } from '../../components/purchase-orders/poModel';
 import { num } from '../../components/crm/crmModel';
 import { useConfirm } from '../../components/ui/useConfirm';
+import { useToast } from '../../contexts/ToastContext';
 import { getOrderLists, saveOrderList, deleteOrderList, type QuickItem, type QuickList } from '../../services/orderListsService';
 import { api } from '../../services/api';
 import '../accounting/accounting.css';
@@ -15,7 +16,6 @@ interface PurchaseOrdersAppProps {
   categories: Category[];
   storeSettings: StoreSettings;
   onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
-  showSnackbar?: (message: string, type?: any) => void;
   /** Rendered inside the Purchase Orders hub (a section of ProcureApp) rather
    *  than as its own standalone app — skip the StandaloneShell chrome. */
   embedded?: boolean;
@@ -33,10 +33,11 @@ const saveLists = (storeId: string | undefined, lists: QuickList[]) => {
   try { localStorage.setItem(lsKey(storeId), JSON.stringify(lists)); } catch { /* ignore */ }
 };
 
-const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categories, storeSettings, onSaveProduct, showSnackbar, embedded = false, onCreatePurchaseOrder }) => {
+const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categories, storeSettings, onSaveProduct, embedded = false, onCreatePurchaseOrder }) => {
   const storeId = storeSettings?.storeId;
   const fmt = (n: number) => formatCurrency(n, storeSettings);
-  const { confirm, confirmDialog } = useConfirm();
+  const { confirm } = useConfirm();
+  const { showToast } = useToast();
 
   const [lists, setLists] = useState<QuickList[]>(() => loadLists(storeId));
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -167,7 +168,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
     try {
       const categoryId = await resolveImportCategoryId();
       if (!categoryId) {
-        showSnackbar?.('Couldn’t prepare a category for the imported items. Check your connection and try again.', 'error');
+        showToast('Couldn’t prepare a category for the imported items. Check your connection and try again.', 'error');
         return;
       }
       // Skip items already in the catalogue (matched by name) so re-importing a
@@ -193,14 +194,14 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
         count++;
       }
       updateList(selected.id, (l) => ({ ...l, importedAt: Date.now() }));
-      showSnackbar?.(
+      showToast(
         skipped > 0
           ? `${count} item${count === 1 ? '' : 's'} imported · ${skipped} already in inventory (skipped, no duplicates).`
           : `${count} item${count === 1 ? '' : 's'} imported into your inventory.`,
         'success',
       );
     } catch (e) {
-      showSnackbar?.('Failed to import some items. Please try again.', 'error');
+      showToast('Failed to import some items. Please try again.', 'error');
     } finally {
       setImporting(false);
     }
@@ -241,7 +242,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
       });
     }
     if (matched.length === 0) {
-      showSnackbar?.('None of these items are in your inventory yet. Use “Import to inventory” first, then create the purchase order.', 'warning');
+      showToast('None of these items are in your inventory yet. Use “Import to inventory” first, then create the purchase order.', 'warning');
       return;
     }
     if (unmatched.length > 0) {
@@ -268,7 +269,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
     };
     onCreatePurchaseOrder(po);
     updateList(selected.id, (l) => ({ ...l, exportedAt: Date.now(), exportedPoNumber: po.poNumber }));
-    showSnackbar?.(
+    showToast(
       unmatched.length > 0
         ? `${po.poNumber} drafted with ${items.length} of ${selected.items.length} items — choose a supplier and save it.`
         : `${po.poNumber} drafted — choose a supplier and save it.`,
@@ -418,7 +419,6 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
         )}
       </div>
 
-      {confirmDialog}
 
 
     </>

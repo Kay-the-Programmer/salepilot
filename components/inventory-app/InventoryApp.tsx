@@ -9,7 +9,6 @@ import ClosingStockReport from './ClosingStockReport';
 import { buildInventoryOverview } from './inventoryModel';
 import { limitsForPlan } from '../../utils/entitlements';
 import { can } from '../../utils/rbac';
-import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './inventory.css';
 
@@ -172,7 +171,6 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             <ProductCapBanner count={products.length} planId={user?.subscriptionPlan} />
             {/* Contextual inline upsell — stockouts / heavy manual entry. The product
                 cap is handled by the richer ProductCapBanner meter above. */}
-            <UpsellInline ids={['stockout_repeat', 'bulk_manual_adds']} placement="inventory" className="mx-4 mb-3" />
             {content}
 
             {toast && (

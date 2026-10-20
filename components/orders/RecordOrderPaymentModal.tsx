@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Sale, Payment, StoreSettings } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';
-import CalendarIcon from '../icons/CalendarIcon';
-import BanknotesIcon from '../icons/BanknotesIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import { formatCurrency } from '../../utils/currency';
 import { InputField } from '../ui/InputField';
 import { toDateInputValue } from '../../utils/date';
+import {
+    BanknotesIcon,
+    CalendarIcon,
+    ClipboardDocumentListIcon,
+    CurrencyDollarIcon,
+    XMarkIcon,
+} from '../icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface RecordOrderPaymentModalProps {
     isOpen: boolean;
@@ -16,10 +19,10 @@ interface RecordOrderPaymentModalProps {
     order: Sale;
     onSave: (order: Sale, payment: Omit<Payment, 'id'>) => void;
     storeSettings: StoreSettings;
-    showSnackbar: (message: string, type: 'success' | 'error' | 'info' | 'sync') => void;
 }
 
-const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpen, onClose, order, onSave, storeSettings, showSnackbar }) => {
+const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpen, onClose, order, onSave, storeSettings }) => {
+    const { showToast } = useToast();
     const balanceDue = Number(order.total) - Number(order.amountPaid || 0);
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
     const [date, setDate] = useState(toDateInputValue());
@@ -43,7 +46,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            showSnackbar("Invalid payment amount.", "error");
+            showToast("Invalid payment amount.", "error");
             return;
         }
         const paymentAmount = parseFloat(amount);

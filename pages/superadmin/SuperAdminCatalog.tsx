@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/ui/useConfirm';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { INPUT_CLASS } from '../../utils/ui';
@@ -244,6 +245,7 @@ const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, 
 );
 
 const ModuleEditor: React.FC<{ initial: CatalogModule; onClose: () => void; onSaved: () => void }> = ({ initial, onClose, onSaved }) => {
+    const { confirm } = useConfirm();
     const [f, setF] = useState<CatalogModule>(initial);
     const [saving, setSaving] = useState(false);
     const [err, setErr] = useState<string | null>(null);
@@ -265,7 +267,7 @@ const ModuleEditor: React.FC<{ initial: CatalogModule; onClose: () => void; onSa
         }
     };
     const remove = async () => {
-        if (!window.confirm(`Delete add-on "${f.name}"? Stores already granted it keep it until their next change.`)) return;
+        if (!await confirm({ title: `Delete add-on "${f.name}"?`, message: 'Stores already granted it keep it until their next change.', confirmLabel: 'Delete', danger: true })) return;
         setSaving(true);
         try { await api.delete(`/superadmin/catalog/modules/${f.id}`); onSaved(); }
         catch (e: any) { setErr(e?.message || 'Failed to delete'); setSaving(false); }
@@ -333,6 +335,7 @@ const ModuleEditor: React.FC<{ initial: CatalogModule; onClose: () => void; onSa
 // --- Plan editor -------------------------------------------------------------
 
 const PlanEditor: React.FC<{ initial: CatalogPlan; modules: CatalogModule[]; onClose: () => void; onSaved: () => void }> = ({ initial, modules, onClose, onSaved }) => {
+    const { confirm } = useConfirm();
     const [f, setF] = useState<CatalogPlan>(initial);
     const [featuresText, setFeaturesText] = useState(initial.features.join('\n'));
     const [saving, setSaving] = useState(false);
@@ -357,7 +360,7 @@ const PlanEditor: React.FC<{ initial: CatalogPlan; modules: CatalogModule[]; onC
         }
     };
     const remove = async () => {
-        if (!window.confirm(`Delete plan "${f.name}"?`)) return;
+        if (!await confirm({ title: `Delete plan "${f.name}"?`, confirmLabel: 'Delete', danger: true })) return;
         setSaving(true);
         try { await api.delete(`/superadmin/catalog/plans/${f.id}`); onSaved(); }
         catch (e: any) { setErr(e?.message || 'Failed to delete'); setSaving(false); }

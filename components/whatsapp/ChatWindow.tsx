@@ -4,15 +4,16 @@ import { api } from '../../services/api';
 import { WhatsAppMessage } from '../../types';
 import LoadingSpinner from '../LoadingSpinner';
 import { ArrowLeftIcon } from '../icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ChatWindowProps {
     conversationId: string;
     onBack: () => void;
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
     isSystem?: boolean;
 }
 
-export default function ChatWindow({ conversationId, onBack, showSnackbar, isSystem }: ChatWindowProps) {
+export default function ChatWindow({ conversationId, onBack, isSystem }: ChatWindowProps) {
+    const { showToast } = useToast();
     const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +61,7 @@ export default function ChatWindow({ conversationId, onBack, showSnackbar, isSys
             setNewMessage('');
             fetchMessages(); // Instant refresh
         } catch (error: any) {
-            showSnackbar(error.message || 'Failed to send message', 'error');
+            showToast(error.message || 'Failed to send message', 'error');
         } finally {
             setIsSending(false);
         }

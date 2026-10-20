@@ -14,7 +14,7 @@ const CartPage: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
     const { shopInfo, formatPrice } = useOutletContext<ShopOutletContext>();
     const navigate = useNavigate();
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
     const [items, setItems] = useState<CartItem[]>([]);
 
     useEffect(() => {
@@ -167,7 +167,6 @@ const CartPage: React.FC = () => {
                     </p>
                 </div>
             </div>
-            {confirmDialog}
         </div>
     );
 };

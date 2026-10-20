@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { JournalEntry, Account, Sale, Customer, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import BookOpenIcon from '../../icons/BookOpenIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
-import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
 import { toDateInputValue } from '../../../utils/date';
+import {
+    BookOpenIcon,
+    CalendarDaysIcon,
+    MagnifyingGlassIcon,
+} from '../../icons';
 
 interface JournalViewProps {
     entries: JournalEntry[];

@@ -45,18 +45,10 @@ export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !==
 export const MARKETING_ENABLED = (import.meta.env?.VITE_MARKETING_ENABLED ?? 'false') !== 'false';
 export const LOGISTICS_ENABLED = (import.meta.env?.VITE_LOGISTICS_ENABLED ?? 'false') !== 'false';
 
-/**
- * Hustle POS as a SEPARATE app is withheld from launch — not the keypad itself.
- *
- * The same component is embedded in the POS as its "Quick" mode, reachable from
- * the mode toggle while selling, so nothing is lost by hiding the standalone
- * copy: it was a second till to train staff on, QA, and keep in step with the
- * first on tax, overrides, printing and offline behaviour.
- *
- * Set `VITE_HUSTLE_APP_ENABLED=true` to bring the standalone app back (its tile
- * in `standaloneApps.ts` must be uncommented too).
- */
-export const HUSTLE_APP_ENABLED = (import.meta.env?.VITE_HUSTLE_APP_ENABLED ?? 'false') !== 'false';
+/* Hustle POS is gone, not flagged off. It was a second till — its own keypad,
+   cart and printing path — and the "Quick mode" it was folded into has since
+   been removed too, so the flag guarded a surface that no longer existed.
+   `/hustle` redirects to the one till. */
 
 /**
  * Plan capacity — mirrors `s-back/src/services/plan-limits.ts`. Every tier

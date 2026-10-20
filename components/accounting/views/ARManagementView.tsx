@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Sale, Customer, StoreSettings, Payment } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import DocumentChartBarIcon from '../../icons/DocumentChartBarIcon';
-import UsersIcon from '../../icons/UsersIcon';
-import EllipsisVerticalIcon from '../../icons/EllipsisVerticalIcon';
-import EyeIcon from '../../icons/EyeIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
-import BanknotesIcon from '../../icons/BanknotesIcon';
-import CalendarIcon from '../../icons/CalendarIcon';
 import UnifiedRecordPaymentModal from '../UnifiedRecordPaymentModal';
 import CustomerStatementModal from '../modals/CustomerStatementModal';
+import {
+    BanknotesIcon,
+    CalculatorIcon,
+    CalendarIcon,
+    DocumentChartBarIcon,
+    EllipsisVerticalIcon,
+    EyeIcon,
+    UsersIcon,
+} from '../../icons';
 
 interface ARManagementViewProps {
     sales: Sale[];

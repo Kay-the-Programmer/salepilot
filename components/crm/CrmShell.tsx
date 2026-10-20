@@ -1,12 +1,6 @@
 import React from 'react';
 import { User } from '../../types';
-import { Icon, Avatar } from './CrmBits';
-import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
-import AppSwitcher from '../standalone/AppSwitcher';
-import AppNavMenu from '../standalone/AppNavMenu';
-import Logo from '../../assets/logo.png';
-import RailThemeButton from '../standalone/RailThemeButton';
-import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
+import AppShell, { AppShellNavItem } from '../standalone/AppShell';
 
 export type CrmSection = 'dashboard' | 'customers' | 'whatsapp' | 'loyalty' | 'insights';
 
@@ -20,7 +14,7 @@ interface CrmShellProps {
     children: React.ReactNode;
 }
 
-const NAV: { id: CrmSection; label: string; icon: string }[] = [
+const NAV: AppShellNavItem<CrmSection>[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'customers', label: 'Customers', icon: 'group' },
     { id: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
@@ -28,82 +22,21 @@ const NAV: { id: CrmSection; label: string; icon: string }[] = [
     { id: 'insights', label: 'Insights', icon: 'analytics' },
 ];
 
-/**
- * Standalone CRM frame. Desktop = a fixed left navigation rail (mirrors the
- * standalone POS shell); mobile = a top bar + bottom navigation. Discover is
- * exposed on both so users can hop back to the SalePilot app launcher.
- */
-export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => {
-    const { openAppSwitcher } = useAppSwitcher();
-    const navItems = NAV;
-
-    return (
-        <div className="crm">
-            {/* Desktop navigation rail */}
-            <aside className="crm-rail" aria-label="CRM navigation">
-                <div className="crm-rail__brand">
-                    <span className="crm-bar__logo"><Icon name="storefront" size={22} fill={1} /></span>
-                    <div className="crm-rail__brand-text">
-                        <span className="crm-rail__brand-title">SalePilot CRM</span>
-                        <span className="crm-rail__brand-sub">Customer Hub</span>
-                    </div>
-                </div>
-
-                <nav className="crm-rail__nav">
-                    {navItems.map(item => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            className={`crm-rail__item${active === item.id ? ' is-active' : ''}`}
-                            aria-current={active === item.id ? 'page' : undefined}
-                            onClick={() => onNavigate(item.id)}
-                        >
-                            <Icon name={item.icon} size={22} fill={active === item.id ? 1 : 0} />
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-
-                <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
-                        <Icon name="apps" size={22} /> SalePilot Apps
-                    </button>
-                    <RailThemeButton />
-                    <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
-                        <Icon name="logout" size={22} /> Logout
-                    </button>
-                    <div className="crm-rail__user">
-                        <Avatar name={user?.name} src={user?.profilePicture} size={36} />
-                        <div className="crm-rail__user-info">
-                            <span className="crm-rail__user-name">{user?.name}</span>
-                            <span className="crm-rail__user-role">{user?.role}</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Content column (with mobile top bar + bottom nav) */}
-            <div className="crm-body">
-                <header className="crm-bar crm-bar--mobile">
-                    <AppSwitcher user={user} currentRoute="crm" triggerClassName="crm-iconbtn" />
-                    <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
-                    <div className="crm-bar__actions">
-                        <AppNavMenu
-                            items={navItems.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) }))}
-                            onExit={onExit}
-                            onLogout={onLogout}
-                            triggerClassName="crm-iconbtn"
-                        />
-                    </div>
-                </header>
-
-                {children}
-            </div>
-
-            {/* Embedded AI assistant — available from inside the CRM app */}
-            <AssistantLauncher userName={user?.name} />
-        </div>
-    );
-};
+/** Standalone CRM frame — the shared chrome, with the CRM's sections. */
+export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => (
+    <AppShell
+        user={user}
+        route="crm"
+        navLabel="CRM navigation"
+        brand={{ icon: 'storefront', title: 'SalePilot CRM', sub: 'Customer Hub' }}
+        nav={NAV}
+        active={active}
+        onNavigate={onNavigate}
+        onExit={onExit}
+        onLogout={onLogout}
+    >
+        {children}
+    </AppShell>
+);
 
 export default CrmShell;

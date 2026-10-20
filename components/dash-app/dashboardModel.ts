@@ -1,4 +1,5 @@
 import { Product, Sale, Customer, StoreSettings } from '../../types';
+import { saleNetOfRefunds } from '../../utils/revenue';
 import { num, parseApiDate } from '../crm/crmModel';
 
 /**
@@ -103,22 +104,12 @@ const rangeWindow = (range: DashRange, now: number): DashWindow => {
 /** The active window for a range — exported so callers filter exactly as the cards do. */
 export const windowFor = (range: DashRange, now: number = Date.now()): DashWindow => rangeWindow(range, now);
 
-/** Net revenue of a sale: ex-tax, net of discounts (the platform-wide revenue
- *  definition), reduced by the refunded share. Cancelled sales contribute 0. */
-const saleNet = (s: Sale): number => {
-    if ((s as any).fulfillmentStatus === 'cancelled') return 0;
-    const base = Math.max(0, num(s.subtotal) - num((s as any).discount));
-    const refunded = num(s.totalRefunded);
-    // The refunded SHARE must be measured against what the sale was worth
-    // BEFORE the refund. `total` from /sales is already net of refunds, so
-    // dividing by it inflated the share (a K90 refund on a K360 sale read as
-    // 90/270 = 33% instead of 25%) and under-reported revenue. `originalTotal`
-    // is the pre-refund figure; older cached rows that lack it are reconstructed
-    // by adding the refund back.
-    const original = num(s.originalTotal) || num(s.total) + refunded;
-    const refundedFraction = original > 0 ? Math.min(1, refunded / original) : 0;
-    return base * (1 - refundedFraction);
-};
+/**
+ * Net revenue of a sale for the dashboard: the platform definition, reduced
+ * by the refunded share. The arithmetic lives in `utils/revenue` so this and
+ * the accounting surfaces cannot drift apart.
+ */
+const saleNet = saleNetOfRefunds;
 
 export interface DashDelta {
     /** Percentage change vs the prior comparable window. */

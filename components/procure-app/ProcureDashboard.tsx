@@ -13,10 +13,9 @@ interface ProcureDashboardProps {
     onViewSuppliers: () => void;
     onViewOrders: () => void;
     onAutoReorder: () => void;
-    autoReorderEntitled?: boolean;
 }
 
-export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, storeSettings, reorderCount = 0, onNewOrder, onViewSuppliers, onViewOrders, onAutoReorder, autoReorderEntitled = false }) => {
+export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, storeSettings, reorderCount = 0, onNewOrder, onViewSuppliers, onViewOrders, onAutoReorder }) => {
     const {
         totalSuppliers, openOrders, openOrdersValue, awaitingReceiptOrders, awaitingReceiptItems,
         payable, overdueCount, overdueAmount, recentOrders, topSuppliers,
@@ -141,7 +140,7 @@ export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, st
                             <div className="proc-alert__left">
                                 <span className="proc-alert__icon" style={{ background: 'var(--c-primary)', color: '#fff' }}><Icon name="auto_awesome" size={22} fill={1} /></span>
                                 <div>
-                                    <p className="proc-alert__title">Smart Reorder {!autoReorderEntitled && <span className="crm-badge crm-badge--gold" style={{ marginLeft: 4, padding: '1px 7px', fontSize: 10 }}>Premium</span>}</p>
+                                    <p className="proc-alert__title">Smart Reorder</p>
                                     <p className="proc-alert__text">
                                         {reorderCount > 0
                                             ? `${reorderCount} item${reorderCount === 1 ? '' : 's'} at or below reorder point.`
@@ -151,7 +150,7 @@ export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, st
                             </div>
                             {reorderCount > 0 && (
                                 <button className="crm-btn crm-btn--primary" type="button" onClick={onAutoReorder} style={{ padding: '8px 14px', fontSize: 13 }}>
-                                    {autoReorderEntitled ? 'Generate' : <><Icon name="lock" size={16} /> Unlock</>}
+                                    Generate
                                 </button>
                             )}
                         </div>

@@ -212,7 +212,16 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
             detail: { limit: body.limit, allowed: body.allowed, used: body.used, message },
           }));
         } else if (body.module) {
-          window.dispatchEvent(new CustomEvent('salepilot:paywall', { detail: { module: body.module, message } }));
+          // A module 402 used to open a separate add-on paywall offering that
+          // one feature for a monthly fee. Nothing is sold per feature any
+          // more — every tier includes everything, and modules are granted by
+          // the subscription and revoked when it lapses — so a module 402 can
+          // only mean the subscription is not active. That is the same thing
+          // SUBSCRIPTION_REQUIRED means, so it takes the same route and the
+          // user sees one explanation instead of two competing ones.
+          window.dispatchEvent(new CustomEvent('salepilot:subscription-required', {
+            detail: { message, module: body.module },
+          }));
         }
       } catch (_) { }
     }

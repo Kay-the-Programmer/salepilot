@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Supplier } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
-import UserCircleIcon from '../icons/UserCircleIcon';
-import EnvelopeIcon from '../icons/EnvelopeIcon';
-import PhoneIcon from '../icons/PhoneIcon';
-import MapPinIcon from '../icons/MapPinIcon';
-import BankIcon from '../icons/BankIcon';
-import DocumentTextIcon from '../icons/DocumentTextIcon';
 import { InputField } from '../ui/InputField';
 import LocationPickerModal from '../ui/LocationPickerModal';
+import {
+    BankIcon,
+    BuildingOfficeIcon,
+    DocumentTextIcon,
+    EnvelopeIcon,
+    MapPinIcon,
+    PhoneIcon,
+    UserCircleIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface SupplierFormModalProps {
     isOpen: boolean;

@@ -5,12 +5,11 @@ import ChatWindow from '../components/whatsapp/ChatWindow';
 import { User } from '../types';
 
 interface WhatsAppConversationsPageProps {
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
     currentUser: User;
     superMode?: 'superadmin' | 'store';
 }
 
-export default function WhatsAppConversationsPage({ showSnackbar, currentUser, superMode }: WhatsAppConversationsPageProps) {
+export default function WhatsAppConversationsPage({ currentUser, superMode }: WhatsAppConversationsPageProps) {
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const isSystem = currentUser.role === 'superadmin' && superMode === 'superadmin';
 
@@ -30,7 +29,6 @@ export default function WhatsAppConversationsPage({ showSnackbar, currentUser, s
                     <ChatWindow
                         conversationId={selectedConversationId}
                         onBack={() => setSelectedConversationId(null)}
-                        showSnackbar={showSnackbar}
                         isSystem={isSystem}
                     />
                 ) : (

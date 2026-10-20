@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SnackbarType } from '../App';
-import CheckCircleIcon from './icons/CheckCircleIcon';
-import XCircleIcon from './icons/XCircleIcon';
-import InformationCircleIcon from './icons/InformationCircleIcon';
-import XMarkIcon from './icons/XMarkIcon';
-import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
+import type { ToastType } from '../contexts/ToastContext';
+import {
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+    InformationCircleIcon,
+    XCircleIcon,
+    XMarkIcon,
+} from './icons';
 
 /**
  * The toast card. Purely presentational — positioning and stacking belong to
@@ -14,7 +16,7 @@ import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
  */
 interface SnackbarProps {
     message: string;
-    type: SnackbarType;
+    type: ToastType;
     onClose: () => void;
     /** Auto-dismiss after this many ms (default 4000). */
     duration?: number;
@@ -60,7 +62,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, duration = 
         return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     }, [isPaused, isExiting, handleClose]);
 
-    const TYPE_STYLES: Record<SnackbarType, { chip: string; icon: string; progress: string }> = {
+    const TYPE_STYLES: Record<ToastType, { chip: string; icon: string; progress: string }> = {
         success: { chip: 'bg-success-muted', icon: 'text-success', progress: 'bg-success' },
         error:   { chip: 'bg-danger-muted',  icon: 'text-danger',  progress: 'bg-danger' },
         info:    { chip: 'bg-surface-variant', icon: 'text-brand-text', progress: 'bg-brand-text-muted' },

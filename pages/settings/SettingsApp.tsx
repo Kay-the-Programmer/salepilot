@@ -6,7 +6,6 @@ import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import type { BankAccount, StoreSettings, User } from '../../types';
 import { BANK_ACCOUNT_FIELDS } from '../../types';
-import type { SnackbarType } from '../../App';
 import { api, buildAssetUrl } from '../../services/api';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import { announceLogoUpdate } from '../../utils/pdfDocument';
@@ -23,13 +22,13 @@ import AccountVerificationSection from '../../components/settings/AccountVerific
 import NotificationSettingsSection from '../../components/settings/sections/NotificationSettingsSection';
 import BarcodeScannerSection from '../../components/settings/sections/BarcodeScannerSection';
 import ReferralSection from '../../components/settings/sections/ReferralSection';
+import { useToast } from '../../contexts/ToastContext';
 
 type Category = 'store' | 'receipts' | 'financial' | 'pos' | 'inventory' | 'notifications' | 'verification' | 'referrals' | 'scanner' | 'billing';
 
 interface SettingsAppProps {
   settings: StoreSettings;
   user: User;
-  showSnackbar: (message: string, type?: SnackbarType) => void;
   onSave: (settings: StoreSettings) => void;
   /** The receipt wizard persists on its own, so the app's copy is refreshed
    *  directly rather than through another save. */
@@ -75,7 +74,8 @@ const tileTone: Record<Category, string> = {
   scanner: 'm3-bg-surface-highest m3-text-on-surface-variant',
 };
 
-const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar, onSave, onSettingsSaved }) => {
+const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, onSave, onSettingsSaved }) => {
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const { preference, cycleTheme } = useTheme();
   const { openAppSwitcher } = useAppSwitcher();
@@ -132,9 +132,9 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
       setLogoUrl(r?.logoUrl || '');
       // Tell the rest of the app, so documents printed in this session are branded.
       if (r?.logoUrl) announceLogoUpdate(r.logoUrl);
-      showSnackbar('Logo updated. It now heads your documents.', 'success');
+      showToast('Logo updated. It now heads your documents.', 'success');
     } catch (err: any) {
-      showSnackbar(err?.message || 'Could not upload the logo.', 'error');
+      showToast(err?.message || 'Could not upload the logo.', 'error');
     } finally {
       setUploadingLogo(false);
     }
@@ -205,7 +205,7 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   const removeBank = (id: string) =>
     setCurrentSettings((prev) => ({ ...prev, bankAccounts: (prev.bankAccounts || []).filter((b) => b.id !== id) }));
 
-  const handleSave = () => { onSave(currentSettings); showSnackbar('Settings saved.', 'success'); };
+  const handleSave = () => { onSave(currentSettings); showToast('Settings saved.', 'success'); };
   const handleReset = () => setCurrentSettings(settings);
 
   const meta = CATEGORIES.find((c) => c.id === active)!;
@@ -532,7 +532,6 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                 <ManagerApprovalsCard
                   settings={currentSettings}
                   onChange={(overrideThresholds) => setCurrentSettings((prev) => ({ ...prev, overrideThresholds } as any))}
-                  showSnackbar={showSnackbar}
                   inputCls={inputCls}
                 />
               </>
@@ -573,7 +572,7 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                 </div>
               </div>
             )}
-            {active === 'referrals' && <div className="m3-feature"><ReferralSection user={user} showSnackbar={showSnackbar} /></div>}
+            {active === 'referrals' && <div className="m3-feature"><ReferralSection user={user} /></div>}
             {active === 'scanner' && <div className="m3-feature"><BarcodeScannerSection /></div>}
           </div>
         </main>
@@ -595,7 +594,6 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
         onClose={() => setShowReceiptSetup(false)}
         settings={currentSettings}
         onSaved={(s) => { setCurrentSettings(s); onSettingsSaved?.(s); }}
-        showSnackbar={showSnackbar}
       />
     </div>
   );

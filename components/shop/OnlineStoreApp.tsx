@@ -9,12 +9,12 @@ import { whatsappCampaignService } from '../../services/whatsappCampaignService'
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
 import { api, buildAssetUrl } from '../../services/api';
 import { announceLogoUpdate } from '../../utils/pdfDocument';
+import { useToast } from '../../contexts/ToastContext';
 
 interface OnlineStoreAppProps {
     user: User;
     storeSettings: StoreSettings | null;
     onLogout: () => void;
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const card = 'bg-surface border border-brand-border rounded-2xl shadow-sm';
@@ -30,7 +30,8 @@ const SEGMENTS = [
     { id: 'vip', label: 'VIP spenders' },
 ];
 
-export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSettings, onLogout, showSnackbar }) => {
+export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSettings, onLogout }) => {
+    const { showToast } = useToast();
     const storeId = user?.currentStoreId || '';
     const storeName = storeSettings?.name || 'Your store';
     const enabled = (storeSettings as any)?.isOnlineStoreEnabled !== false;
@@ -74,9 +75,9 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
             const r: any = await api.postFormData('/settings/logo', fd);
             setLogoUrl(r?.logoUrl || '');
             if (r?.logoUrl) announceLogoUpdate(r.logoUrl);
-            showSnackbar('Logo updated.', 'success');
+            showToast('Logo updated.', 'success');
         } catch (err: any) {
-            showSnackbar(err?.message || 'Could not upload the logo.', 'error');
+            showToast(err?.message || 'Could not upload the logo.', 'error');
         } finally { setUploadingLogo(false); }
     };
 
@@ -92,9 +93,9 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
                 freeDeliveryAbove: freeAbove.trim() === '' ? '' : Math.max(0, Number(freeAbove) || 0),
                 storeDescription: description.trim(),
             });
-            showSnackbar(wholesale ? 'You are listed on the wholesale marketplace.' : 'Marketplace settings saved.', 'success');
+            showToast(wholesale ? 'You are listed on the wholesale marketplace.' : 'Marketplace settings saved.', 'success');
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not save marketplace settings.', 'error');
+            showToast(e?.message || 'Could not save marketplace settings.', 'error');
         } finally { setSavingMarket(false); }
     };
 
@@ -105,7 +106,7 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
     const waReady = !!wa?.entitled && !!wa?.configured && !!wa?.enabled;
 
     const copy = () => {
-        navigator.clipboard?.writeText(link).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); showSnackbar('Store link copied.', 'success'); });
+        navigator.clipboard?.writeText(link).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); showToast('Store link copied.', 'success'); });
     };
     const share = async () => {
         if (navigator.share) { try { await navigator.share({ title: storeName, text: `Shop ${storeName} online`, url: link }); } catch { /* cancelled */ } }
@@ -113,9 +114,9 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
     };
 
     const shareCatalog = async () => {
-        if (!waReady) { showSnackbar('Connect WhatsApp first (CRM → WhatsApp → Connect) to send catalogs.', 'info'); return; }
-        if (!message.trim()) { showSnackbar('Add a message.', 'error'); return; }
-        if (timing === 'scheduled' && !when) { showSnackbar('Pick a date & time.', 'error'); return; }
+        if (!waReady) { showToast('Connect WhatsApp first (CRM → WhatsApp → Connect) to send catalogs.', 'info'); return; }
+        if (!message.trim()) { showToast('Add a message.', 'error'); return; }
+        if (timing === 'scheduled' && !when) { showToast('Pick a date & time.', 'error'); return; }
         setSending(true);
         try {
             const created: any = await whatsappCampaignService.create({
@@ -129,12 +130,12 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
             });
             if (timing === 'now' && created?.id) {
                 const r: any = await whatsappCampaignService.run(created.id);
-                showSnackbar(`Catalog sent to ${r.sent ?? 0} customer${(r.sent ?? 0) === 1 ? '' : 's'}.`, 'success');
+                showToast(`Catalog sent to ${r.sent ?? 0} customer${(r.sent ?? 0) === 1 ? '' : 's'}.`, 'success');
             } else {
-                showSnackbar(timing === 'weekly' ? 'Weekly catalog share scheduled.' : 'Catalog share scheduled.', 'success');
+                showToast(timing === 'weekly' ? 'Weekly catalog share scheduled.' : 'Catalog share scheduled.', 'success');
             }
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not schedule catalog share.', 'error');
+            showToast(e?.message || 'Could not schedule catalog share.', 'error');
         } finally { setSending(false); }
     };
 

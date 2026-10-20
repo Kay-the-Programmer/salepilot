@@ -1,10 +1,12 @@
 import React from 'react';
 import { Category, User, StoreSettings } from '../../types';
-import ArrowLeftIcon from '../icons/ArrowLeftIcon';
-import PencilIcon from '../icons/PencilIcon';
-import TrashIcon from '../icons/TrashIcon';
-import TagIcon from '../icons/TagIcon';
-import FolderIcon from '../icons/FolderIcon';
+import {
+    ArrowLeftIcon,
+    FolderIcon,
+    PencilIcon,
+    TagIcon,
+    TrashIcon,
+} from '../icons';
 
 interface CategoryDetailViewProps {
     category: Category;

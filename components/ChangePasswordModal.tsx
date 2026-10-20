@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import XMarkIcon from './icons/XMarkIcon';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import {
+    XMarkIcon,
+} from './icons';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;

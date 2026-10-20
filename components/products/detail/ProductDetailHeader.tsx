@@ -1,6 +1,8 @@
 import React from 'react';
 import { Product } from '@/types.ts';
-import ArrowLeftIcon from '@/components/icons/ArrowLeftIcon';
+import {
+    ArrowLeftIcon,
+} from '@/components/icons';
 
 interface ProductDetailHeaderProps {
     product: Product;

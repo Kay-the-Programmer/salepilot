@@ -8,6 +8,7 @@ import { facebookService, FacebookStatus, FacebookPageRef, FacebookPost, Faceboo
 import MarketingPage from '../../pages/MarketingPage';
 import LoadingSpinner from '../LoadingSpinner';
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
+import { useToast } from '../../contexts/ToastContext';
 
 interface MarketingAppProps {
     user: User;
@@ -15,7 +16,6 @@ interface MarketingAppProps {
     onUpgrade: () => void;
     onExit: () => void;
     onLogout: () => void;
-    showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
 }
 
 type Tab = 'compose' | 'comments' | 'insights' | 'posters' | 'connect';
@@ -34,7 +34,7 @@ const btnPrimary = `${btn} bg-blue-600 text-white hover:bg-blue-700`;
 const btnGhost = `${btn} bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-700`;
 const input = 'w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none';
 
-export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onLogout, showSnackbar }) => {
+export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onLogout }) => {
     const [tab, setTab] = useState<Tab>('compose');
     const [status, setStatus] = useState<FacebookStatus | null>(null);
     const [loading, setLoading] = useState(true);
@@ -96,17 +96,17 @@ export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onLogout,
                 ) : tab === 'posters' ? (
                     <div className="h-full"><MarketingPage /></div>
                 ) : tab === 'connect' ? (
-                    <ConnectTab status={status} onChanged={loadStatus} showSnackbar={showSnackbar} />
+                    <ConnectTab status={status} onChanged={loadStatus} />
                 ) : !connected ? (
                     <Gate icon={Facebook} title="Connect your Facebook Page"
                         text="Link a Page you manage to start publishing posts, replying to comments and viewing insights."
                         action={<button className={btnPrimary} onClick={() => setTab('connect')}><Plug className="w-4 h-4" /> Go to Connect</button>} />
                 ) : tab === 'compose' ? (
-                    <ComposeTab showSnackbar={showSnackbar} onPosted={() => setTab('comments')} />
+                    <ComposeTab onPosted={() => setTab('comments')} />
                 ) : tab === 'comments' ? (
-                    <CommentsTab showSnackbar={showSnackbar} />
+                    <CommentsTab />
                 ) : (
-                    <InsightsTab showSnackbar={showSnackbar} />
+                    <InsightsTab />
                 )}
             </main>
         </div>
@@ -126,7 +126,8 @@ const Gate: React.FC<{ icon: React.ElementType; title: string; text: string; act
 );
 
 // ── Connect tab ───────────────────────────────────────────────────────────────
-const ConnectTab: React.FC<{ status: FacebookStatus; onChanged: () => void; showSnackbar: (m: string, t: 'success' | 'error' | 'info') => void }> = ({ status, onChanged, showSnackbar }) => {
+const ConnectTab: React.FC<{ status: FacebookStatus; onChanged: () => void }> = ({ status, onChanged }) => {
+    const { showToast } = useToast();
     const [busy, setBusy] = useState(false);
     const [pages, setPages] = useState<FacebookPageRef[] | null>(null);
 
@@ -136,25 +137,25 @@ const ConnectTab: React.FC<{ status: FacebookStatus; onChanged: () => void; show
             await loadFacebookSdk(status.appId);
             const token = await facebookLogin();
             const res = await facebookService.connect(token);
-            if ((res as any).connected) { showSnackbar('Facebook Page connected.', 'success'); onChanged(); }
+            if ((res as any).connected) { showToast('Facebook Page connected.', 'success'); onChanged(); }
             else if ((res as any).pages?.length) { setPages((res as any).pages); }
-            else showSnackbar('No Pages were returned. Make sure you granted Page access.', 'error');
+            else showToast('No Pages were returned. Make sure you granted Page access.', 'error');
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not connect Facebook.', 'error');
+            showToast(e?.message || 'Could not connect Facebook.', 'error');
         } finally { setBusy(false); }
     };
 
     const pick = async (pageId: string) => {
         setBusy(true);
-        try { await facebookService.selectPage(pageId); showSnackbar('Page connected.', 'success'); setPages(null); onChanged(); }
-        catch (e: any) { showSnackbar(e?.message || 'Could not select the Page.', 'error'); }
+        try { await facebookService.selectPage(pageId); showToast('Page connected.', 'success'); setPages(null); onChanged(); }
+        catch (e: any) { showToast(e?.message || 'Could not select the Page.', 'error'); }
         finally { setBusy(false); }
     };
 
     const disconnect = async () => {
         setBusy(true);
-        try { await facebookService.disconnect(); showSnackbar('Disconnected.', 'info'); onChanged(); }
-        catch (e: any) { showSnackbar(e?.message || 'Failed to disconnect.', 'error'); }
+        try { await facebookService.disconnect(); showToast('Disconnected.', 'info'); onChanged(); }
+        catch (e: any) { showToast(e?.message || 'Failed to disconnect.', 'error'); }
         finally { setBusy(false); }
     };
 
@@ -212,20 +213,21 @@ const ConnectTab: React.FC<{ status: FacebookStatus; onChanged: () => void; show
 };
 
 // ── Compose tab ───────────────────────────────────────────────────────────────
-const ComposeTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' | 'info') => void; onPosted: () => void }> = ({ showSnackbar, onPosted }) => {
+const ComposeTab: React.FC<{ onPosted: () => void }> = ({ onPosted }) => {
+    const { showToast } = useToast();
     const [message, setMessage] = useState('');
     const [link, setLink] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [busy, setBusy] = useState(false);
 
     const publish = async () => {
-        if (!message.trim() && !imageUrl.trim()) { showSnackbar('Add a message or an image URL.', 'error'); return; }
+        if (!message.trim() && !imageUrl.trim()) { showToast('Add a message or an image URL.', 'error'); return; }
         setBusy(true);
         try {
             const res = await facebookService.publish({ message: message.trim(), link: link.trim() || undefined, imageUrl: imageUrl.trim() || undefined });
-            if ((res as any).success) { showSnackbar('Published to your Page.', 'success'); setMessage(''); setLink(''); setImageUrl(''); onPosted(); }
-            else showSnackbar((res as any).message || 'Publish failed.', 'error');
-        } catch (e: any) { showSnackbar(e?.message || 'Publish failed.', 'error'); }
+            if ((res as any).success) { showToast('Published to your Page.', 'success'); setMessage(''); setLink(''); setImageUrl(''); onPosted(); }
+            else showToast((res as any).message || 'Publish failed.', 'error');
+        } catch (e: any) { showToast(e?.message || 'Publish failed.', 'error'); }
         finally { setBusy(false); }
     };
 
@@ -253,7 +255,8 @@ const ComposeTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' | 
 };
 
 // ── Comments tab ──────────────────────────────────────────────────────────────
-const CommentsTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' | 'info') => void }> = ({ showSnackbar }) => {
+const CommentsTab: React.FC = () => {
+    const { showToast } = useToast();
     const [posts, setPosts] = useState<FacebookPost[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [activePost, setActivePost] = useState<string | null>(null);
@@ -265,7 +268,7 @@ const CommentsTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' |
     useEffect(() => {
         facebookService.getPosts()
             .then(p => { setPosts(p || []); if (p?.length) setActivePost(p[0].id); })
-            .catch(e => showSnackbar(e?.message || 'Failed to load posts.', 'error'))
+            .catch(e => showToast(e?.message || 'Failed to load posts.', 'error'))
             .finally(() => setLoadingPosts(false));
     }, []);
 
@@ -273,7 +276,7 @@ const CommentsTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' |
         setLoadingComments(true);
         facebookService.getComments(postId)
             .then(c => setComments(c || []))
-            .catch(e => showSnackbar(e?.message || 'Failed to load comments.', 'error'))
+            .catch(e => showToast(e?.message || 'Failed to load comments.', 'error'))
             .finally(() => setLoadingComments(false));
     }, []);
 
@@ -281,16 +284,16 @@ const CommentsTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' |
 
     const reply = async (commentId: string) => {
         if (!replyText.trim()) return;
-        try { await facebookService.replyComment(commentId, replyText.trim()); showSnackbar('Reply posted.', 'success'); setReplyFor(null); setReplyText(''); activePost && loadComments(activePost); }
-        catch (e: any) { showSnackbar(e?.message || 'Reply failed.', 'error'); }
+        try { await facebookService.replyComment(commentId, replyText.trim()); showToast('Reply posted.', 'success'); setReplyFor(null); setReplyText(''); activePost && loadComments(activePost); }
+        catch (e: any) { showToast(e?.message || 'Reply failed.', 'error'); }
     };
     const toggleHide = async (c: FacebookComment) => {
         try { await facebookService.hideComment(c.id, !c.is_hidden); activePost && loadComments(activePost); }
-        catch (e: any) { showSnackbar(e?.message || 'Could not update comment.', 'error'); }
+        catch (e: any) { showToast(e?.message || 'Could not update comment.', 'error'); }
     };
     const remove = async (commentId: string) => {
-        try { await facebookService.deleteComment(commentId); showSnackbar('Comment deleted.', 'info'); activePost && loadComments(activePost); }
-        catch (e: any) { showSnackbar(e?.message || 'Delete failed.', 'error'); }
+        try { await facebookService.deleteComment(commentId); showToast('Comment deleted.', 'info'); activePost && loadComments(activePost); }
+        catch (e: any) { showToast(e?.message || 'Delete failed.', 'error'); }
     };
 
     if (loadingPosts) return <div className="h-full flex items-center justify-center"><LoadingSpinner /></div>;
@@ -353,13 +356,14 @@ const METRIC_LABELS: Record<string, string> = {
     page_views_total: 'Page views (28d)',
 };
 
-const InsightsTab: React.FC<{ showSnackbar: (m: string, t: 'success' | 'error' | 'info') => void }> = ({ showSnackbar }) => {
+const InsightsTab: React.FC = () => {
+    const { showToast } = useToast();
     const [data, setData] = useState<any[] | null>(null);
 
     useEffect(() => {
         facebookService.getInsights()
             .then(d => setData(d || []))
-            .catch(e => { showSnackbar(e?.message || 'Failed to load insights.', 'error'); setData([]); });
+            .catch(e => { showToast(e?.message || 'Failed to load insights.', 'error'); setData([]); });
     }, []);
 
     const metrics = useMemo(() => (data || []).map(m => {

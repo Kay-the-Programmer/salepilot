@@ -24,7 +24,7 @@ const STEPS: { id: PurchaseOrder['status']; label: string }[] = [
 ];
 
 export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, storeSettings, onBack, onEdit, onReceive, onUpdateStatus, onDelete }) => {
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     const m = useMemo(() => {
         let ordered = 0, received = 0;
@@ -189,7 +189,6 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
                 </button>
             </div>
 
-            {confirmDialog}
         </main>
     );
 };

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Account, AccountType } from '../../../types';
-import PencilIcon from '../../icons/PencilIcon';
-import XMarkIcon from '../../icons/XMarkIcon';
-import InformationCircleIcon from '../../icons/InformationCircleIcon';
+import {
+    InformationCircleIcon,
+    PencilIcon,
+    XMarkIcon,
+} from '../../icons';
 
 interface AccountFormModalProps {
     isOpen: boolean;

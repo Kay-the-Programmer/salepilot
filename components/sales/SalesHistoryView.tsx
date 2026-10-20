@@ -6,7 +6,6 @@ import { formatCurrency } from '../../utils/currency';
 import SaleDetailContent from './SaleDetailContent';
 import ReceiptModal from './ReceiptModal';
 import PosIcon from './PosIcon';
-import { SnackbarType } from '../../App';
 import { invalidateDashboardCache } from '../reports/reportsData';
 import PeriodPicker from '../dash-app/PeriodPicker';
 import { DashRange, presetRange, rangeDates, rangeDaysOf, rangeLabel, windowFor } from '../dash-app/dashboardModel';
@@ -14,12 +13,12 @@ import {
     createPdf, drawPdfHeader, drawPdfTable, drawPdfFooterAsync, savePdf,
     pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
 } from '../../utils/pdfDocument';
+import { useToast } from '../../contexts/ToastContext';
 
 interface SalesHistoryViewProps {
     storeSettings: StoreSettings;
     customers: Customer[];
     onProcessReturn: (returnInfo: Return) => void;
-    showSnackbar: (message: string, type?: SnackbarType) => void;
     /** First-run CTA: jump back to the register to make the first sale. */
     onStartSelling?: () => void;
     /** Correcting a sale's date rewrites history, so it is admin-only. */
@@ -61,7 +60,8 @@ const cartTitle = (sale: Sale, term: string): string => {
     return cart.length > 1 ? `${label} +${cart.length - 1} more` : label;
 };
 
-export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar, onStartSelling, userRole, onSaleChanged }) => {
+export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, onStartSelling, userRole, onSaleChanged }) => {
+    const { showToast } = useToast();
     const [sales, setSales] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -181,7 +181,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
             });
             setSelectedSale(prev => (prev ? { ...prev, timestamp: updated?.timestamp || next.toISOString() } : prev));
             setDateDraft(null);
-            showSnackbar(
+            showToast(
                 `Sale moved to ${next.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`,
                 'success',
             );
@@ -193,7 +193,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
             onSaleChanged?.();
             fetchSales();
         } catch (err: any) {
-            showSnackbar(err?.message || 'Could not change the sale date.', 'error');
+            showToast(err?.message || 'Could not change the sale date.', 'error');
         } finally {
             setSavingDate(false);
         }
@@ -245,7 +245,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                 page++;
             }
             if (rows.length === 0) {
-                showSnackbar(`No sales in ${rangeLabel(range).toLowerCase()} to export.`, 'info');
+                showToast(`No sales in ${rangeLabel(range).toLowerCase()} to export.`, 'info');
                 return;
             }
 
@@ -309,7 +309,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                 startDay === endDay ? startDay : `${startDay}_to_${endDay}`,
             ));
         } catch (err: any) {
-            showSnackbar(err?.message || 'Could not export the sales history.', 'error');
+            showToast(err?.message || 'Could not export the sales history.', 'error');
         } finally {
             setExporting(false);
         }
@@ -376,7 +376,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
             refundMethod,
         };
         onProcessReturn(returnInfo);
-        showSnackbar(`Refund of ${formatCurrency(refundTotal, storeSettings)} processed`, 'success');
+        showToast(`Refund of ${formatCurrency(refundTotal, storeSettings)} processed`, 'success');
         setRefundMode(false);
         setSelectedSale(null);
         setMobileDetailOpen(false);
@@ -685,7 +685,6 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                     onClose={() => setReceiptOpen(false)}
                     saleData={selectedSale}
                     storeSettings={storeSettings}
-                    showSnackbar={showSnackbar}
                 />
             )}
         </div>

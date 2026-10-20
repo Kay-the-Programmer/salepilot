@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
-import XMarkIcon from './icons/XMarkIcon';
+import {
+    XMarkIcon,
+} from './icons';
 
 interface UnifiedScannerModalProps {
     isOpen: boolean;

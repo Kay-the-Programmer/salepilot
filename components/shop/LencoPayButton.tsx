@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LencoPayProps {
     amount: number;
@@ -39,6 +40,7 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
     children,
     className,
 }) => {
+    const { showToast } = useToast();
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [isInternalProcessing, setIsInternalProcessing] = useState(false);
 
@@ -82,7 +84,7 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
 
         if (!publicKey) {
             console.error('Lenco Public Key is missing');
-            alert('Payment configuration error: Public key missing');
+            showToast('Payment configuration error: Public key missing', 'error');
             return;
         }
 

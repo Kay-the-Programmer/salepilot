@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
-import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
 import { useConfirm } from '../ui/useConfirm';
 import { limitsForPlan, withinLimit } from '../../utils/entitlements';
 import { TeamShell, TeamSection } from './TeamShell';
@@ -34,9 +33,8 @@ export const TeamApp: React.FC<TeamAppProps> = ({
 }) => {
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<User | null>(null);
-    const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     const notify = (msg: string) => setToast(msg);
 
@@ -50,11 +48,13 @@ export const TeamApp: React.FC<TeamAppProps> = ({
     // Staff logins are a plan capacity, not an add-on: every tier can manage a
     // team, the entry tier just holds fewer logins (owner + one cashier).
     const seatLimit = limitsForPlan(user?.subscriptionPlan).seats;
-    const entitled = seatLimit === -1;
     const canAdd = withinLimit(overview.total, seatLimit);
 
     const openAdd = () => {
-        if (!canAdd) { setUpgradeOpen(true); return; }
+        // Seats are a capacity limit, not a feature to buy: the server
+        // answers with a PLAN_LIMIT 402 and the one subscription host explains
+        // it, so there is nothing to open here.
+        if (!canAdd) return;
         setEditing(null);
         setFormOpen(true);
     };
@@ -92,12 +92,10 @@ export const TeamApp: React.FC<TeamAppProps> = ({
             <TeamMembers
                 overview={overview}
                 currentUser={user}
-                entitled={entitled}
-                freeSeats={seatLimit === -1 ? Infinity : seatLimit}
+                seatLimit={seatLimit}
                 onAdd={openAdd}
                 onEdit={openEdit}
                 onDelete={handleDelete}
-                onUpgrade={() => setUpgradeOpen(true)}
             />
         );
 
@@ -120,17 +118,6 @@ export const TeamApp: React.FC<TeamAppProps> = ({
                 />
             )}
 
-            <PremiumUpgradeModal
-                isOpen={upgradeOpen}
-                onClose={() => setUpgradeOpen(false)}
-                title="Unlock Team Members"
-                description="Add staff and manager accounts with their own logins and roles. This is a premium add-on you can unlock for a small monthly fee."
-                bullets={[
-                    'Add staff & inventory-manager accounts',
-                    'Assign roles and control what each can do',
-                    'The owner seat stays free',
-                ]}
-            />
 
             {toast && (
                 <div className="crm-toast" role="status">
@@ -139,7 +126,6 @@ export const TeamApp: React.FC<TeamAppProps> = ({
                 </div>
             )}
 
-            {confirmDialog}
         </TeamShell>
     );
 };

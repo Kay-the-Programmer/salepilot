@@ -5,8 +5,11 @@ import { getCurrentUser } from '../../services/authService';
 import { useToast } from '../../contexts/ToastContext';
 import Modal from '../ui/Modal';
 import { INPUT_CLASS } from '../../utils/ui';
-import { ChatBubbleLeftRightIcon, CheckCircleIcon } from '../icons';
-import ArrowLeftIcon from '../icons/ArrowLeftIcon';
+import {
+    ArrowLeftIcon,
+    ChatBubbleLeftRightIcon,
+    CheckCircleIcon,
+} from '../icons';
 
 type FeedbackType = 'bug' | 'feature' | 'improvement' | 'praise' | 'general';
 type Step = 'mood' | 'type' | 'message';

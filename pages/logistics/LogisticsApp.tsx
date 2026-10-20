@@ -4,10 +4,7 @@ import type { Shipment, Courier, Bus, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { formatCurrency } from '../../utils/currency';
-import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
-import PremiumUpgradeModal from '../../components/ui/PremiumUpgradeModal';
-import { UpsellInline } from '../../components/upsell/UpsellCard';
 import '../accounting/accounting.css';
 
 type Tab = 'shipments' | 'couriers' | 'buses';
@@ -60,9 +57,6 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
   const [confirm, setConfirm] = useState<{ title: string; msg: string; onYes: () => void } | null>(null);
   const fmt = (n: number) => formatCurrency(n, storeSettings);
 
-  // Public tracking page is a premium add-on — locked unless the store unlocked it.
-  const trackingUnlocked = hasModule(storeSettings, MODULES.PUBLIC_TRACKING);
-  const [showTrackingUpsell, setShowTrackingUpsell] = useState(false);
 
   const [courierForm, setCourierForm] = useState<Partial<Courier>>({ isActive: true });
   const [busForm, setBusForm] = useState<Partial<Bus>>({ isActive: true });
@@ -156,26 +150,18 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
           <div className="sp-fade-in">
             {/* Proactive, dismissible tracking nudge (engine-gated). The button
                 below remains the always-on discovery affordance. */}
-            <UpsellInline ids={['tracking_requested']} placement="logistics" className="mb-4" />
             <button
-              onClick={() => (trackingUnlocked ? navigate('/track') : setShowTrackingUpsell(true))}
-              title={trackingUnlocked ? undefined : 'Premium add-on — tap to unlock'}
+              onClick={() => navigate('/track')}
               className="w-full mb-4 flex items-center gap-2 px-4 py-3 rounded-xl m3-bg-surface-container hover:m3-bg-surface-high transition active:scale-[0.99] text-left"
             >
               <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 22 }}>travel_explore</span>
               <span className="flex-1 min-w-0">
                 <span className="flex items-center gap-1.5 text-sm font-semibold m3-text-on-surface">
                   Public tracking page
-                  {!trackingUnlocked && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-px rounded-full text-[9px] font-bold uppercase tracking-wide" style={{ background: '#ffe2b8', color: '#8a5a00' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 11 }}>lock</span>
-                      Premium
-                    </span>
-                  )}
                 </span>
                 <span className="block text-[11px] m3-text-on-surface-variant">Share with customers to track by number</span>
               </span>
-              <span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 20 }}>{trackingUnlocked ? 'open_in_new' : 'lock'}</span>
+              <span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 20 }}>open_in_new</span>
             </button>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
               <Stat icon="inventory_2" label="Total" value={stats.total} tone="primary" />
@@ -318,17 +304,6 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
         </Modal>
       )}
 
-      <PremiumUpgradeModal
-        isOpen={showTrackingUpsell}
-        onClose={() => setShowTrackingUpsell(false)}
-        title="Unlock Public Tracking"
-        description="Give customers a shareable page to track their shipment by number — a premium add-on you can unlock for a small monthly fee."
-        bullets={[
-          'A branded public page customers open with a tracking number',
-          'Live status updates as you move shipments along',
-          'Fewer “where’s my order?” messages to answer',
-        ]}
-      />
     </StandaloneShell>
   );
 };

@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import PlusIcon from './icons/PlusIcon';
-import XMarkIcon from './icons/XMarkIcon';
-import Bars3Icon from './icons/Bars3Icon';
+import {
+    Bars3Icon,
+    PlusIcon,
+    XMarkIcon,
+} from './icons';
 
 interface HeaderProps {
     title: string | React.ReactNode;

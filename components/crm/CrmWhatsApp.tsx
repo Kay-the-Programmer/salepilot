@@ -64,7 +64,7 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
     const [tool, setTool] = useState<WaTool>('chats');
     // Carries a template body from the Templates tool into the Compose tool.
     const [prefill, setPrefill] = useState<{ body: string; n: number } | null>(null);
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
     const { templates, setTemplates } = useStoreTemplates();
 
     // Honour an incoming intent (e.g. "Re-engage" asking for a broadcast).
@@ -193,7 +193,6 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
                 />
             )}
 
-            {confirmDialog}
         </main>
     );
 };

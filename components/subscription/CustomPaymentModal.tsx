@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
-import CreditCardIcon from '../icons/CreditCardIcon';
-import DevicePhoneMobileIcon from '../icons/DevicePhoneMobileIcon';
-import XMarkIcon from '../icons/XMarkIcon';
-import ShieldCheckIcon from '../icons/ShieldCheckIcon';
+import {
+    CreditCardIcon,
+    DevicePhoneMobileIcon,
+    ShieldCheckIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface CustomPaymentModalProps {
     isOpen: boolean;

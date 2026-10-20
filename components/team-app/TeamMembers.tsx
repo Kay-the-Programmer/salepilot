@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { TeamOverview, roleDef } from './teamModel';
@@ -6,17 +7,22 @@ import { TeamOverview, roleDef } from './teamModel';
 interface TeamMembersProps {
     overview: TeamOverview;
     currentUser: User;
-    entitled: boolean;
-    freeSeats: number;
+    /** Staff logins this plan allows, -1 for unlimited. */
+    seatLimit: number;
     onAdd: () => void;
     onEdit: (u: User) => void;
     onDelete: (u: User) => void;
-    onUpgrade: () => void;
 }
 
-export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser, entitled, freeSeats, onAdd, onEdit, onDelete, onUpgrade }) => {
+export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser, seatLimit, onAdd, onEdit, onDelete }) => {
+    const navigate = useNavigate();
     const { members, total, admins, managers, staff } = overview;
-    const canAdd = entitled || total < freeSeats;
+    // Seats are capacity, not a feature to buy: every tier can add staff, the
+    // tiers differ in how many. So running out is answered by a bigger plan,
+    // not by unlocking anything, and there is one place to go for that.
+    const unlimited = seatLimit < 0;
+    const canAdd = unlimited || total < seatLimit;
+    const seePlans = () => navigate('/subscription');
 
     return (
         <main className="crm-main crm-section-fade">
@@ -28,11 +34,10 @@ export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser,
                 <button
                     className="crm-btn crm-btn--primary"
                     type="button"
-                    onClick={canAdd ? onAdd : onUpgrade}
-                    title={canAdd ? 'Add a team member' : 'Adding extra users is a premium add-on'}
+                    onClick={canAdd ? onAdd : seePlans}
+                    title={canAdd ? 'Add a team member' : `Your plan allows ${seatLimit} staff login${seatLimit === 1 ? '' : 's'}`}
                 >
-                    <Icon name={canAdd ? 'person_add' : 'lock'} size={20} /> Add User
-                    {!canAdd && <span className="crm-badge crm-badge--gold" style={{ marginLeft: 4, padding: '2px 8px' }}>Premium</span>}
+                    <Icon name={canAdd ? 'person_add' : 'arrow_upward'} size={20} /> Add User
                 </button>
             </div>
 
@@ -58,26 +63,26 @@ export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser,
                 </div>
             </div>
 
-            {/* Seat / premium status */}
-            <div className={`team-seats ${entitled ? 'team-seats--ok' : (total >= freeSeats ? 'team-seats--locked' : 'team-seats--ok')}`}>
+            {/* Seat capacity */}
+            <div className={`team-seats ${canAdd ? 'team-seats--ok' : 'team-seats--locked'}`}>
                 <div className="team-seats__left">
-                    <span className="team-seats__icon"><Icon name={entitled ? 'workspace_premium' : 'event_seat'} size={24} fill={1} /></span>
+                    <span className="team-seats__icon"><Icon name={unlimited ? 'workspace_premium' : 'event_seat'} size={24} fill={1} /></span>
                     <div>
                         <p className="team-seats__title">
-                            {entitled ? 'Team Members unlocked' : `${total} of ${freeSeats} free seat${freeSeats === 1 ? '' : 's'} used`}
+                            {unlimited ? 'Unlimited staff logins' : `${total} of ${seatLimit} staff login${seatLimit === 1 ? '' : 's'} used`}
                         </p>
                         <p className="team-seats__text">
-                            {entitled
+                            {unlimited
                                 ? 'Add as many staff accounts as your store needs.'
-                                : (total >= freeSeats
-                                    ? 'Adding more users is a premium add-on.'
-                                    : `You can add ${freeSeats - total} more user${freeSeats - total === 1 ? '' : 's'} on the free plan.`)}
+                                : (canAdd
+                                    ? `You can add ${seatLimit - total} more${seatLimit - total === 1 ? '' : ''} on this plan.`
+                                    : 'A larger plan raises this limit — every feature is included in all of them.')}
                         </p>
                     </div>
                 </div>
-                {!entitled && total >= freeSeats && (
-                    <button className="crm-btn crm-btn--filled" type="button" onClick={onUpgrade}>
-                        <Icon name="lock_open" size={20} /> Unlock
+                {!canAdd && (
+                    <button className="crm-btn crm-btn--filled" type="button" onClick={seePlans}>
+                        <Icon name="arrow_upward" size={20} /> See plans
                     </button>
                 )}
             </div>
@@ -93,8 +98,8 @@ export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser,
                         <Icon name="group_off" size={40} />
                         <p className="crm-empty__title">No team members yet</p>
                         <p className="crm-empty__text">Add staff accounts so your team can sell and manage stock with their own logins.</p>
-                        <button className="crm-btn crm-btn--primary" type="button" style={{ marginTop: 8 }} onClick={canAdd ? onAdd : onUpgrade}>
-                            <Icon name={canAdd ? 'person_add' : 'lock'} size={20} /> Add your first member
+                        <button className="crm-btn crm-btn--primary" type="button" style={{ marginTop: 8 }} onClick={canAdd ? onAdd : seePlans}>
+                            <Icon name={canAdd ? 'person_add' : 'arrow_upward'} size={20} /> Add your first member
                         </button>
                     </div>
                 ) : (

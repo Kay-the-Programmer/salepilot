@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Category, CustomAttribute, Account } from '../types';
-import XMarkIcon from './icons/XMarkIcon';
-import PlusIcon from './icons/PlusIcon';
-import TrashIcon from './icons/TrashIcon';
-import ChevronDownIcon from './icons/ChevronDownIcon';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import {
+    ChevronDownIcon,
+    PlusIcon,
+    TrashIcon,
+    XMarkIcon,
+} from './icons';
 
 interface CategoryFormModalProps {
     isOpen: boolean;

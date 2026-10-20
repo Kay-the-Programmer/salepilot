@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/ui/useConfirm';
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +16,7 @@ import {
     CreditCardIcon,
     RefreshIcon
 } from '../../components/icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface StoreDetails {
     id: string;
@@ -110,7 +112,9 @@ const paymentRowMeta = (s?: string): { tone: PillTone; label: string } => {
 };
 
 const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId }) => {
+    const { confirm } = useConfirm();
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [store, setStore] = useState<StoreDetails | null>(null);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const [payments, setPayments] = useState<PaymentRow[]>([]);
@@ -180,7 +184,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
             await api.put(`/superadmin/stores/${storeId}/modules`, { enabledModules: Array.from(next) });
         } catch (e: any) {
             setEnabled(prev); // revert
-            alert(e.message || 'Failed to update add-ons for this store');
+            showToast(e.message || 'Failed to update add-ons for this store', 'error');
         } finally {
             setSavingMod(null);
         }
@@ -202,15 +206,18 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
     };
 
     const decideSender = async (action: 'approve' | 'reject' | 'revoke') => {
-        if (action !== 'approve' && !window.confirm(action === 'revoke'
-            ? 'Revoke this sender ID? The store falls back to its name in front of the message.'
-            : 'Reject this request?')) return;
+        if (action !== 'approve' && !await confirm({
+            title: action === 'revoke' ? 'Revoke this sender ID?' : 'Reject this request?',
+            message: action === 'revoke' ? 'The store falls back to its name in front of the message.' : undefined,
+            confirmLabel: action === 'revoke' ? 'Revoke' : 'Reject',
+            danger: true,
+        })) return;
         setSavingSender(true);
         try {
             const resp = await api.put<SmsSenderState>(`/superadmin/stores/${storeId}/sms-sender`, { action });
             setSmsSender(prev => ({ ...(prev || {}), ...resp }));
         } catch (e: any) {
-            alert(e.message || 'Failed to update the sender ID');
+            showToast(e.message || 'Failed to update the sender ID', 'error');
         } finally {
             setSavingSender(false);
         }
@@ -253,7 +260,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
             setEditingSub(false);
             await loadStoreDetails();
         } catch (err: any) {
-            alert('Failed to update subscription: ' + (err.message || 'Unknown error'));
+            showToast('Failed to update subscription: ' + (err.message || 'Unknown error'), 'error');
         } finally {
             setSavingSub(false);
         }
@@ -269,11 +276,11 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                 title: notifTitle,
                 message: notifMessage
             });
-            alert('Notification sent successfully!');
+            showToast('Notification sent successfully!', 'success');
             setNotifTitle('');
             setNotifMessage('');
         } catch (e: any) {
-            alert(e.message || 'Failed to send notification');
+            showToast(e.message || 'Failed to send notification', 'error');
         } finally {
             setSending(false);
         }

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Account } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import ScaleIcon from '../icons/Scale';
-import InformationCircleIcon from '../icons/InformationCircleIcon';
+import {
+    InformationCircleIcon,
+    ScaleIcon,
+    XMarkIcon,
+} from '../icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface AccountAdjustmentModalProps {
     isOpen: boolean;
@@ -20,6 +23,7 @@ const AccountAdjustmentModal: React.FC<AccountAdjustmentModalProps> = ({
     account,
     accounts
 }) => {
+    const { showToast } = useToast();
     const [adjustmentAmount, setAdjustmentAmount] = useState('');
     const [offsetAccountId, setOffsetAccountId] = useState('');
     const [description, setDescription] = useState('');
@@ -33,19 +37,19 @@ const AccountAdjustmentModal: React.FC<AccountAdjustmentModalProps> = ({
         e.preventDefault();
 
         if (!offsetAccountId) {
-            alert('Please select an offset account');
+            showToast('Please select an offset account', 'error');
             return;
         }
 
         const offsetAccount = accounts.find(a => a.id === offsetAccountId);
         if (!offsetAccount) {
-            alert('Invalid offset account');
+            showToast('Invalid offset account', 'error');
             return;
         }
 
         const amount = parseFloat(adjustmentAmount);
         if (isNaN(amount) || amount === 0) {
-            alert('Please enter a valid non-zero adjustment amount');
+            showToast('Please enter a valid non-zero adjustment amount', 'error');
             return;
         }
 

@@ -1,12 +1,14 @@
 import React from 'react';
 import { SupplierInvoice, StoreSettings } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
-import CalendarIcon from '../icons/CalendarIcon';
-import BanknotesIcon from '../icons/BanknotesIcon';
 import { formatCurrency } from '../../utils/currency';
 import { formatDocumentDate } from '../../utils/date';
+import {
+    BanknotesIcon,
+    BuildingOfficeIcon,
+    CalendarIcon,
+    ClipboardDocumentListIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface SupplierInvoiceDetailModalProps {
     isOpen: boolean;

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Product, PurchaseOrder } from '../types';
-import XMarkIcon from './icons/XMarkIcon';
-import PlusIcon from './icons/PlusIcon';
 import { Button } from './ui/Button';
+import {
+    PlusIcon,
+    XMarkIcon,
+} from './icons';
 
 interface LinkToPOModalProps {
     isOpen: boolean;

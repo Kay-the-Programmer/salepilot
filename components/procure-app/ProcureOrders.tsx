@@ -9,6 +9,7 @@ import ProcureOrderForm from './ProcureOrderForm';
 import ProcureOrderReceive from './ProcureOrderReceive';
 import ProcureOrderDetail from './ProcureOrderDetail';
 import { useConfirm } from '../ui/useConfirm';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ProcureOrdersProps {
     purchaseOrders: PurchaseOrder[];
@@ -18,7 +19,6 @@ interface ProcureOrdersProps {
     onSave: (po: PurchaseOrder) => void;
     onDelete: (poId: string) => void;
     onReceiveItems: (poId: string, items: { productId: string; quantity: number }[]) => void;
-    showSnackbar: (message: string, type?: any) => void;
     /** Supplier id to pre-open the create form with (from "Place Order"). */
     draftSupplierId?: string | null;
     onConsumeDraft?: () => void;
@@ -26,8 +26,6 @@ interface ProcureOrdersProps {
     autoGenerate?: boolean;
     onConsumeAutoGenerate?: () => void;
     /** Auto-reorder is a premium add-on. */
-    autoReorderEntitled?: boolean;
-    onRequireUpgrade?: () => void;
     /** A PO drafted from an order list — opened in the form so the user assigns
      *  a supplier (required by the backend) before it is first saved. */
     importedDraft?: PurchaseOrder | null;
@@ -44,10 +42,10 @@ const FILTERS: { id: Filter; label: string }[] = [
 ];
 
 export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
-    purchaseOrders, suppliers, products, storeSettings, onSave, onDelete, onReceiveItems, showSnackbar,
-    draftSupplierId, onConsumeDraft, autoGenerate, onConsumeAutoGenerate, autoReorderEntitled = false, onRequireUpgrade,
+    purchaseOrders, suppliers, products, storeSettings, onSave, onDelete, onReceiveItems, draftSupplierId, onConsumeDraft, autoGenerate, onConsumeAutoGenerate,
     importedDraft, onConsumeImportedDraft,
 }) => {
+    const { showToast } = useToast();
     const [view, setView] = useState<'list' | 'form' | 'suggest' | 'detail'>('list');
     const [editing, setEditing] = useState<PurchaseOrder | null>(null);
     const [createSupplierId, setCreateSupplierId] = useState<string | undefined>(undefined);
@@ -56,7 +54,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     const [receivePo, setReceivePo] = useState<PurchaseOrder | null>(null);
     const [detailPo, setDetailPo] = useState<PurchaseOrder | null>(null);
     const [filter, setFilter] = useState<Filter>('all');
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
 
     // Keep the open detail in sync with refreshed data (after receive / status change).
     useEffect(() => {
@@ -69,11 +67,10 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     // there to show the upsell without a pointless round trip; a 402 from the
     // API is the real gate, and the global paywall host picks it up.
     const autoGenerateOrders = async () => {
-        if (!autoReorderEntitled) { onRequireUpgrade?.(); return; }
         try {
             const { drafts: generated } = await api.get<{ drafts: ReorderDraft[] }>('/purchase-orders/reorder-suggestions');
             if (!generated || generated.length === 0) {
-                showSnackbar('All stock is above its reorder point — nothing to reorder.', 'info');
+                showToast('All stock is above its reorder point — nothing to reorder.', 'info');
                 return;
             }
             if (generated.length === 1) {
@@ -83,8 +80,10 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
             setDrafts(generated);
             setView('suggest');
         } catch (err: any) {
-            if (err?.status === 402) { onRequireUpgrade?.(); return; }
-            showSnackbar(err?.body?.message || err?.message || 'Could not build reorder suggestions.', 'error');
+            // A 402 here means the subscription lapsed; the API layer has
+            // already raised the one explanation for that, so just stop.
+            if (err?.status === 402) return;
+            showToast(err?.body?.message || err?.message || 'Could not build reorder suggestions.', 'error');
         }
     };
 
@@ -122,7 +121,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     // Auto-generate reorder drafts when triggered from the dashboard.
     useEffect(() => {
         if (autoGenerate) {
-            if (autoReorderEntitled) autoGenerateOrders(); else onRequireUpgrade?.();
+            autoGenerateOrders();
             onConsumeAutoGenerate?.();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,7 +140,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
 
     const openCreate = () => { setEditing(null); setCreateSupplierId(undefined); setFormItems(undefined); setView('form'); };
     const openEdit = (po: PurchaseOrder) => {
-        if (po.status === 'received') { showSnackbar('A fully received order can no longer be edited.', 'info'); return; }
+        if (po.status === 'received') { showToast('A fully received order can no longer be edited.', 'info'); return; }
         setEditing(po); setCreateSupplierId(undefined); setFormItems(undefined); setView('form');
     };
     const openDetail = (po: PurchaseOrder) => { setDetailPo(po); setView('detail'); };
@@ -189,7 +188,6 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                         onReceive={items => onReceiveItems(receivePo.id, items)}
                     />
                 )}
-                {confirmDialog}
             </>
         );
     }
@@ -205,7 +203,6 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                 initialItems={formItems}
                 onSave={handleSave}
                 onCancel={() => { setView(editing && detailPo?.id === editing.id ? 'detail' : (drafts.length > 1 ? 'suggest' : 'list')); setEditing(null); setFormItems(undefined); }}
-                showSnackbar={showSnackbar}
             />
         );
     }
@@ -260,11 +257,10 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                     <button
                         className="crm-btn crm-btn--tonal"
                         type="button"
-                        onClick={() => (autoReorderEntitled ? autoGenerateOrders() : onRequireUpgrade?.())}
-                        title={autoReorderEntitled ? 'Generate orders from low-stock items' : 'Auto-reorder is a premium add-on'}
+                        onClick={autoGenerateOrders}
+                        title="Generate orders from low-stock items"
                     >
-                        <Icon name={autoReorderEntitled ? 'auto_awesome' : 'lock'} size={20} /> Auto-generate
-                        {!autoReorderEntitled && <span className="crm-badge crm-badge--gold" style={{ marginLeft: 4, padding: '2px 8px' }}>Premium</span>}
+                        <Icon name="auto_awesome" size={20} /> Auto-generate
                     </button>
                     <button className="crm-btn crm-btn--primary" type="button" onClick={openCreate}>
                         <Icon name="add" size={20} /> New Purchase Order
@@ -342,7 +338,6 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                 />
             )}
 
-            {confirmDialog}
         </main>
     );
 };

@@ -16,6 +16,7 @@ import {
     CheckCircleIcon,
     XCircleIcon
 } from '../../components/icons';
+import { useToast } from '../../contexts/ToastContext';
 
 // Types
 interface StoreRow {
@@ -52,6 +53,7 @@ type PendingChange =
 const STATUS_INPUT = INPUT_CLASS;
 
 const SuperAdminStores: React.FC = () => {
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [stores, setStores] = useState<StoreRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -101,7 +103,7 @@ const SuperAdminStores: React.FC = () => {
             // Merge: the PATCH response has core columns only — keep enriched fields (email, revenue, plan name).
             setStores(prev => prev.map(s => s.id === id ? { ...s, ...resp.store } : s));
         } catch (e: any) {
-            alert(e.message || 'Update failed');
+            showToast(e.message || 'Update failed', 'error');
         } finally {
             setUpdatingId(null);
         }
@@ -113,7 +115,7 @@ const SuperAdminStores: React.FC = () => {
             await loadStores();
             setSelectedStores([]);
         } catch (e: any) {
-            alert('Bulk update failed');
+            showToast('Bulk update failed', 'error');
         }
     };
 

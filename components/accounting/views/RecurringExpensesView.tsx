@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { RecurringExpense, Account, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import PlusIcon from '../../icons/PlusIcon';
-import PencilIcon from '../../icons/PencilIcon';
-import TrashIcon from '../../icons/TrashIcon';
-import BanknotesIcon from '../../icons/BanknotesIcon';
-import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
-import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
+import {
+    BanknotesIcon,
+    CalendarDaysIcon,
+    MagnifyingGlassIcon,
+    PencilIcon,
+    PlusIcon,
+    TrashIcon,
+} from '../../icons';
 
 interface RecurringExpensesViewProps {
     expenses: RecurringExpense[];

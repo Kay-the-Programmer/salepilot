@@ -1,6 +1,8 @@
 import React from 'react';
-import CubeIcon from '../../components/icons/CubeIcon';
-import TagIcon from '../../components/icons/TagIcon';
+import {
+    CubeIcon,
+    TagIcon,
+} from '../../components/icons';
 
 interface InventoryEmptyStateProps {
     activeTab: 'products' | 'categories';

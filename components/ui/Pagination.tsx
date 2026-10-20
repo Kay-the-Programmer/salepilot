@@ -1,5 +1,7 @@
 import React from 'react';
-import ChevronDownIcon from '../icons/ChevronDownIcon';
+import {
+    ChevronDownIcon,
+} from '../icons';
 
 interface PaginationProps {
     total: number;

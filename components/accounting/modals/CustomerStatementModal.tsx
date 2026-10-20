@@ -1,11 +1,13 @@
 import React, { useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { Customer, Sale, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDocumentDate } from '../../../utils/date';
-import DocumentChartBarIcon from '../../icons/DocumentChartBarIcon';
-import XMarkIcon from '../../icons/XMarkIcon';
-import PrinterIcon from '../../icons/PrinterIcon';
+import {
+    DocumentChartBarIcon,
+    PrinterIcon,
+    XMarkIcon,
+} from '../../icons';
+import { Modal } from '../../ui/Modal';
 
 interface CustomerStatementModalProps {
     isOpen: boolean;
@@ -67,14 +69,8 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
 
     const LABEL = 'text-[11px] font-bold text-brand-text-muted uppercase tracking-wider';
 
-    return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
-            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
-
-            <div
-                className="relative bg-surface w-full max-w-3xl rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
-                onClick={(e) => e.stopPropagation()}
-            >
+    return (
+        <Modal open onClose={onClose} size="2xl" sheet ariaLabel="Customer statement">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
                     <div className="flex items-center gap-3 min-w-0">
@@ -172,9 +168,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                         Close
                     </button>
                 </div>
-            </div>
-        </div>,
-        document.body
+        </Modal>
     );
 };
 

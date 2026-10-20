@@ -1,12 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { Product, StockTakeSession } from '../types';
-import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
-import XMarkIcon from '../components/icons/XMarkIcon';
-import QrCodeIcon from '../components/icons/QrCodeIcon';
-import ConfirmationModal from '../components/ConfirmationModal';
+import { useConfirm } from '../components/ui/useConfirm';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
 const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
 import { HiOutlineXMark } from 'react-icons/hi2';
+import {
+    ClipboardDocumentListIcon,
+    QrCodeIcon,
+    XMarkIcon,
+} from '../components/icons';
 
 interface StockTakePageProps {
     session: StockTakeSession | null;
@@ -42,8 +44,7 @@ const fmtQty = (value: number | string, isKg: boolean): string => {
 const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStart, onUpdateItem, onCancel, onFinalize }) => {
     const [filter, setFilter] = useState('all'); // 'all', 'counted', 'uncounted', 'discrepancy'
     const [searchTerm, setSearchTerm] = useState('');
-    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-    const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
+    const { confirm } = useConfirm();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [scanNotice, setScanNotice] = useState<string | null>(null);
     // Local keystroke drafts so kg entries like "10." survive typing — the
@@ -90,18 +91,29 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
         });
     };
 
-    const handleCancel = () => {
-        setIsCancelModalOpen(true);
+    const handleCancel = async () => {
+        const ok = await confirm({
+            title: 'Cancel Stock Take',
+            message: 'Are you sure you want to cancel this stock take? All progress will be lost and this session will be discarded.',
+            confirmLabel: 'Yes, Cancel',
+            cancelLabel: 'No, Keep It',
+            danger: true,
+        });
+        if (ok) onCancel();
     };
 
-    const handleConfirmCancel = () => {
-        setIsCancelModalOpen(false);
-        onCancel();
-    };
-
-    const handleConfirmFinalize = () => {
-        setIsFinalizeModalOpen(false);
-        onFinalize();
+    const handleFinalize = async () => {
+        // The number people check before committing is how many items will NOT
+        // be touched, so the uncounted total leads.
+        const ok = await confirm({
+            title: 'Complete Stock Take',
+            message: uncountedCount > 0
+                ? `${uncountedCount} item${uncountedCount === 1 ? ' is' : 's are'} still uncounted and will not be adjusted. Completing the count will update inventory levels for the ${countedItems} counted item${countedItems === 1 ? '' : 's'}.`
+                : 'This will update your inventory levels to the counted quantities.',
+            confirmLabel: 'Complete Count',
+            cancelLabel: 'Keep Counting',
+        });
+        if (ok) onFinalize();
     };
 
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -270,7 +282,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                             Cancel
                         </button>
                         <button
-                            onClick={() => setIsFinalizeModalOpen(true)}
+                            onClick={() => { void handleFinalize(); }}
                             type="button"
                             className="rounded-lg bg-sp-orange px-6 py-3 text-xs font-bold text-white shadow-sm hover:bg-sp-orange-light transition-all uppercase tracking-widest active:scale-95 duration-300"
                         >
@@ -416,17 +428,6 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                 </div>
             </main>
 
-            <ConfirmationModal
-                isOpen={isCancelModalOpen}
-                onClose={() => setIsCancelModalOpen(false)}
-                onConfirm={handleConfirmCancel}
-                title="Cancel Stock Take"
-                message="Are you sure you want to cancel this stock take? All progress will be lost and this session will be discarded."
-                confirmText="Yes, Cancel"
-                cancelText="No, Keep It"
-                confirmButtonClass="bg-danger hover:bg-danger/90 rounded-lg p-4 font-black uppercase tracking-widest text-[10px]"
-                variant="floating"
-            />
             {isScannerOpen && (
                 <Suspense fallback={null}>
                     <UnifiedScannerModal
@@ -437,19 +438,6 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                     />
                 </Suspense>
             )}
-            <ConfirmationModal
-                isOpen={isFinalizeModalOpen}
-                onClose={() => setIsFinalizeModalOpen(false)}
-                onConfirm={handleConfirmFinalize}
-                title="Complete Stock Take"
-                message={uncountedCount > 0
-                    ? `${uncountedCount} item${uncountedCount === 1 ? ' is' : 's are'} still uncounted and will not be adjusted. Completing the count will update inventory levels for the ${countedItems} counted item${countedItems === 1 ? '' : 's'}.`
-                    : 'This will update your inventory levels to the counted quantities.'}
-                confirmText="Complete Count"
-                cancelText="Keep Counting"
-                confirmButtonClass="bg-sp-orange hover:bg-sp-orange-light rounded-lg p-4 font-black uppercase tracking-widest text-[10px]"
-                variant="floating"
-            />
         </div>
     );
 };

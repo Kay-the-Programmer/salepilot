@@ -3,6 +3,7 @@ import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../t
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney } from '../crm/crmModel';
 import { computePoTotals, suggestReorder, productToPoItem, newPoIdentifiers, applyPlaceOrder } from '../purchase-orders/poModel';
+import { useToast } from '../../contexts/ToastContext';
 
 type Step = 'build' | 'review';
 
@@ -16,7 +17,6 @@ interface ProcureOrderFormProps {
     initialItems?: POItem[];
     onSave: (po: PurchaseOrder, placeOrder: boolean) => void;
     onCancel: () => void;
-    showSnackbar: (message: string, type?: any) => void;
 }
 
 /**
@@ -25,8 +25,8 @@ interface ProcureOrderFormProps {
  * comes from the single source of truth `components/purchase-orders/poModel`.
  */
 export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
-    poToEdit, suppliers, products, storeSettings, initialSupplierId, initialItems, onSave, onCancel, showSnackbar,
-}) => {
+    poToEdit, suppliers, products, storeSettings, initialSupplierId, initialItems, onSave, onCancel, }) => {
+    const { showToast } = useToast();
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
         const prefill = initialSupplierId ? suppliers.find(s => s.id === initialSupplierId) : null;
@@ -62,7 +62,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
 
     const addProductToPO = (product: Product, quantity = 1) => {
         setPo(prev => {
-            if (prev.items.some(i => i.productId === product.id)) { showSnackbar('Product is already in this PO.', 'info'); return prev; }
+            if (prev.items.some(i => i.productId === product.id)) { showToast('Product is already in this PO.', 'info'); return prev; }
             return { ...prev, items: [...prev.items, productToPoItem(product, quantity)] };
         });
     };
@@ -103,12 +103,12 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     );
 
     const addAllSuggested = () => {
-        if (suggested.length === 0) { showSnackbar(po.supplierId ? 'Nothing to reorder for this supplier.' : 'Nothing is below its reorder point.', 'info'); return; }
+        if (suggested.length === 0) { showToast(po.supplierId ? 'Nothing to reorder for this supplier.' : 'Nothing is below its reorder point.', 'info'); return; }
         setPo(prev => ({
             ...prev,
             items: [...prev.items, ...suggested.map(p => productToPoItem(p, p.suggestedQty))],
         }));
-        showSnackbar(`Added ${suggested.length} suggested product${suggested.length === 1 ? '' : 's'}.`, 'success');
+        showToast(`Added ${suggested.length} suggested product${suggested.length === 1 ? '' : 's'}.`, 'success');
     };
 
     const totalUnits = po.items.reduce((n, it) => n + num(it.quantity), 0);

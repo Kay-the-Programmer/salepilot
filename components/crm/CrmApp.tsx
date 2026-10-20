@@ -69,7 +69,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
     const [smsInfo, setSmsInfo] = useState<SmsConfig | null>(null);
     const [waInfo, setWaInfo] = useState<WhatsAppStatus | null>(null);
     const [waLoading, setWaLoading] = useState(true);
-    const { confirm, confirmDialog } = useConfirm();
+    const { confirm } = useConfirm();
     const { showToast } = useToast();
 
     // The CRM used to own a private `crm-toast`; it now shares the one global
@@ -385,7 +385,6 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 />
             )}
 
-            {confirmDialog}
         </CrmShell>
     );
 };

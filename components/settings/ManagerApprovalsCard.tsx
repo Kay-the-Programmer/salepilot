@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { StoreSettings } from '@/types.ts';
 import { getOverrideSettings, setManagerPin } from '../../services/overrides';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ManagerApprovalsCardProps {
     settings: Partial<StoreSettings>;
     onChange: (thresholds: Record<string, unknown>) => void;
-    showSnackbar: (message: string, type?: 'success' | 'error') => void;
     inputCls: string;
 }
 
@@ -18,8 +18,9 @@ interface ManagerApprovalsCardProps {
  * failure this layout is meant to prevent.
  */
 const ManagerApprovalsCard: React.FC<ManagerApprovalsCardProps> = ({
-    settings, onChange, showSnackbar, inputCls,
+    settings, onChange, inputCls,
 }) => {
+    const { showToast } = useToast();
     const thresholds = (settings as any).overrideThresholds || {};
     const [canApprove, setCanApprove] = useState(false);
     const [password, setPassword] = useState('');
@@ -41,11 +42,11 @@ const ManagerApprovalsCard: React.FC<ManagerApprovalsCardProps> = ({
         setSavingPin(true);
         try {
             const r = await setManagerPin(password, clear ? null : pin);
-            showSnackbar(r.hasPin ? 'Approval PIN saved.' : 'Approval PIN removed.', 'success');
+            showToast(r.hasPin ? 'Approval PIN saved.' : 'Approval PIN removed.', 'success');
             setPassword('');
             setPin('');
         } catch (e: any) {
-            showSnackbar(e?.message || 'Could not save that PIN.', 'error');
+            showToast(e?.message || 'Could not save that PIN.', 'error');
         } finally {
             setSavingPin(false);
         }

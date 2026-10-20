@@ -1,10 +1,13 @@
 import React from 'react';
 import { Sale, StoreSettings } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
-import PrinterIcon from '../icons/PrinterIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import { formatCurrency } from '../../utils/currency';
 import { formatDocumentDate } from '../../utils/date';
+import {
+    ClipboardDocumentListIcon,
+    PrinterIcon,
+    XMarkIcon,
+} from '../icons';
+import { useToast } from '../../contexts/ToastContext';
 
 interface SalesInvoiceDetailModalProps {
     isOpen: boolean;
@@ -18,6 +21,7 @@ interface SalesInvoiceDetailModalProps {
 const LABEL = 'text-[11px] font-bold text-brand-text-muted uppercase tracking-wider';
 
 const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpen, onClose, invoice, onRecordPayment, storeSettings, customerName }) => {
+    const { showToast } = useToast();
     if (!isOpen) return null;
 
     // Prefer payment records when present; guard against an empty array reading as 0 paid.
@@ -35,7 +39,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
     const handlePrint = () => {
         const printWindow = window.open('', '', 'height=800,width=600');
         if (!printWindow) {
-            alert('Could not open print window. Please check your browser\'s pop-up blocker settings.');
+            showToast('Could not open print window. Please check your browser\'s pop-up blocker settings.', 'error');
             return;
         }
 

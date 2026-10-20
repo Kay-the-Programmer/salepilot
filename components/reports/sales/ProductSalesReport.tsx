@@ -6,8 +6,10 @@ import {
     createPdf, drawPdfHeader, drawPdfTable, drawPdfFooterAsync, savePdf,
     pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
 } from '../../../utils/pdfDocument';
-import ChevronLeftIcon from '../../icons/ChevronLeftIcon';
-import ChevronRightIcon from '../../icons/ChevronRightIcon';
+import {
+    ChevronLeftIcon,
+    ChevronRightIcon,
+} from '../../icons';
 
 export interface ProductSalesRow {
     productId: string;

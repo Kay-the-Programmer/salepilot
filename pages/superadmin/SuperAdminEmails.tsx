@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/ui/useConfirm';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
@@ -32,6 +33,7 @@ interface EmailTemplate {
 }
 
 const SuperAdminEmails: React.FC = () => {
+    const { confirm } = useConfirm();
     const { showToast } = useToast();
     const [templates, setTemplates] = useState<EmailTemplate[]>([]);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -159,7 +161,7 @@ const SuperAdminEmails: React.FC = () => {
 
     const deleteTip = async () => {
         if (!selected || selected.builtIn) return;
-        if (!window.confirm(`Delete the tip “${selected.name}”? This can’t be undone.`)) return;
+        if (!await confirm({ title: `Delete the tip “${selected.name}”?`, message: 'This can’t be undone.', confirmLabel: 'Delete', danger: true })) return;
         setDeleting(true);
         try {
             await api.delete(`/superadmin/email-templates/${selected.key}`);

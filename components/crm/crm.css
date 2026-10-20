@@ -212,7 +212,24 @@
 .crm-link:hover { text-decoration: underline; }
 
 /* ---------- Cards ---------- */
-.crm-card {
+
+/*
+ * One card surface for every app.
+ *
+ * The CRM, Dashboard, Procurement and Team stylesheets each used to declare
+ * these same four properties under their own class name, and the hairline
+ * border had drifted to a different rgba in each — rgba(189,201,194,.25),
+ * rgba(0,0,0,.05), rgba(26,26,46,.05) — so cards sitting side by side in
+ * different apps had visibly different edges. The surface is declared once
+ * here and the variants below add only what is actually particular to them
+ * (padding, layout, hover). crm.css is loaded by `AppShell`, so every app has
+ * it by the time its own stylesheet runs.
+ */
+.crm-card,
+.crm-custcard,
+.crm-engcard,
+.proc-stat-card,
+.team-rolecard {
   background: var(--c-surface-lowest);
   border: 1px solid rgba(189, 201, 194, 0.25);
   border-radius: var(--c-radius-lg);
@@ -352,8 +369,6 @@
 @media (min-width: 1024px) { .crm-custgrid { grid-template-columns: repeat(3, 1fr); } }
 
 .crm-custcard {
-  background: var(--c-surface-lowest); border: 1px solid rgba(0,0,0,0.05);
-  border-radius: var(--c-radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   padding: 20px; cursor: pointer; text-align: left; width: 100%; font-family: inherit;
   transition: box-shadow 0.25s var(--c-ease), transform 0.12s var(--c-ease);
 }
@@ -401,7 +416,7 @@
 
 .crm-eng { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 640px) { .crm-eng { grid-template-columns: repeat(3, 1fr); } }
-.crm-engcard { background: var(--c-surface-lowest); border: 1px solid rgba(189, 201, 194, 0.22); border-radius: var(--c-radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.04); padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.crm-engcard { padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .crm-engcard__icon { width: 48px; height: 48px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
 .crm-engcard__icon--p { background: rgba(0, 43, 107,0.1); color: var(--c-primary); }
 .crm-engcard__icon--s { background: rgba(255,165,53,0.12); color: var(--c-secondary); }

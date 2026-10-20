@@ -1,6 +1,8 @@
 import React from 'react';
-import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 import Modal from './ui/Modal';
+import {
+    ExclamationTriangleIcon,
+} from './icons';
 
 interface LogoutConfirmationModalProps {
     isOpen: boolean;

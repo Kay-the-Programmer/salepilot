@@ -1,8 +1,10 @@
 import React from 'react';
 import { CartItem, StoreSettings } from '@/types';
-import XMarkIcon from '../icons/XMarkIcon';
-import ClockIcon from '../icons/ClockIcon';
 import { formatCurrency } from '@/utils/currency';
+import {
+    ClockIcon,
+    XMarkIcon,
+} from '../icons';
 
 interface HeldSalesModalProps {
     isOpen: boolean;
