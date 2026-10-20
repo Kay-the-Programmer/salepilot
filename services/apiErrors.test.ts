@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { messageForStatus, OFFLINE_MESSAGE, NetworkError } from './apiErrorMessages';
+import { messageForStatus, OFFLINE_MESSAGE, NetworkError, errorText } from './apiErrorMessages';
 
 /**
  * Most screens put `err.message` straight into a toast, so whatever this layer
@@ -62,6 +62,35 @@ describe('messageForStatus', () => {
     expect(messageForStatus(404, '   ')).toBe(messageForStatus(404));
     expect(messageForStatus(404, undefined)).toBe(messageForStatus(404));
     expect(messageForStatus(404, 42 as unknown)).toBe(messageForStatus(404));
+  });
+});
+
+describe('errorText', () => {
+  it('keeps the specific message over the caller’s generic one', () => {
+    // This is the whole point: "Not enough stock" beats "Failed to update".
+    expect(errorText(new Error('Not enough stock to sell 5 of these.'), 'That could not be saved.'))
+      .toBe('Not enough stock to sell 5 of these.');
+  });
+
+  it('falls back when there is nothing usable', () => {
+    const fallback = 'That shipment could not be saved.';
+    expect(errorText(undefined, fallback)).toBe(fallback);
+    expect(errorText({}, fallback)).toBe(fallback);
+    expect(errorText(new Error('   '), fallback)).toBe(fallback);
+    expect(errorText({ message: 42 }, fallback)).toBe(fallback);
+  });
+
+  it('falls back when the message is plainly internal', () => {
+    const fallback = 'That could not be saved.';
+    // A bare runtime error, a serialised object or a stack frame is not a
+    // sentence anyone can act on, however specific it is.
+    expect(errorText(new TypeError('Cannot read properties of undefined'), fallback)).toBe(fallback);
+    expect(errorText(new Error('{"code":"ER_DUP"}'), fallback)).toBe(fallback);
+    expect(errorText(new Error('at handler (server.js:12)'), fallback)).toBe(fallback);
+  });
+
+  it('passes the offline message through, since it is written for a person', () => {
+    expect(errorText(new NetworkError(), 'nope')).toBe(OFFLINE_MESSAGE);
   });
 });
 

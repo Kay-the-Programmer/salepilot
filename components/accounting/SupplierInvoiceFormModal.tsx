@@ -99,7 +99,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            showToast('Please fill in all required fields.', 'error');
+            showToast('Fill in the supplier, the invoice number and the amount.', 'error');
             return;
         }
 

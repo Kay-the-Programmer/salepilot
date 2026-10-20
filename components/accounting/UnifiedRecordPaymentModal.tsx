@@ -63,7 +63,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            showToast('Invalid payment amount.', 'error');
+            showToast('Enter how much was paid. It must be more than zero.', 'error');
             return;
         }
         onSave(invoiceId, { date, amount: parseFloat(amount), method, reference });

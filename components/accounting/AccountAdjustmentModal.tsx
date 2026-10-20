@@ -37,19 +37,19 @@ const AccountAdjustmentModal: React.FC<AccountAdjustmentModalProps> = ({
         e.preventDefault();
 
         if (!offsetAccountId) {
-            showToast('Please select an offset account', 'error');
+            showToast('Choose the account the difference should go to.', 'error');
             return;
         }
 
         const offsetAccount = accounts.find(a => a.id === offsetAccountId);
         if (!offsetAccount) {
-            showToast('Invalid offset account', 'error');
+            showToast('That account can’t take this adjustment. Choose another.', 'error');
             return;
         }
 
         const amount = parseFloat(adjustmentAmount);
         if (isNaN(amount) || amount === 0) {
-            showToast('Please enter a valid non-zero adjustment amount', 'error');
+            showToast('Enter how much to adjust by. It can’t be zero.', 'error');
             return;
         }
 

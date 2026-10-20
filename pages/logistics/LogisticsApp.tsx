@@ -6,6 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { formatCurrency } from '../../utils/currency';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
 import '../accounting/accounting.css';
+import { errorText } from '../../services/apiErrorMessages';
 
 type Tab = 'shipments' | 'couriers' | 'buses';
 
@@ -84,12 +85,12 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
   const createCourier = async (e: React.FormEvent) => {
     e.preventDefault();
     try { const c = await api.post<Courier>('/logistics/couriers', courierForm); setCouriers((p) => [c, ...p]); setModal(null); setCourierForm({ isActive: true }); }
-    catch { showToast('Failed to create courier', 'error'); }
+    catch (e) { showToast(errorText(e, 'That courier could not be saved.'), 'error'); }
   };
   const createBus = async (e: React.FormEvent) => {
     e.preventDefault();
     try { const b = await api.post<Bus>('/logistics/buses', busForm); setBuses((p) => [b, ...p]); setModal(null); setBusForm({ isActive: true }); }
-    catch { showToast('Failed to create bus', 'error'); }
+    catch (e) { showToast(errorText(e, 'That bus could not be saved.'), 'error'); }
   };
   const createShipment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,20 +98,20 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
       const payload = { ...shipForm, tracking_number: shipForm.tracking_number || `TRK-${Date.now()}` };
       const s = await api.post<Shipment>('/logistics/shipments', payload);
       setShipments((p) => [s, ...p]); setModal(null); setShipForm({ status: 'pending', shipping_cost: 0, method: 'courier' });
-    } catch { showToast('Failed to create shipment', 'error'); }
+    } catch (e) { showToast(errorText(e, 'That shipment could not be saved.'), 'error'); }
   };
   const removeItem = (type: 'courier' | 'bus', id: string) => {
     setConfirm({
       title: `Delete ${type}`, msg: 'This action cannot be undone.',
       onYes: async () => {
         try { await api.delete(`/logistics/${type}s/${id}`); if (type === 'courier') setCouriers((p) => p.filter((c) => c.id !== id)); else setBuses((p) => p.filter((b) => b.id !== id)); setConfirm(null); }
-        catch { showToast('Failed to delete', 'error'); }
+        catch (e) { showToast(errorText(e, 'That could not be deleted.'), 'error'); }
       },
     });
   };
   const updateStatus = async (id: string, status: string) => {
     try { const u = await api.patch<Shipment>(`/logistics/shipments/${id}/status`, { status }); setShipments((p) => p.map((s) => (s.id === id ? u : s))); }
-    catch { showToast('Failed to update status', 'error'); }
+    catch (e) { showToast(errorText(e, 'The status could not be changed.'), 'error'); }
   };
 
   const navItems = [

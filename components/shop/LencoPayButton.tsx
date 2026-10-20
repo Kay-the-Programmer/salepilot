@@ -84,7 +84,7 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
 
         if (!publicKey) {
             console.error('Lenco Public Key is missing');
-            showToast('Payment configuration error: Public key missing', 'error');
+            showToast('Card and mobile money payments aren’t set up yet. Ask the shop owner to finish setup in Settings.', 'error');
             return;
         }
 

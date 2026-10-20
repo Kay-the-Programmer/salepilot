@@ -114,19 +114,19 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
 
     return createPortal(
         <div className="fixed inset-0 z-[300] bg-background flex flex-col animate-fade-in" role="dialog" aria-modal="true" aria-label="SalePilot apps">
-            <header className="flex-shrink-0 flex items-center justify-between px-5 h-16 bg-surface border-b border-brand-border">
-                <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <header className="relative flex-shrink-0 flex items-center justify-between px-5 h-16 bg-surface border-b border-brand-border">
+                <div className="flex items-center gap-2.5 min-w-0 z-10">
+                    <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                         <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">apps</span>
                     </span>
                     <div className="min-w-0">
                         <h2 className="text-base font-extrabold text-brand-text leading-tight truncate">App Menu</h2>
                     </div>
-                    <div className='ml-5 w-10 h-10' >
-                        <img src={salepilotlogo} className="w-full" alt="" />
-                    </div>
                 </div>
-                <button type="button" onClick={onClose} aria-label="Close menu" className="inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                    <img src={salepilotlogo} alt="SalePilot" className="h-7 sm:h-8 w-auto object-contain" />
+                </div>
+                <button type="button" onClick={onClose} aria-label="Close menu" className="inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition z-10">
                     <span className="material-symbols-rounded" aria-hidden="true">close</span>
                 </button>
             </header>
@@ -147,7 +147,7 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                                 // not still need a deliberate click.
                                 if (e.key === 'Enter' && visible.length === 1) go(visible[0].route);
                             }}
-                            placeholder="Filter apps…"
+                            placeholder="Search apps"
                             aria-label="Filter apps"
                             className="flex-1 bg-transparent text-sm text-brand-text placeholder:text-brand-text-muted outline-none"
                         />
@@ -162,7 +162,6 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                         filtering, where the filtered list is the answer. */}
                     {!q && suggested.length > 0 && (
                         <section>
-                            <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">Suggested</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {suggested.map(a => (
                                     <button

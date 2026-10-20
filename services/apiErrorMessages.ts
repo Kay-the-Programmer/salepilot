@@ -74,3 +74,26 @@ export const messageForStatus = (status: number, serverMessage?: unknown): strin
       ? STATUS_MESSAGE[500]
       : 'That didn’t work. Please try again.');
 };
+
+/**
+ * What to put in a toast from a `catch`.
+ *
+ * Several screens did `catch { showToast('Failed to update status') }`,
+ * throwing away the error. That was defensible when the error's message was
+ * raw — but it no longer is, so discarding it now replaces "Not enough stock
+ * to sell 5 of these" with "Failed to update", which is strictly less useful.
+ *
+ * The fallback is still worth passing: it names the thing being attempted, for
+ * the case where something non-HTTP went wrong and the message is a developer
+ * string from somewhere else in the stack.
+ */
+export const errorText = (err: unknown, fallback: string): string => {
+  const msg = (err as { message?: unknown })?.message;
+  if (typeof msg !== 'string') return fallback;
+  const trimmed = msg.trim();
+  if (!trimmed) return fallback;
+  // A message that is clearly not written for a person — a bare type error, a
+  // stack, a JSON blob — is worse than the caller's sentence.
+  const looksInternal = /^[A-Z]\w*Error\b|\bundefined\b|\bnull\b|^\{|^\[|\bat \w+ \(/.test(trimmed);
+  return looksInternal ? fallback : trimmed;
+};

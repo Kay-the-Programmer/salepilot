@@ -5,6 +5,7 @@ import { getCurrentUser } from '../services/authService';
 import { HiOutlineArrowLeft, HiOutlineCheck, HiOutlineShoppingBag, HiOutlineClock } from 'react-icons/hi2';
 import { formatCurrency } from '../utils/currency';
 import { useToast } from '../contexts/ToastContext';
+import { errorText } from '../services/apiErrorMessages';
 
 interface MarketplaceRequestActionPageProps {
     requestId: string;
@@ -36,7 +37,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
             setRequest(data);
         } catch (error) {
             console.error('Failed to fetch request:', error);
-            showToast('Failed to load request details', 'error');
+            showToast(errorText(error, 'Those request details could not be loaded. Check your connection and try again.'), 'error');
         } finally {
             setLoading(false);
         }
@@ -57,7 +58,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
             showToast('Offer submitted successfully!', 'success');
             onBack();
         } catch (error) {
-            showToast('Failed to submit offer', 'error');
+            showToast(errorText(error, 'Your offer could not be sent. Check your connection and try again.'), 'error');
         } finally {
             setSubmitting(false);
         }

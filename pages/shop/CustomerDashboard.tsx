@@ -12,6 +12,7 @@ import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import RequestWizard from '../../components/RequestWizard';
 import { useToast } from '../../contexts/ToastContext';
+import { errorText } from '../../services/apiErrorMessages';
 
 export default function CustomerDashboard() {
     const [requests, setRequests] = useState<any[]>([]);
@@ -34,7 +35,7 @@ export default function CustomerDashboard() {
             setRequests(data);
         } catch (error: any) {
             console.error('Error fetching requests:', error);
-            showToast('Failed to load requests', 'error');
+            showToast(errorText(error, 'Your requests could not be loaded. Check your connection and try again.'), 'error');
         } finally {
             setLoading(false);
         }

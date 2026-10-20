@@ -70,7 +70,7 @@ const SuperAdminEmails: React.FC = () => {
             setTemplates(res.templates || []);
             setSelectedKey(prev => prev || res.templates?.[0]?.key || null);
         } catch {
-            showToast('Failed to load email templates', 'error');
+            showToast('The email templates could not be loaded. Check your connection and try again.', 'error');
         } finally {
             setLoading(false);
         }
@@ -184,7 +184,7 @@ const SuperAdminEmails: React.FC = () => {
             if (t.key === selectedKey) setEnabled(!t.enabled);
             showToast(`${t.name} ${!t.enabled ? 'enabled' : 'disabled'}`, 'success');
         } catch {
-            showToast('Failed to update', 'error');
+            showToast('That change could not be saved. Check your connection and try again.', 'error');
         }
     };
 

@@ -165,7 +165,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
         const expenseAccount = accounts.find(a => a.id === formData.expenseAccountId);
         const paymentAccount = accounts.find(a => a.id === formData.paymentAccountId);
-        if (!expenseAccount || !paymentAccount) { showToast('Invalid account selection', 'error'); return; }
+        if (!expenseAccount || !paymentAccount) { showToast('One of those accounts no longer exists. Pick them again.', 'error'); return; }
 
         const payload = buildExpensePayload({
             date: formData.date,

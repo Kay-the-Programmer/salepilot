@@ -17,6 +17,7 @@ import RailThemeButton from './RailThemeButton';
 import Logo from '../../assets/logo.png';
 import '../crm/crm.css';
 import { useToast } from '../../contexts/ToastContext';
+import { errorText } from '../../services/apiErrorMessages';
 
 interface MultiStoreAppProps {
     user: User;
@@ -92,7 +93,7 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, on
 
     const load = () => {
         setLoading(true);
-        getMyStores().then(setStores).catch(() => showToast('Could not load your businesses.', 'error')).finally(() => setLoading(false));
+        getMyStores().then(setStores).catch(e => showToast(errorText(e, 'Your shops could not be loaded.'), 'error')).finally(() => setLoading(false));
     };
     const loadSummary = (d = days) => {
         setSummaryLoading(true);

@@ -15,6 +15,7 @@ import OrdersList from '../components/orders/OrdersList';
 import OrderDetailContent from '../components/orders/OrderDetailContent';
 import { HiOutlineXMark, HiOutlineBanknotes, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 import { useToast } from '../contexts/ToastContext';
+import { errorText } from '../services/apiErrorMessages';
 
 
 
@@ -97,7 +98,7 @@ export default function OrdersPage({ storeSettings, onDataRefresh }: OrdersPageP
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
-            showToast('Failed to fetch orders', 'error');
+            showToast(errorText(error, 'Your orders could not be loaded. Check your connection and try again.'), 'error');
         } finally {
             setLoading(false);
         }

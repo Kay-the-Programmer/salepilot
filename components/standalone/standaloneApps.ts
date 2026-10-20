@@ -40,16 +40,16 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'Sales Reports', page: 'dash', route: 'dash', desc: 'How the shop is doing', iconName: 'monitoring', requires: 'reports', group: 'Money' },
     // Hustle POS is withheld from launch as a separate app — its keypad is the
     // POS's "Quick" mode. See HUSTLE_APP_ENABLED in utils/entitlements.
-    { name: 'Online Orders', page: 'orders', route: 'orders', desc: 'Orders customers placed online', iconName: 'shopping_bag', requires: 'orders', group: 'Sell' },
+    // { name: 'Online Orders', page: 'orders', route: 'orders', desc: 'Orders customers placed online', iconName: 'shopping_bag', requires: 'orders', group: 'Sell' },
     { name: 'Ask SalePilot', page: 'assistant', route: 'assistant', desc: 'Ask questions about your shop', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT, group: 'Money' },
     { name: 'Customers', page: 'crm', route: 'crm', desc: 'Customer list, loyalty and messages', iconName: 'diversity_3', requires: 'customers', group: 'Customers' },
     // Marketing Suite is withheld from launch — see MARKETING_ENABLED in utils/entitlements.
-    { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Your shop link, QR code and sharing', iconName: 'storefront', requires: 'online-store', group: 'Sell' },
+    // { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Your shop link, QR code and sharing', iconName: 'storefront', requires: 'online-store', group: 'Sell' },
     { name: 'My Shops', page: 'businesses', route: 'businesses', desc: 'Run all your shops from one place', iconName: 'domain', requires: 'businesses', group: 'Setup' },
     { name: 'Stock', page: 'inv', route: 'inv', desc: 'What you have, what is running low', iconName: 'inventory_2', requires: 'inventory', group: 'Stock' },
     { name: 'Staff', page: 'team', route: 'team', desc: 'Who can use the shop and what they can do', iconName: 'manage_accounts', requires: 'users', group: 'Setup' },
     { name: 'Buy Stock', page: 'procure', route: 'procure', desc: 'Suppliers and orders you place', iconName: 'shopping_cart_checkout', requires: 'suppliers', group: 'Stock' },
-    { name: 'Buy from Shops', page: 'directory', route: 'marketplace', desc: 'Order stock from other shops near you', iconName: 'local_mall', requires: 'directory', group: 'Stock' },
+    // { name: 'Buy from Shops', page: 'directory', route: 'marketplace', desc: 'Order stock from other shops near you', iconName: 'local_mall', requires: 'directory', group: 'Stock' },
     { name: 'Books', page: 'books', route: 'books', desc: 'Money in, money out and statements', iconName: 'account_balance', requires: 'accounting', group: 'Money' },
     { name: 'Expenses', page: 'expenses', route: 'expenses', desc: 'Record what you spend for the shop', iconName: 'receipt_long', requires: 'expenses', group: 'Money' },
     { name: 'Quotes & Invoices', page: 'sales-docs', route: 'quotes', desc: 'Price offers and bills for customers', iconName: 'description', requires: 'sales-docs', group: 'Sell' },

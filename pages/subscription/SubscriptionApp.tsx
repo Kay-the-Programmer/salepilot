@@ -11,6 +11,7 @@ import { logEvent } from '../../src/utils/analytics';
 import '../assistant/assistant.css';
 import './subscription.css';
 import { formatMoneyByCode } from '../../utils/currency';
+import { errorText } from '../../services/apiErrorMessages';
 
 const CustomPaymentModal = React.lazy(() => import('../../components/subscription/CustomPaymentModal'));
 
@@ -73,7 +74,7 @@ const SubscriptionApp: React.FC = () => {
       setPlans(data || []);
     } catch (e) {
       console.error('Error fetching plans:', e);
-      showToast('Failed to load subscription plans', 'error');
+      showToast(errorText(e, 'The plans could not be loaded. Check your connection and try again.'), 'error');
     } finally {
       setFetchingPlans(false);
     }
@@ -141,7 +142,7 @@ const SubscriptionApp: React.FC = () => {
 
   const handlePayment = useCallback(async (method: 'card' | 'mobile-money', phoneNumber?: string) => {
     if (!planToPay) return;
-    if (!user?.currentStoreId) { showToast('Store context missing. Please re-login.', 'error'); return; }
+    if (!user?.currentStoreId) { showToast('No shop is selected. Pick one from My Shops, then try again.', 'error'); return; }
     setLoading(true);
     try {
       const response = await api.post<any>('/subscriptions/pay', {
