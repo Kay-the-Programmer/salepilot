@@ -6,9 +6,9 @@ import {
     BellAlertIcon,
     MinusIcon,
     PlusIcon,
-    ShoppingCartIcon,
 } from '../icons';
 import PosIcon from './PosIcon';
+import { ProductPlaceholderIcon, productImageUrl } from '../products/productImage';
 
 interface ProductCardProps {
     product: Product;
@@ -28,7 +28,7 @@ const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
     const numericStock = parseFloat(String((product as any).stock)) || 0;
     const isSoldOut = numericStock === 0;
     const isLowStock = numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
-    const img = product.imageUrls?.[0];
+    const img = productImageUrl(product);
 
     return (
         <button
@@ -40,7 +40,7 @@ const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
             <div className="prodcard__art">
                 {img
                     ? <img src={buildAssetUrl(img)} alt={product.name} />
-                    : <PosIcon name="inventory_2" size={40} />}
+                    : <ProductPlaceholderIcon style={{ width: 40, height: 40 }} />}
                 <span className="prodcard__price tnum">{formatCurrency(product.price, storeSettings)}</span>
                 {isSoldOut ? (
                     <span className="prodcard__tag prodcard__tag--soldout">Sold Out</span>
@@ -74,6 +74,7 @@ const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
 
 // ─── List Variant ─────────────────────────────────────────────────────────────
 const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart, updateQuantity, onLowStockAlert }) => {
+    const img = productImageUrl(product);
     const numericStock = parseFloat(String((product as any).stock)) || 0;
     const isSoldOut = numericStock === 0;
     const isLowStock = numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
@@ -94,11 +95,11 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
         >
             {/* Thumbnail */}
             <div className="w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900/60 relative">
-                {product.imageUrls?.[0] ? (
-                    <img src={buildAssetUrl(product.imageUrls[0])} alt={product.name} className="w-full h-full object-cover" />
+                {img ? (
+                    <img src={buildAssetUrl(img)} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingCartIcon className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                        <ProductPlaceholderIcon className="w-5 h-5 text-slate-300 dark:text-slate-600" />
                     </div>
                 )}
                 {isSoldOut && (
@@ -161,6 +162,7 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
 
 // ─── Mobile Variant ───────────────────────────────────────────────────────────
 const MobileCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart }) => {
+    const img = productImageUrl(product);
     const numericStock = parseFloat(String((product as any).stock)) || 0;
     const isSoldOut = numericStock === 0;
     const [isTapping, setIsTapping] = React.useState(false);
@@ -184,11 +186,11 @@ const MobileCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettin
             `}
         >
             <div className="aspect-square bg-slate-100 dark:bg-slate-900/60 relative overflow-hidden">
-                {product.imageUrls?.[0] ? (
-                    <img src={buildAssetUrl(product.imageUrls[0])} alt={product.name} className="w-full h-full object-cover" />
+                {img ? (
+                    <img src={buildAssetUrl(img)} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                        <ShoppingCartIcon className="w-7 h-7 text-slate-300 dark:text-slate-600" />
+                        <ProductPlaceholderIcon className="w-7 h-7 text-slate-300 dark:text-slate-600" />
                     </div>
                 )}
                 {cartItem && (

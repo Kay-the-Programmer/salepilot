@@ -4,6 +4,7 @@ import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
 import { OPEN_STATUSES } from './procureModel';
 import PoStatusChip from '../purchase-orders/PoStatusChip';
+import { ProductPlaceholderIcon, productImageUrl } from '../products/productImage';
 
 interface ProcureSupplierProfileProps {
     supplier: Supplier;
@@ -177,7 +178,7 @@ export const ProcureSupplierProfile: React.FC<ProcureSupplierProfileProps> = ({
                                 return (
                                     <div key={p.id} className="proc-prod">
                                         <div className="proc-prod__img">
-                                            {p.imageUrls?.[0] ? <img src={p.imageUrls[0]} alt={p.name} /> : <Icon name="inventory_2" size={40} />}
+                                            {productImageUrl(p) ? <img src={productImageUrl(p)!} alt={p.name} /> : <ProductPlaceholderIcon style={{ width: 40, height: 40 }} />}
                                             <span className={`proc-prod__badge ${badge.cls}`}>{badge.label}</span>
                                         </div>
                                         <div className="proc-prod__body">

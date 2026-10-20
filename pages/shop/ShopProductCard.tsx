@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HiOutlinePhoto, HiOutlinePlus, HiOutlineMinus } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineMinus } from 'react-icons/hi2';
 import { buildAssetUrl } from '../../services/api';
 import { Product } from '../../types';
+import { ProductPlaceholderIcon, productImageUrl } from '../../components/products/productImage';
 
 interface QuickAdd {
     /** Current quantity of this product in the cart (0 = not in cart). */
@@ -50,9 +51,9 @@ const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, for
         >
             {/* Image */}
             <div className="relative aspect-square w-full bg-warm-100 overflow-hidden">
-                {product.imageUrls && product.imageUrls.length > 0 ? (
+                {productImageUrl(product) ? (
                     <img
-                        src={buildAssetUrl(product.imageUrls[0])}
+                        src={buildAssetUrl(productImageUrl(product)!)}
                         alt={product.name}
                         loading="lazy"
                         className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
@@ -60,7 +61,7 @@ const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, for
                     />
                 ) : (
                     <div className="h-full w-full flex items-center justify-center text-warm-400">
-                        <HiOutlinePhoto className="w-10 h-10" />
+                        <ProductPlaceholderIcon className="w-10 h-10" />
                     </div>
                 )}
                 {outOfStock && (

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Product, User, StoreSettings } from '../../types';
 import { api, buildAssetUrl } from '@/services/api';
-import { BellAlertIcon, ShoppingCartIcon } from '../icons';
+import { BellAlertIcon } from '../icons';
 import { useToast } from '../../contexts/ToastContext';
+import { ProductPlaceholderIcon, productImageUrl } from '../products/productImage';
 
 interface LowStockAlertModalProps {
     isOpen: boolean;
@@ -74,15 +75,15 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
                     {/* Product Info Card */}
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                         <div className="flex items-center gap-3">
-                            {product.imageUrls?.[0] ? (
+                            {productImageUrl(product) ? (
                                 <img
-                                    src={buildAssetUrl(product.imageUrls[0])}
+                                    src={buildAssetUrl(productImageUrl(product)!)}
                                     alt={product.name}
                                     className="w-16 h-16 object-cover rounded-lg"
                                 />
                             ) : (
                                 <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center">
-                                    <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
+                                    <ProductPlaceholderIcon className="w-8 h-8 text-slate-400" />
                                 </div>
                             )}
                             <div className="flex-1">

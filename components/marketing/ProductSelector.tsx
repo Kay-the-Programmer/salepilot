@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
 import { SearchIcon } from '../icons';
+import { ProductPlaceholderIcon, productImageUrl } from '../products/productImage';
 
 interface Props {
     products: Product[];
@@ -50,14 +51,14 @@ const ProductSelector: React.FC<Props> = ({ products, onSelect, selectedProductI
                             `}
                         >
                             <div className="h-12 w-12 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0 border border-gray-200 dark:border-slate-700 shadow-inner">
-                                {product.imageUrls && product.imageUrls.length > 0 ? (
+                                {productImageUrl(product) ? (
                                     <img
-                                        src={product.imageUrls[0]}
+                                        src={productImageUrl(product)!}
                                         alt={product.name}
                                         className="h-full w-full object-cover transition-transform group-hover:scale-110"
                                     />
                                 ) : ( // Fallback icon 
-                                    <span className="text-xl">📦</span>
+                                    <ProductPlaceholderIcon className="w-6 h-6 text-gray-400 dark:text-slate-500" />
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">

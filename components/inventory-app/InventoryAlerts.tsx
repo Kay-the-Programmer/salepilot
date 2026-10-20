@@ -3,6 +3,7 @@ import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { num } from '../crm/crmModel';
 import { InventoryOverview, thresholdFor } from './inventoryModel';
+import { ProductPlaceholderIcon, productImageUrl } from '../products/productImage';
 
 interface InventoryAlertsProps {
     overview: InventoryOverview;
@@ -65,7 +66,7 @@ export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, stor
                                 <div key={p.id} className="inv-stock-row">
                                     <div className="inv-stock-row__left">
                                         <span className="inv-thumb">
-                                            {p.imageUrls?.[0] ? <img src={p.imageUrls[0]} alt={p.name} /> : <Icon name="inventory_2" size={22} />}
+                                            {productImageUrl(p) ? <img src={productImageUrl(p)!} alt={p.name} /> : <ProductPlaceholderIcon style={{ width: 22, height: 22 }} />}
                                         </span>
                                         <div style={{ minWidth: 0 }}>
                                             <p className="inv-stock-row__name">{p.name}</p>

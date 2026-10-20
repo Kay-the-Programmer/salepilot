@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Product, StoreSettings } from '../../types';
 import { ArrowDownTrayIcon, SparklesIcon } from '../icons';
 import { buildAssetUrl } from '../../services/api';
+import { productImageUrl } from '../products/productImage';
 
 interface Props {
     product: Product;
@@ -88,7 +89,10 @@ const PosterGenerator: React.FC<Props> = ({
         }
 
         // --- Product Image ---
-        if (product.imageUrls && product.imageUrls.length > 0) {
+        // The seeded placeholder is not a product photo; a poster is better
+        // off without one than carrying the SalePilot logo as the product.
+        const productPhoto = productImageUrl(product);
+        if (productPhoto) {
             try {
                 const img = new Image();
                 img.crossOrigin = "anonymous"; // Handle CORS for canvas
@@ -96,7 +100,7 @@ const PosterGenerator: React.FC<Props> = ({
                 await new Promise((resolve, reject) => {
                     img.onload = resolve;
                     img.onerror = reject;
-                    img.src = product.imageUrls[0];
+                    img.src = productPhoto;
                 });
 
                 const imgSize = format === 'square' ? 600 : 800;

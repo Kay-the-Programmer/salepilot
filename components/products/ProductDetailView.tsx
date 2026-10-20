@@ -8,7 +8,6 @@ import {
     ArchiveBoxIcon,
     ChartBarIcon,
     CheckCircleIcon,
-    CubeIcon,
     ExclamationTriangleIcon,
     PencilIcon,
     PrinterIcon,
@@ -17,6 +16,7 @@ import {
     TrashIcon,
     TruckIcon,
 } from '@/components/icons';
+import { ProductPlaceholderIcon, productImageUrl } from './productImage';
 
 const asNumber = (val: any) => {
   const n = typeof val === 'number' ? val : parseFloat(val);
@@ -76,8 +76,7 @@ const ProductDetailView: React.FC<{
   const reorderPct = Math.min(100, Math.round((reorder / target) * 100));
 
   const imageUrl = React.useMemo(() => {
-    if (!product.imageUrls || product.imageUrls.length === 0) return null;
-    let url = product.imageUrls[0].replace(/[{}]/g, '');
+    const url = productImageUrl(product);
     if (!url) return null;
     if (url.startsWith('data:') || /^https?:\/\//i.test(url)) return url;
     return buildAssetUrl(url);
@@ -117,7 +116,7 @@ const ProductDetailView: React.FC<{
                   />
                 ) : (
                   <div className="w-full h-full bg-surface-variant flex items-center justify-center">
-                    <CubeIcon className="w-16 h-16 text-brand-text-muted/40" />
+                    <ProductPlaceholderIcon className="w-16 h-16 text-brand-text-muted/40" />
                   </div>
                 )}
               </div>
