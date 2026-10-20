@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product, Sale, Customer, StoreSettings, User } from '../../types';
 import { api } from '../../services/api';
 import { DashboardShell, DashSection } from './DashboardShell';
 import BizOverview from './BizOverview';
 import BizSales from './BizSales';
 import BizProducts from './BizProducts';
+import SetupChecklist from './SetupChecklist';
 import { buildDashboard, DashRange, DashServerTotals, rangeDatePair } from './dashboardModel';
 import '../crm/crm.css';
 import './dash.css';
@@ -35,6 +37,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
     onNavigate, onSalesHistory, onExit, onLogout,
     onNewSale, onInventory, onOrders,
 }) => {
+    const navigate = useNavigate();
     const [range, setRange] = useState<DashRange>({ kind: 'preset', preset: 'week' });
 
     // The period's "now" is PINNED, not read at render time. Open-ended presets
@@ -114,7 +117,18 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
     } else {
         content = (
             <>
-                {/* Daily-summary nudge slot (one max), shown on the day-summary card. */}
+                {/* A new shop's first screen should say what to do, not report
+                    zeros at them. Hides itself once the shop is set up. */}
+                <div className="crm-main" style={{ paddingBottom: 0 }}>
+                    <SetupChecklist
+                        products={products}
+                        sales={sales}
+                        storeSettings={storeSettings}
+                        onAddProduct={onInventory}
+                        onSell={onNewSale}
+                        onSettings={() => navigate('/config')}
+                    />
+                </div>
                 <BizOverview
                     overview={overview}
                 storeSettings={storeSettings}

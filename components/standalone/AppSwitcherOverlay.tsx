@@ -2,8 +2,39 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
-import { getLaunchableApps, AppDef } from './standaloneApps';
+import { getLaunchableApps, AppDef, APP_GROUPS, AppGroup } from './standaloneApps';
 import { recordAppUse, getSuggestedRoutes } from './appUsage';
+
+/** A card of app rows. One per group when browsing, one for the hits when searching. */
+const AppRows: React.FC<{
+    apps: AppDef[];
+    currentRoute?: string;
+    onPick: (route: string) => void;
+}> = ({ apps, currentRoute, onPick }) => (
+    <div className="rounded-2xl border border-brand-border bg-surface overflow-hidden divide-y divide-brand-border">
+        {apps.map(a => {
+            const active = currentRoute === a.route;
+            return (
+                <button
+                    key={a.route}
+                    type="button"
+                    onClick={() => onPick(a.route)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`w-full flex items-center gap-3 px-3.5 py-3 text-left transition ${active ? 'bg-primary/5' : 'hover:bg-surface-variant'}`}
+                >
+                    <span className="w-10 h-10 flex-shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">{a.iconName}</span>
+                    </span>
+                    <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-bold text-brand-text truncate">{a.name}</span>
+                        <span className="block text-xs text-brand-text-muted truncate">{a.desc}</span>
+                    </span>
+                    <span className={`material-symbols-rounded flex-shrink-0 ${active ? 'text-primary' : 'text-brand-text-muted'}`} style={{ fontSize: 20 }} aria-hidden="true">chevron_right</span>
+                </button>
+            );
+        })}
+    </div>
+);
 
 interface AppSwitcherOverlayProps {
     open: boolean;
@@ -51,6 +82,30 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
         () => (q ? allSorted.filter(a => a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)) : allSorted),
         [allSorted, q],
     );
+
+    /**
+     * The apps under each heading, in group order, skipping empty groups.
+     *
+     * Browsing is by job — Sell, Stock, Customers, Money, Setup — because
+     * someone looking for where to record what they spent knows they want to
+     * do something with money, not that we called it Expenses. Searching stays
+     * flat: once you have typed, the list of matches *is* the answer and
+     * splitting it across headings only hides it.
+     */
+    const grouped = useMemo(() => {
+        const byGroup = new Map<AppGroup, AppDef[]>();
+        // Registry order, not A–Z: within a group the apps are listed in the
+        // order a shop reaches for them, so Till is the first thing under Sell
+        // rather than the last because its name starts with T.
+        for (const a of apps) {
+            const list = byGroup.get(a.group) || [];
+            list.push(a);
+            byGroup.set(a.group, list);
+        }
+        return APP_GROUPS
+            .map(g => ({ group: g, items: byGroup.get(g) || [] }))
+            .filter(s => s.items.length > 0);
+    }, [apps]);
 
     if (!open) return null;
 
@@ -124,41 +179,29 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                         </section>
                     )}
 
-                    {/* All apps — grouped A–Z list (the Apple way) */}
-                    <section>
-                        <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">
-                            {q ? `${visible.length} match${visible.length === 1 ? '' : 'es'}` : 'All Apps'}
-                        </h3>
-                        {visible.length === 0 ? (
+                    {/* All apps — one card per job, so you can find something by
+                        knowing what you want to do rather than what we named it. */}
+                    {visible.length === 0 ? (
+                        <section>
                             <p className="rounded-2xl border border-brand-border bg-surface px-4 py-8 text-center text-sm text-brand-text-muted">
-                                No app matches “{filter}”.
+                                Nothing matches “{filter}”.
                             </p>
-                        ) : (
-                        <div className="rounded-2xl border border-brand-border bg-surface overflow-hidden divide-y divide-brand-border">
-                            {visible.map(a => {
-                                const active = currentRoute === a.route;
-                                return (
-                                    <button
-                                        key={a.route}
-                                        type="button"
-                                        onClick={() => go(a.route)}
-                                        aria-current={active ? 'page' : undefined}
-                                        className={`w-full flex items-center gap-3 px-3.5 py-3 text-left transition ${active ? 'bg-primary/5' : 'hover:bg-surface-variant'}`}
-                                    >
-                                        <span className="w-10 h-10 flex-shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                            <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">{a.iconName}</span>
-                                        </span>
-                                        <span className="flex-1 min-w-0">
-                                            <span className="block text-sm font-bold text-brand-text truncate">{a.name}</span>
-                                            <span className="block text-xs text-brand-text-muted truncate">{a.desc}</span>
-                                        </span>
-                                        <span className={`material-symbols-rounded flex-shrink-0 ${active ? 'text-primary' : 'text-brand-text-muted'}`} style={{ fontSize: 20 }} aria-hidden="true">chevron_right</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        )}
-                    </section>
+                        </section>
+                    ) : q ? (
+                        <section>
+                            <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">
+                                {visible.length} match{visible.length === 1 ? '' : 'es'}
+                            </h3>
+                            <AppRows apps={visible} currentRoute={currentRoute} onPick={go} />
+                        </section>
+                    ) : (
+                        grouped.map(({ group, items }) => (
+                            <section key={group}>
+                                <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">{group}</h3>
+                                <AppRows apps={items} currentRoute={currentRoute} onPick={go} />
+                            </section>
+                        ))
+                    )}
                 </div>
             </div>
         </div>,
