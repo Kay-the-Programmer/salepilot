@@ -116,21 +116,8 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
         );
     } else {
         content = (
-            <>
-                {/* A new shop's first screen should say what to do, not report
-                    zeros at them. Hides itself once the shop is set up. */}
-                <div className="crm-main" style={{ paddingBottom: 0 }}>
-                    <SetupChecklist
-                        products={products}
-                        sales={sales}
-                        storeSettings={storeSettings}
-                        onAddProduct={onInventory}
-                        onSell={onNewSale}
-                        onSettings={() => navigate('/config')}
-                    />
-                </div>
-                <BizOverview
-                    overview={overview}
+            <BizOverview
+                overview={overview}
                 storeSettings={storeSettings}
                 user={user}
                 range={range}
@@ -140,8 +127,18 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 onNewSale={onNewSale}
                 onInventory={onInventory}
                 onOrders={onOrders}
+            >
+                {/* A new shop's first screen should say what to do, not report
+                    zeros at them. Hides itself once the shop is set up. */}
+                <SetupChecklist
+                    products={products}
+                    sales={sales}
+                    storeSettings={storeSettings}
+                    onAddProduct={onInventory}
+                    onSell={onNewSale}
+                    onSettings={() => navigate('/config')}
                 />
-            </>
+            </BizOverview>
         );
     }
 

@@ -17,6 +17,7 @@ interface BizOverviewProps {
     onNewSale: () => void;
     onInventory: () => void;
     onOrders: () => void;
+    children?: React.ReactNode;
 }
 
 const greeting = () => {
@@ -34,12 +35,14 @@ const fmtTime = (ts: string) => {
 export const BizOverview: React.FC<BizOverviewProps> = ({
     overview, storeSettings, user, range, onRange,
     onViewSales, onViewProducts, onNewSale, onInventory, onOrders,
+    children,
 }) => {
     const firstName = user?.name?.split(' ')[0] || 'there';
     const stockAlerts = overview.lowStockCount + overview.outOfStockCount;
 
     return (
         <main className="crm-main crm-section-fade">
+            {children}
             {/* Welcome + period picker */}
             <div className="dash-welcome">
                 <div>
