@@ -80,7 +80,7 @@ export const PosShell: React.FC<PosShellProps> = ({
                     onClick={() => { setAppsOpen(true); onCloseDrawer(); }}
                 >
                     <PosIcon name="apps" size={22} />
-                    SalePilot Apps
+                    Menu
                 </button>
                 <button type="button" className="posshell__navitem" onClick={cycleTheme}>
                     <PosIcon name={THEME_PREFERENCE_ICON[preference]} size={22} />

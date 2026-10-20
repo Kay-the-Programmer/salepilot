@@ -27,7 +27,7 @@ export const AppSwitcher: React.FC<AppSwitcherProps> = ({ user, triggerClassName
 
     return (
         <>
-            <button type="button" onClick={() => setOpen(true)} aria-label="All SalePilot apps" className={btnClass}>
+            <button type="button" onClick={() => setOpen(true)} aria-label="Menu" className={btnClass}>
                 <span className="material-symbols-rounded">apps</span>
             </button>
             <AppSwitcherOverlay open={open} onClose={() => setOpen(false)} user={user} currentRoute={currentRoute} />

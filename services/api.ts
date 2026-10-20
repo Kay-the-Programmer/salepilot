@@ -145,6 +145,10 @@ export const getAuthHeaders = (): Record<string, string> => {
   return {};
 };
 
+// Error wording lives in its own module so it is pure and testable.
+export { OFFLINE_MESSAGE, NetworkError, messageForStatus } from './apiErrorMessages';
+import { NetworkError, messageForStatus } from './apiErrorMessages';
+
 // Lightweight HTTP error with status and optional payload for better UI handling
 export class HttpError extends Error {
   status: number;
@@ -178,17 +182,25 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
   // `credentials: 'include'` is what lets the httpOnly session cookie travel
   // to the API on a different subdomain. Harmless when the session is still a
   // Bearer token: there is simply no cookie to send.
-  const resp = await fetch(url, { ...init, headers, credentials: 'include' });
+  //
+  // A fetch that never reaches the server rejects with the browser's own
+  // TypeError, whose message is "Failed to fetch" — which screens then put in
+  // front of the user verbatim. The cause is almost always the connection, so
+  // say that instead; the original is kept on `cause` for the console.
+  let resp: Response;
+  try {
+    resp = await fetch(url, { ...init, headers, credentials: 'include' });
+  } catch (err) {
+    throw new NetworkError(err);
+  }
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
-    let message = text || `Request failed with status ${resp.status}`;
     let body: any = undefined;
     try {
       body = text ? JSON.parse(text) : undefined;
-      if (body && typeof body === 'object' && body.message) {
-        message = body.message;
-      }
-    } catch (_) { }
+    } catch (_) { /* not JSON — an HTML error page or a proxy's plain text */ }
+    // `error` as well as `message`: the API uses both key names.
+    const message = messageForStatus(resp.status, body?.message ?? body?.error);
     // 402s come in three shapes now that SalePilot is a paid product:
     //
     //  • SUBSCRIPTION_REQUIRED — the trial or subscription has lapsed past its
@@ -509,7 +521,7 @@ export const api = {
 
     if (!getOnlineStatus()) {
       if (options.skipQueue || isAuth) {
-        throw new Error('No internet connection');
+        throw new NetworkError();
       }
       const optimistic = await applyOptimisticUpdate(endpoint, 'POST', body);
       return queueAndReturn<T>(endpoint, reqOptions, body, { clientRequestId, optimistic });
@@ -596,7 +608,9 @@ export const api = {
     const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
-      if (options.skipQueue) throw new Error('You are offline. This cannot be done until you reconnect.');
+      // Deletes are not queued when the caller opts out, so say plainly that it
+      // has not happened rather than leaving them unsure.
+      if (options.skipQueue) throw new Error('You appear to be offline, so this wasn’t deleted. Try again once you’re back online.');
       const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
       return queueAndReturn<T>(endpoint, reqOptions, {}, { clientRequestId, optimistic });
     }
@@ -719,6 +733,10 @@ const BACKOFF_MAX_MS = 5 * 60_000;
 let _syncInFlight = false;
 
 function isNetworkError(e: any): boolean {
+  // The flag is the reliable signal (see NetworkError). The string check stays
+  // for anything throwing the browser's TypeError without passing through
+  // `request` — a bare fetch in a service, say.
+  if (e?.isNetworkError === true) return true;
   return typeof e?.message === 'string' && e.message.toLowerCase().includes('failed to fetch');
 }
 
