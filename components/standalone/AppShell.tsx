@@ -115,7 +115,7 @@ export function AppShell<Id extends string = string>({
                         </button>
                     ))}
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
-                        <Icon name="apps" size={22} /> SalePilot Apps
+                        <Icon name="apps" size={22} /> Menu
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

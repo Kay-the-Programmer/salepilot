@@ -36,7 +36,6 @@ export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSetting
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">Performance Overview</p>
                     <h2 className="crm-pagehead__title">CRM Insights</h2>
                 </div>
                 <span className="crm-pagehead__sub" style={{ alignSelf: 'flex-end' }}>All-time figures</span>

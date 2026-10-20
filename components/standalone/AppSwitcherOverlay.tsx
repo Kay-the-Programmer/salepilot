@@ -37,6 +37,63 @@ const AppRows: React.FC<{
     </div>
 );
 
+/**
+ * Google-style search field: a full pill, flat at rest with a hairline border,
+ * lifting into a soft shadow on hover and focus (the border fades out as the
+ * shadow comes in, exactly like google.com). Search icon on the left, a round
+ * clear button on the right that only appears once there is something to clear.
+ * All colours come from the existing theme tokens.
+ */
+const SearchBar: React.FC<{
+    value: string;
+    onChange: (v: string) => void;
+    onSubmitSingle: () => void;
+}> = ({ value, onChange, onSubmitSingle }) => (
+    <div
+        className="group flex items-center h-12 sm:h-14 pl-4 pr-2 gap-3 rounded-full border border-brand-border bg-surface
+                   transition-colors duration-200
+                   hover:border-primary/40
+                   focus-within:border-primary focus-within:hover:border-primary"
+    >
+        <span
+            className="material-symbols-rounded flex-shrink-0 text-brand-text-muted group-focus-within:text-primary transition-colors"
+            style={{ fontSize: 22 }}
+            aria-hidden="true"
+        >
+            search
+        </span>
+        <input
+            autoFocus
+            type="text"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            onKeyDown={e => {
+                // Enter on a single remaining match opens it, so a
+                // filter that has already narrowed to one app does
+                // not still need a deliberate click.
+                if (e.key === 'Enter') onSubmitSingle();
+            }}
+            placeholder="Search apps"
+            aria-label="Filter apps"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="search"
+            className="flex-1 min-w-0 h-full bg-transparent text-base text-brand-text placeholder:text-brand-text-muted border-0 outline-none ring-0 shadow-none focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0" />
+        {value && (
+            <button
+                type="button"
+                onClick={() => onChange('')}
+                aria-label="Clear search"
+                className="flex-shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant hover:text-brand-text active:scale-90 transition"
+            >
+                <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">close</span>
+            </button>
+        )}
+    </div>
+);
+
 interface AppSwitcherOverlayProps {
     open: boolean;
     onClose: () => void;
@@ -135,28 +192,11 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Contextual cross-sell slot (revives the discover_card surface). */}
 
-                    <div className="flex items-center gap-2.5 rounded-xl border border-brand-border bg-surface px-3.5 py-2.5">
-                        <span className="material-symbols-rounded text-brand-text-muted" style={{ fontSize: 20 }} aria-hidden="true">search</span>
-                        <input
-                            autoFocus
-                            value={filter}
-                            onChange={e => setFilter(e.target.value)}
-                            onKeyDown={e => {
-                                // Enter on a single remaining match opens it, so a
-                                // filter that has already narrowed to one app does
-                                // not still need a deliberate click.
-                                if (e.key === 'Enter' && visible.length === 1) go(visible[0].route);
-                            }}
-                            placeholder="Search apps"
-                            aria-label="Filter apps"
-                            className="flex-1 bg-transparent text-sm text-brand-text placeholder:text-brand-text-muted outline-none"
-                        />
-                        {filter && (
-                            <button type="button" onClick={() => setFilter('')} aria-label="Clear filter" className="text-brand-text-muted hover:text-brand-text">
-                                <span className="material-symbols-rounded" style={{ fontSize: 18 }} aria-hidden="true">close</span>
-                            </button>
-                        )}
-                    </div>
+                    <SearchBar
+                        value={filter}
+                        onChange={setFilter}
+                        onSubmitSingle={() => { if (visible.length === 1) go(visible[0].route); }}
+                    />
 
                     {/* Suggested — recency-weighted most-used apps. Hidden while
                         filtering, where the filtered list is the answer. */}
@@ -199,7 +239,7 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                     ) : (
                         grouped.map(({ group, items }) => (
                             <section key={group}>
-                                <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">{group}</h3>
+                                {/* <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">{group}</h3> */}
                                 <AppRows apps={items} currentRoute={currentRoute} onPick={go} />
                             </section>
                         ))

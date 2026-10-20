@@ -66,7 +66,6 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">CRM</p>
                     <h2 className="crm-pagehead__title">Customers</h2>
                 </div>
                 {/* Adding a customer used to be reachable only from the Dashboard
@@ -74,7 +73,7 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                     no "add" action on the one screen that lists them. */}
                 <div className="crm-pagehead__actions">
                     <button className="crm-btn crm-btn--filled" type="button" onClick={onAddCustomer}>
-                        <Icon name="person_add" size={20} /> New Customer
+                        <Icon name="person_add" size={20} /> Add Customer
                     </button>
                 </div>
             </div>

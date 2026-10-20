@@ -930,12 +930,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 />
             )}
 
-            {/* Onboarding nudges (cross-navigation only — empty states carry their own CTAs) */}
-            <InventoryOnboardingHelpers
-                products={products}
-                suppliers={suppliers}
-                activeTab={activeTab}
-            />
+
 
             <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
                 {/* Left Panel: List View — hidden while a product/category is open;
@@ -1129,60 +1124,60 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             />
 
             {isScanModalOpen && (
-            <Suspense fallback={null}>
-            <UnifiedScannerModal
-                isOpen={isScanModalOpen}
-                onClose={() => setIsScanModalOpen(false)}
-                onScanSuccess={async (code) => {
-                    const scannedProduct = products.find(p =>
-                        p.sku === code ||
-                        p.barcode === code ||
-                        (p.variants && p.variants.some(v => v.sku === code))
-                    );
+                <Suspense fallback={null}>
+                    <UnifiedScannerModal
+                        isOpen={isScanModalOpen}
+                        onClose={() => setIsScanModalOpen(false)}
+                        onScanSuccess={async (code) => {
+                            const scannedProduct = products.find(p =>
+                                p.sku === code ||
+                                p.barcode === code ||
+                                (p.variants && p.variants.some(v => v.sku === code))
+                            );
 
-                    if (scannedProduct) {
-                        setSelectedProductId(scannedProduct.id);
-                        setIsScanModalOpen(false);
-                        logEvent('Inventory', 'scan_barcode', 'success');
-                    } else {
-                        // Product not found locally, try to look it up using API
-                        setIsScanModalOpen(false);
-                        showToast(`Searching for product details (Code: ${code})...`, 'info');
-                        try {
-                            const scannedData = await barcodeService.lookupProduct(code);
-
-                            if (scannedData) {
-                                showToast(`Product found via ${scannedData.source}!`, 'success');
-                                // Product found in API, open add modal with prefilled data
-                                handleOpenAddModal({
-                                    name: scannedData.name || '',
-                                    description: scannedData.description || '',
-                                    barcode: code,
-                                    imageUrls: scannedData.imageUrls || [],
-                                    brand: scannedData.brand || '',
-                                    weight: scannedData.weight || 0,
-                                    unitOfMeasure: scannedData.unitOfMeasure || 'unit',
-                                    // Try to match category tags if possible, otherwise leave empty
-                                });
+                            if (scannedProduct) {
+                                setSelectedProductId(scannedProduct.id);
+                                setIsScanModalOpen(false);
+                                logEvent('Inventory', 'scan_barcode', 'success');
                             } else {
-                                showToast('Product details not found. Opening form to add manually.', 'info');
-                                // Product not found in API either, open add modal with just barcode
-                                handleOpenAddModal({
-                                    barcode: code
-                                });
+                                // Product not found locally, try to look it up using API
+                                setIsScanModalOpen(false);
+                                showToast(`Searching for product details (Code: ${code})...`, 'info');
+                                try {
+                                    const scannedData = await barcodeService.lookupProduct(code);
+
+                                    if (scannedData) {
+                                        showToast(`Product found via ${scannedData.source}!`, 'success');
+                                        // Product found in API, open add modal with prefilled data
+                                        handleOpenAddModal({
+                                            name: scannedData.name || '',
+                                            description: scannedData.description || '',
+                                            barcode: code,
+                                            imageUrls: scannedData.imageUrls || [],
+                                            brand: scannedData.brand || '',
+                                            weight: scannedData.weight || 0,
+                                            unitOfMeasure: scannedData.unitOfMeasure || 'unit',
+                                            // Try to match category tags if possible, otherwise leave empty
+                                        });
+                                    } else {
+                                        showToast('Product details not found. Opening form to add manually.', 'info');
+                                        // Product not found in API either, open add modal with just barcode
+                                        handleOpenAddModal({
+                                            barcode: code
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error("Error looking up barcode:", error);
+                                    showToast('Search failed. Please enter details manually.', 'error');
+                                    // Fallback to just opening modal with barcode
+                                    handleOpenAddModal({
+                                        barcode: code
+                                    });
+                                }
                             }
-                        } catch (error) {
-                            console.error("Error looking up barcode:", error);
-                            showToast('Search failed. Please enter details manually.', 'error');
-                            // Fallback to just opening modal with barcode
-                            handleOpenAddModal({
-                                barcode: code
-                            });
-                        }
-                    }
-                }}
-            />
-            </Suspense>
+                        }}
+                    />
+                </Suspense>
             )}
 
             <BarcodeLookupModal

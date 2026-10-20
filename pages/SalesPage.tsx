@@ -836,7 +836,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         onClick={() => { setPosView('history'); setMobileCartOpen(false); setPosMenuOpen(false); }}
                                     >
                                         <PosIcon name="receipt_long" size={20} fill={posView === 'history' ? 1 : 0} />
-                                        Sales History &amp; Refunds
+                                        Sales History
                                         {posView === 'history' && <PosIcon name="check" size={18} className="sale__menu-check" />}
                                     </button>
                                     <button
@@ -865,7 +865,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         onClick={() => { setShowReceiptSetup(true); setPosMenuOpen(false); }}
                                     >
                                         <PosIcon name="receipt" size={20} />
-                                        Set Up Receipt
+                                        Receipt Details
                                     </button>
                                     <button
                                         type="button"
@@ -897,7 +897,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         onClick={() => { setShowCashDrawer(true); setPosMenuOpen(false); }}
                                     >
                                         <PosIcon name="point_of_sale" size={20} />
-                                        Till / Cash Drawer
+                                        Cash Drawer
                                     </button>
                                     <div className="sale__menu-sep" />
                                     <button
@@ -910,15 +910,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         Inventory
                                     </button>
                                     <div className="sale__menu-sep" />
-                                    <button
-                                        type="button"
-                                        role="menuitem"
-                                        className="sale__menu-item"
-                                        onClick={() => { navigate('/'); setPosMenuOpen(false); }}
-                                    >
-                                        <PosIcon name="grid_view" size={20} />
-                                        Full SalePilot App
-                                    </button>
+
                                     {onLogout && (
                                         <button
                                             type="button"

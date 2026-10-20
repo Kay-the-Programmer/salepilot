@@ -95,7 +95,6 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
         <main className="crm-main crm-section-fade crm-wa">
             <div className="crm-pagehead crm-wa-head">
                 <div className="crm-wa-head__text">
-                    <p className="crm-pagehead__eyebrow">WhatsApp Business</p>
                     <h1 className="crm-pagehead__title">Messaging</h1>
                     <p className="crm-pagehead__sub">Chat, send and broadcast to your customers on WhatsApp{status?.displayPhoneNumber ? ` · ${status.displayPhoneNumber}` : ''}.</p>
                 </div>

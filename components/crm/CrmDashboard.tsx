@@ -38,15 +38,14 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">CRM</p>
-                    <h2 className="crm-pagehead__title">Store Overview</h2>
+                    <h2 className="crm-pagehead__title">Customer Overview</h2>
                 </div>
                 <div className="crm-pagehead__actions">
                     <button className="crm-btn crm-btn--outline" type="button" onClick={onViewInsights}>
                         <Icon name="insights" size={20} /> Insights
                     </button>
                     <button className="crm-btn crm-btn--filled" type="button" onClick={onAddCustomer}>
-                        <Icon name="person_add" size={20} /> New Customer
+                        <Icon name="person_add" size={20} /> Add Customer
                     </button>
                 </div>
             </div>
