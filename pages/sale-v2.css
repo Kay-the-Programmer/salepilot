@@ -1953,7 +1953,8 @@
   .sale__browse {
     height: 100%;
     padding: var(--v2-space-4);
-    padding-bottom: calc(var(--pos-nav-h, 0px) + 96px);
+    /* Enough room to scroll the last row clear of the docked cart bar. */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 96px);
   }
 
   /* Cart becomes a full-screen slide-up sheet */
@@ -2005,18 +2006,25 @@
     font-size: var(--v2-text-base);
   }
 
-  /* Bottom summary bar */
+  /* Bottom summary bar — docked, not hovering.
+   *
+   * It sits flush on the bottom edge and carries the safe area as its own
+   * padding, so on a phone with a home indicator the bar's surface runs under
+   * the indicator instead of leaving a band of product grid peeking out below
+   * it. It used to offset by `--pos-nav-h`, a bottom nav that no longer
+   * exists, which left exactly that band. */
   .sale__cartbar {
     display: flex;
     position: fixed;
     left: 0;
     right: 0;
-    bottom: calc(var(--pos-nav-h, 0px) + env(safe-area-inset-bottom));
+    bottom: 0;
     z-index: 70;
     align-items: center;
     justify-content: space-between;
     gap: var(--v2-space-3);
     padding: var(--v2-space-3) var(--v2-space-4);
+    padding-bottom: calc(var(--v2-space-3) + env(safe-area-inset-bottom));
     background: var(--v2-color-surface);
     border-top: 1px solid var(--v2-color-border);
     box-shadow: 0 -6px 20px rgba(26, 26, 46, 0.1);
