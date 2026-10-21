@@ -253,11 +253,6 @@ const SubscriptionApp: React.FC = () => {
           { icon: 'receipt_long', label: 'Billing', active: false, onClick: goBilling },
         ]}
         onExit={() => navigate('/')}
-        rightExtra={
-          <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold" title="Profile">
-            {user.profilePicture ? <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" /> : <span>{initial}</span>}
-          </button>
-        }
       />
 
       <div className="flex-1 min-h-0 flex">
@@ -282,12 +277,6 @@ const SubscriptionApp: React.FC = () => {
               </button>
             ))}
           </nav>
-          <div className="px-3 py-3 space-y-1 border-t m3-border-outline-variant">
-            <button onClick={openAppSwitcher} className="sub-navitem">
-              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>apps</span>
-              SalePilot Apps
-            </button>
-          </div>
         </aside>
 
         {/* Main content */}
@@ -311,7 +300,6 @@ const SubscriptionApp: React.FC = () => {
           </div>
         </main>
       </div>
-
 
       {isPaymentModalOpen && (
         <Suspense fallback={null}>
@@ -367,21 +355,19 @@ const ManageView: React.FC<{
         <div className="flex gap-2">
           <button
             onClick={onChangePlan}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${
-              paymentDue
-                ? 'm3-bg-surface-high m3-text-on-surface'
-                : 'm3-bg-primary m3-text-on-primary shadow'
-            }`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${paymentDue
+              ? 'm3-bg-surface-high m3-text-on-surface'
+              : 'm3-bg-primary m3-text-on-primary shadow'
+              }`}
           >
             Change plan
           </button>
           <button
             onClick={onPayCurrentPlan}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${
-              paymentDue
-                ? 'm3-bg-primary m3-text-on-primary shadow'
-                : 'm3-bg-surface-high m3-text-on-surface'
-            }`}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition hover:opacity-90 ${paymentDue
+              ? 'm3-bg-primary m3-text-on-primary shadow'
+              : 'm3-bg-surface-high m3-text-on-surface'
+              }`}
           >
             {payLabel}
           </button>
@@ -586,13 +572,12 @@ const PlansView: React.FC<{
               <button
                 disabled={(isActive && !paymentDue) || loading}
                 onClick={() => onSelect(plan.id)}
-                className={`w-full py-3 px-5 rounded-xl text-sm font-semibold transition active:scale-95 ${
-                  isActive && !paymentDue
-                    ? 'border-2 m3-border-outline-variant m3-text-on-surface-variant cursor-default'
-                    : isActive || featured
-                      ? 'm3-bg-primary-container m3-text-on-primary-container font-bold shadow hover:shadow-lg'
-                      : 'border-2 m3-border-primary m3-text-primary hover:opacity-80'
-                } ${loading && selectedPlan === plan.id ? 'opacity-60' : ''}`}
+                className={`w-full py-3 px-5 rounded-xl text-sm font-semibold transition active:scale-95 ${isActive && !paymentDue
+                  ? 'border-2 m3-border-outline-variant m3-text-on-surface-variant cursor-default'
+                  : isActive || featured
+                    ? 'm3-bg-primary-container m3-text-on-primary-container font-bold shadow hover:shadow-lg'
+                    : 'border-2 m3-border-primary m3-text-primary hover:opacity-80'
+                  } ${loading && selectedPlan === plan.id ? 'opacity-60' : ''}`}
               >
                 {loading && selectedPlan === plan.id
                   ? 'Processing…'
