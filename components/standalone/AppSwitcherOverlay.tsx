@@ -176,9 +176,6 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                     <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                         <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">apps</span>
                     </span>
-                    <div className="min-w-0">
-                        <h2 className="text-base font-extrabold text-brand-text leading-tight truncate">App Menu</h2>
-                    </div>
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
                     <img src={salepilotlogo} alt="SalePilot" className="h-7 sm:h-8 w-auto object-contain" />
