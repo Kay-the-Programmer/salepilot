@@ -81,7 +81,7 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
             >
                 <span className="cart__charge-label">
                     <PosIcon name="point_of_sale" size={22} fill={1} />
-                    Process Payment
+                    Pay
                 </span>
                 <span className="cart__charge-total tnum">{formatCurrency(total, storeSettings)}</span>
             </button>
