@@ -260,3 +260,18 @@ export const resetPassword = async (
 ): Promise<void> => {
     await api.post('/auth/reset-password', { token, newPassword });
 };
+
+/**
+ * Hand a shared till to the staff member whose till PIN this is. The session
+ * (cookie and stored user) becomes theirs, so sales are stamped with them.
+ */
+export const switchCashier = async (pin: string): Promise<User> => {
+    const user = await api.post<User>('/auth/till-switch', { pin });
+    const normalized = normalizeUser(user);
+    if (!normalized?.token) throw new Error('Could not switch cashier.');
+    return persistSession(normalized);
+};
+
+/** Set (or with null, remove) the signed-in user's own till PIN. */
+export const setTillPin = (pin: string | null) => api.put<{ hasTillPin: boolean }>('/auth/till-pin', { pin });
+export const getTillPin = () => api.get<{ hasTillPin: boolean }>('/auth/till-pin');

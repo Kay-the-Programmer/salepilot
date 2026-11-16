@@ -264,3 +264,34 @@ export const downloadDocumentPdf = async (doc: SalesDocument, settings: StoreSet
 export const printDocumentPdf = async (doc: SalesDocument, settings: StoreSettings | null) => {
     printPdf(await buildWithLogo(doc, settings));
 };
+
+/**
+ * Send the document to the customer in one tap.
+ * On phones the PDF itself goes to the share sheet (WhatsApp, email, …).
+ * Elsewhere WhatsApp opens on the customer's number with a short summary and
+ * the PDF downloads so it can be attached.
+ */
+export const shareDocument = async (
+    doc: SalesDocument,
+    settings: StoreSettings | null,
+    message: string,
+    waLink: string | null,
+): Promise<'shared' | 'whatsapp' | 'downloaded'> => {
+    const label = doc.docType === 'quotation' ? 'Quotation' : 'Invoice';
+    const pdf = await buildWithLogo(doc, settings);
+    const fileName = pdfFileName(label, settings, doc.number);
+    const blob = pdf.output('blob') as Blob;
+    const file = typeof File !== 'undefined' ? new File([blob], fileName, { type: 'application/pdf' }) : null;
+    const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
+    if (file && nav.share && nav.canShare?.({ files: [file] })) {
+        try {
+            await nav.share({ files: [file], text: message, title: `${label} ${doc.number}` });
+            return 'shared';
+        } catch (e: any) {
+            if (e?.name === 'AbortError') return 'shared';
+        }
+    }
+    savePdf(pdf, fileName);
+    if (waLink) { window.open(waLink, '_blank', 'noopener'); return 'whatsapp'; }
+    return 'downloaded';
+};

@@ -18,7 +18,8 @@ import {
 } from './types';
 import { downloadManualDocPdf, printManualDocPdf } from './manualDocPdf';
 import { amountInWords, currencyUnits } from './amountInWords';
-import { downloadDocumentPdf, printDocumentPdf } from './documentPdf';
+import { downloadDocumentPdf, printDocumentPdf, shareDocument } from './documentPdf';
+import { waChatLink } from '../../utils/whatsapp';
 import { announceLogoUpdate } from '../../utils/pdfDocument';
 import '../crm/crm.css';
 // Defines the `.sp-assistant` scope: both the --m3-* custom properties and the
@@ -218,10 +219,10 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
      */
     const convertToSale = async (doc: SalesDocument) => {
         const ok = await confirm({
-            title: `Convert ${doc.number} to a sale?`,
-            message: 'This records the sale, reduces stock and posts to the books. '
-                + 'The invoice becomes read-only afterwards.',
-            confirmLabel: 'Convert to sale',
+            title: `Issue ${doc.number}?`,
+            message: `${doc.customerName} will owe ${formatCurrency(doc.total, settings!)}. `
+                + 'The goods come off stock, the amount shows under Customers owe you, and the invoice can no longer be edited.',
+            confirmLabel: 'Issue invoice',
         });
         if (!ok) return;
 
@@ -263,9 +264,9 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
 
             await api.post(`/sales-documents/${doc.id}/link-sale`, { saleId: transactionId });
             await refreshAfterChange(doc.id);
-            setToast('Sale recorded. It now appears in Receivables.');
+            setToast(`${doc.number} issued. ${doc.customerName} now owes ${formatCurrency(doc.total, settings!)}.`);
         } catch (e: any) {
-            setError(e?.message || 'Could not convert to a sale.');
+            setError(e?.message || 'Could not issue the invoice.');
         } finally {
             setBusy(false);
         }
@@ -518,7 +519,27 @@ const DocumentDetail: React.FC<{
     const isQuote = doc.docType === 'quotation';
     // Bank accounts the store offers on invoices; the same filter the PDF applies.
     const invoiceBanks = (storeSettings?.bankAccounts || []).filter(b => b.showOnInvoices !== false);
-    const next = NEXT_STATUSES[doc.status] || [];
+    // An invoice is issued with one tap (below), which records the sale; its
+    // only other move is to be cancelled. Quotes keep the full status flow.
+    const next = (NEXT_STATUSES[doc.status] || []).filter(st => isQuote || st === 'cancelled');
+    const [sending, setSending] = useState(false);
+    const send = async () => {
+        setSending(true);
+        try {
+            const label = isQuote ? 'quotation' : 'invoice';
+            const lines = [
+                `Hello ${doc.customerName},`,
+                `Here is your ${label} ${doc.number} from ${storeSettings?.name || 'us'} for ${formatCurrency(doc.total, storeSettings!)}.`,
+                doc.validUntil ? (isQuote ? `Valid until ${formatDocumentDate(doc.validUntil)}.` : `Please pay by ${formatDocumentDate(doc.validUntil)}.`) : '',
+                ...invoiceBanks.slice(0, 1).map(b => [b.bankName, b.accountName, b.accountNumber].filter(Boolean).join(' · ')),
+                'Thank you.',
+            ].filter(Boolean);
+            const text = lines.join(String.fromCharCode(10));
+            await shareDocument(doc, storeSettings, text, waChatLink(doc.customerPhone, text));
+        } finally {
+            setSending(false);
+        }
+    };
 
     return (
         <div className="sp-assistant sp-docs fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
@@ -643,6 +664,14 @@ const DocumentDetail: React.FC<{
                             onClick={() => { void (isPriced(doc.docType) ? printDocumentPdf(doc, storeSettings) : printManualDocPdf(doc, storeSettings)); }}>
                             <Icon name="print" size={16} /> Print
                         </button>
+                        {isPriced(doc.docType) && doc.status !== 'cancelled' && (
+                            <button type="button" disabled={sending}
+                                className="px-3 py-2 rounded-lg text-sm font-semibold border m3-border-outline-variant disabled:opacity-50"
+                                onClick={() => { void send(); }}
+                                title={doc.customerPhone ? `Send to ${doc.customerPhone}` : 'Share the PDF'}>
+                                <Icon name="send" size={16} /> {doc.customerPhone ? 'Send on WhatsApp' : 'Share'}
+                            </button>
+                        )}
                         {doc.status === 'draft' && (
                             <button type="button" className="px-3 py-2 rounded-lg text-sm font-semibold border m3-border-outline-variant" onClick={onEdit}>
                                 <Icon name="edit" size={16} /> Edit
@@ -672,7 +701,7 @@ const DocumentDetail: React.FC<{
                             <button type="button" disabled={busy}
                                 className="px-3 py-2 rounded-lg text-sm font-bold text-white bg-[color:var(--m3-primary)] disabled:opacity-50"
                                 onClick={onConvertToSale}>
-                                Convert to sale
+                                Issue invoice
                             </button>
                         )}
                         {canDelete && doc.status !== 'converted' && (

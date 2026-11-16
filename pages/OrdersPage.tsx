@@ -13,9 +13,10 @@ import OrdersMetrics from '../components/orders/OrdersMetrics';
 import OrdersFilterBar from '../components/orders/OrdersFilterBar';
 import OrdersList from '../components/orders/OrdersList';
 import OrderDetailContent from '../components/orders/OrderDetailContent';
-import { HiOutlineXMark, HiOutlineBanknotes, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
+import { HiOutlineXMark, HiOutlineBanknotes } from 'react-icons/hi2';
 import { useToast } from '../contexts/ToastContext';
 import { errorText } from '../services/apiErrorMessages';
+import OrderActions from '../components/orders/OrderActions';
 
 
 
@@ -140,21 +141,29 @@ export default function OrdersPage({ storeSettings, onDataRefresh }: OrdersPageP
             if (selectedOrder && selectedOrder.transactionId === orderId) {
                 setSelectedOrder({ ...selectedOrder, fulfillmentStatus: newStatus });
             }
-            showToast(`Order marked as ${newStatus}!`, 'success');
+            const said: Record<string, string> = { accepted: 'Order accepted', fulfilled: 'Order is ready', shipped: 'Order shipped', cancelled: 'Order cancelled, stock put back' };
+            showToast(said[newStatus] || 'Order updated', 'success');
             onDataRefresh?.();
+            return true;
         } catch (error: any) {
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
             showToast(errorMessage, 'error');
+            return false;
         }
     };
 
     const updateStatus = async (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
-        const ok = await confirm({
-            title: 'Update Order Status',
-            message: `Are you sure you want to mark this order as ${newStatus}?`,
-            confirmLabel: 'Update Status',
-        });
-        if (ok) await proceedWithUpdateStatus(orderId, newStatus);
+        // Only cancelling needs a second tap; the other steps are easy to follow up.
+        if (newStatus === 'cancelled') {
+            const ok = await confirm({
+                title: 'Cancel this order?',
+                message: 'The items go back on the shelf and the customer no longer owes for it.',
+                confirmLabel: 'Cancel order',
+                danger: true,
+            });
+            if (!ok) return false;
+        }
+        return proceedWithUpdateStatus(orderId, newStatus);
     };
 
     const filteredOrders = useMemo(() => {
@@ -253,25 +262,7 @@ export default function OrdersPage({ storeSettings, onDataRefresh }: OrdersPageP
                                         </button>
                                     )}
 
-                                    {selectedOrder.fulfillmentStatus === 'pending' && (
-                                        <button
-                                            onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
-                                            className="w-full py-3 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
-                                        >
-                                            <HiOutlineCheckCircle className="w-5 h-5" />
-                                            Fulfill Order
-                                        </button>
-                                    )}
-
-                                    {selectedOrder.fulfillmentStatus === 'fulfilled' && (
-                                        <button
-                                            onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
-                                            className="w-full py-3 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
-                                        >
-                                            <HiOutlineTruck className="w-5 h-5" />
-                                            Mark Shipped
-                                        </button>
-                                    )}
+                                    <OrderActions order={selectedOrder} storeSettings={storeSettings} onUpdateStatus={updateStatus} vertical />
                                 </div>
                             </div>
                         </div>

@@ -13,7 +13,8 @@ interface ProcureSuppliersProps {
     purchaseOrders: PurchaseOrder[];
     supplierInvoices: SupplierInvoice[];
     storeSettings?: StoreSettings | null;
-    onSaveSupplier: (supplier: Supplier) => void;
+    /** Resolves false when the save was refused, so the form stays open. */
+    onSaveSupplier: (supplier: Supplier) => void | Promise<unknown>;
     onDeleteSupplier: (supplierId: string) => void;
     onPlaceOrder: (supplierId?: string) => void;
 }
@@ -62,7 +63,10 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
 
     const openAdd = () => { setEditing(null); setFormOpen(true); };
     const openEdit = (s: Supplier) => { setEditing(s); setFormOpen(true); };
-    const handleSave = (s: Supplier) => { onSaveSupplier(s); setFormOpen(false); setEditing(null); };
+    const handleSave = async (s: Supplier) => {
+        const ok = await onSaveSupplier(s);
+        if (ok !== false) { setFormOpen(false); setEditing(null); }
+    };
     const handleDelete = async (s: Supplier) => {
         const ok = await confirm({
             title: `Delete ${s.name}?`,

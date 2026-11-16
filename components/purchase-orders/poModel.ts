@@ -1,4 +1,4 @@
-import { Product, PurchaseOrder, POItem } from '../../types';
+import { Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
 import { num } from '../crm/crmModel';
 import { purchaseOrderMeta } from '../ui/StatusPill';
 
@@ -28,42 +28,54 @@ export const computePoTotals = (items: POItem[], shippingCost = 0, taxRate = 0):
     return { subtotal, tax, total: subtotal + num(shippingCost) + tax, units };
 };
 
-/** Suggested top-up quantity to bring a product back above its reorder point. */
-export const reorderQty = (p: Product): number =>
-    Math.max(1, (num(p.reorderPoint) + num(p.safetyStock)) - num(p.stock));
+/**
+ * The reorder rule — mirrored exactly from the server (s-back
+ * services/reorder.ts), so the low-stock alert, the Procurement badge and the
+ * suggested orders all agree on what is low and how much to buy.
+ */
+export const thresholdFor = (p: Pick<Product, 'reorderPoint'>, settings?: Pick<StoreSettings, 'lowStockThreshold'> | null): number => {
+    const rp = num(p.reorderPoint);
+    if (rp > 0) return rp;
+    const st = num(settings?.lowStockThreshold);
+    return st > 0 ? st : 5;
+};
 
-/** At/below reorder point and eligible for a draft. */
-export const isLow = (p: Product): boolean =>
-    p.status !== 'archived' && typeof p.reorderPoint !== 'undefined'
-    && num(p.reorderPoint) > 0 && num(p.stock) <= num(p.reorderPoint);
+/** At or below its threshold, and still on sale. */
+export const isLow = (p: Product, settings?: Pick<StoreSettings, 'lowStockThreshold'> | null): boolean =>
+    p.status !== 'archived' && num(p.stock) <= thresholdFor(p, settings);
 
 /**
- * How many items a reorder would cover — the badge on the Procurement Hub.
- *
- * Only the count, deliberately. The drafts themselves (quantities and money)
- * are built by the server at GET /purchase-orders/reorder-suggestions, which
- * is where the Auto Reorder entitlement is enforced; duplicating that
- * arithmetic here just gave it a second place to drift from.
+ * How much to buy: up to twice the threshold (or threshold + safety stock if
+ * larger), whole cartons for unit goods with a carton size, two decimals for
+ * weighed goods, never less than one.
  */
-export const countReorderItems = (products: Product[]): number =>
-    products.filter(p => p.supplierId && isLow(p)).length;
+export const reorderQty = (p: Product, settings?: Pick<StoreSettings, 'lowStockThreshold'> | null): number => {
+    const threshold = thresholdFor(p, settings);
+    const target = Math.max(threshold * 2, threshold + num(p.safetyStock));
+    const need = target - num(p.stock);
+    if (p.unitOfMeasure === 'kg') return Math.max(0.01, Math.ceil(need * 100) / 100);
+    let qty = Math.max(1, Math.ceil(need));
+    const carton = Math.floor(num(p.unitsPerCarton));
+    if (carton > 1) qty = Math.ceil(qty / carton) * carton;
+    return qty;
+};
 
-/** Products below reorder point for a supplier, each with a suggested quantity.
+/** How many products are low — the badge on the Procurement Hub and Buy stock. */
+export const countReorderItems = (products: Product[], settings?: Pick<StoreSettings, 'lowStockThreshold'> | null): number =>
+    products.filter(p => p.status === 'active' && isLow(p, settings)).length;
+
+/** Low products (for a supplier, when one is chosen), each with a suggested quantity.
  *  `exclude` skips products already on the order. */
 export const suggestReorder = (
     products: Product[],
     supplierId: string | null | undefined,
     exclude: Set<string> = new Set(),
-): (Product & { suggestedQty: number })[] => {
-    // With a supplier chosen, suggest what that supplier normally provides;
-    // without one, suggest everything below its reorder point, so an order
-    // raised before the supplier is known still gets the same head start.
-    return products
+    settings?: Pick<StoreSettings, 'lowStockThreshold'> | null,
+): (Product & { suggestedQty: number })[] =>
+    products
         .filter(p => (supplierId ? p.supplierId === supplierId : true)
-            && p.status === 'active' && !exclude.has(p.id)
-            && typeof p.reorderPoint !== 'undefined' && num(p.stock) < num(p.reorderPoint))
-        .map(p => ({ ...p, suggestedQty: reorderQty(p) }));
-};
+            && p.status === 'active' && !exclude.has(p.id) && isLow(p, settings))
+        .map(p => ({ ...p, suggestedQty: reorderQty(p, settings) }));
 
 export const productToPoItem = (p: Product, quantity = 1): POItem => ({
     productId: p.id, productName: p.name, sku: p.sku, quantity, costPrice: num(p.costPrice), receivedQuantity: 0,
@@ -84,11 +96,20 @@ export function applyPlaceOrder<T extends { status: PurchaseOrder['status']; ord
     return po;
 }
 
+/** A suggested line, with the context the Buy stock screen shows. */
+export interface ReorderDraftItem extends POItem {
+    stock?: number;
+    threshold?: number;
+    unitOfMeasure?: 'unit' | 'kg';
+    unitsPerCarton?: number | null;
+}
+
 /** An auto-generated reorder draft for a single supplier. */
 export interface ReorderDraft {
-    supplierId: string;
-    supplierName: string;
-    items: POItem[];
+    /** null = these products have no supplier yet; the buyer picks one. */
+    supplierId: string | null;
+    supplierName: string | null;
+    items: ReorderDraftItem[];
     units: number;
     subtotal: number;
     tax: number;

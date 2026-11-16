@@ -18,6 +18,7 @@ import {
 } from '@/components/icons';
 import { ProductPlaceholderIcon, productImageUrl } from './productImage';
 import InlineNumberEdit from './detail/InlineNumberEdit';
+import { thresholdFor } from '../purchase-orders/poModel';
 
 const asNumber = (val: any) => {
   const n = typeof val === 'number' ? val : parseFloat(val);
@@ -38,6 +39,8 @@ const ProductDetailView: React.FC<{
   onPersonalUse?: (product: Product) => void;
   /** Saves a single field in place (price, cost, reorder level). Omit to make them read-only. */
   onQuickEdit?: (patch: Partial<Product>) => Promise<void>;
+  /** Opens the reorder sheet (buy more from a supplier). */
+  onReorder?: (product: Product) => void;
   onBack?: () => void;
 }> = ({
   product,
@@ -52,6 +55,7 @@ const ProductDetailView: React.FC<{
   onAdjustStock,
   onPersonalUse,
   onQuickEdit,
+  onReorder,
   onBack
 }) => {
   // Superadmin counts as a manager — in Store Mode they act as the store's admin.
@@ -60,7 +64,7 @@ const ProductDetailView: React.FC<{
   const price = asNumber(product.price);
   const cost = asNumber(product.costPrice);
   const stock = asNumber(product.stock);
-  const reorder = product.reorderPoint ?? storeSettings.lowStockThreshold;
+  const reorder = thresholdFor(product, storeSettings);
   const unit = product.unitOfMeasure === 'kg' ? 'kg' : 'units';
   const isOut = stock <= 0;
   const isLow = stock <= reorder;
@@ -196,6 +200,15 @@ const ProductDetailView: React.FC<{
                     <AdjustmentsHorizontalIcon className="w-5 h-5" />
                     + Stock
                   </button>
+                  {onReorder && (
+                    <button
+                      onClick={() => onReorder(product)}
+                      className={`${isLow ? 'bg-sp-orange hover:bg-sp-orange/90 text-white border-transparent' : 'border-brand-border text-brand-text hover:bg-surface-variant'} border transition-colors px-5 py-3 rounded-lg text-sm font-semibold flex items-center gap-2`}
+                    >
+                      <ShoppingCartIcon className="w-5 h-5" />
+                      Reorder
+                    </button>
+                  )}
                   <button
                     onClick={() => onEdit(product)}
                     className="border border-brand-border text-brand-text hover:bg-surface-variant transition-colors px-5 py-3 rounded-lg text-sm font-semibold flex items-center gap-2"

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import PaySupplierModal from '../PaySupplierModal';
 import { SupplierInvoice, PurchaseOrder, StoreSettings, SupplierPayment, Supplier } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 import { toneClass, toneDot } from '../../ui/StatusPill';
@@ -23,6 +24,8 @@ interface APManagementViewProps {
     onViewInvoice: (invoice: SupplierInvoice) => void;
     suppliers: Supplier[];
     onOpenInvoiceForm: () => void;
+    /** After a payment spread over several bills. */
+    onSupplierPaid?: () => void;
 }
 
 const FILTERS: { id: string; label: string }[] = [
@@ -38,7 +41,9 @@ const paidAmount = (inv: SupplierInvoice) => (inv.payments && inv.payments.lengt
     ? inv.payments.reduce((sum, p) => sum + p.amount, 0)
     : (inv.amountPaid || 0);
 
-const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, storeSettings, onRecordPayment, onViewInvoice, onOpenInvoiceForm }) => {
+const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, suppliers, storeSettings, onRecordPayment, onViewInvoice, onOpenInvoiceForm, onSupplierPaid }) => {
+    const [payOpen, setPayOpen] = useState(false);
+    const anyOwed = supplierInvoices.some(i => (Number(i.amount) || 0) - (Number(i.amountPaid) || 0) > 0.004);
     const [invoiceToPay, setInvoiceToPay] = useState<SupplierInvoice | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
@@ -106,16 +111,26 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Accounts Payable</h3>
-                    <p className="text-sm m3-text-on-surface-variant mt-1">Manage supplier invoices and payments</p>
+                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Bills to pay</h3>
+                    <p className="text-sm m3-text-on-surface-variant mt-1">What you owe suppliers (accounts payable) and payments made</p>
                 </div>
+<div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
+                <button
+                    type="button"
+                    disabled={!anyOwed}
+                    onClick={() => setPayOpen(true)}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 m3-bg-primary m3-text-on-primary font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                >
+                    Pay supplier
+                </button>
                 <button
                     onClick={onOpenInvoiceForm}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 m3-bg-primary m3-text-on-primary font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all self-start sm:self-auto"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border m3-border-outline-variant m3-text-on-surface font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all"
                 >
                     <PlusIcon className="w-5 h-5" />
                     Record Invoice
                 </button>
+                </div>
             </div>
 
             {/* KPI row */}
@@ -308,6 +323,14 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                     storeSettings={storeSettings}
                 />
             )}
+            <PaySupplierModal
+                isOpen={payOpen}
+                onClose={() => setPayOpen(false)}
+                suppliers={suppliers}
+                bills={supplierInvoices}
+                storeSettings={storeSettings}
+                onPaid={() => onSupplierPaid?.()}
+            />
         </div>
     );
 };

@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney } from '../crm/crmModel';
-import { computePoTotals, suggestReorder, productToPoItem, newPoIdentifiers, applyPlaceOrder } from '../purchase-orders/poModel';
+import {
+    computePoTotals, suggestReorder, productToPoItem, newPoIdentifiers, applyPlaceOrder, isLow, reorderQty, thresholdFor,
+} from '../purchase-orders/poModel';
 import { useToast } from '../../contexts/ToastContext';
-
-type Step = 'build' | 'review';
+import './procure-order-form.css';
 
 interface ProcureOrderFormProps {
     poToEdit?: PurchaseOrder | null;
@@ -13,365 +14,412 @@ interface ProcureOrderFormProps {
     products: Product[];
     storeSettings: StoreSettings;
     initialSupplierId?: string;
-    /** Pre-populated items (e.g. from an auto-generated reorder draft). */
+    /** Pre-populated items (e.g. from Buy stock's "Add other products"). */
     initialItems?: POItem[];
-    onSave: (po: PurchaseOrder, placeOrder: boolean) => void;
+    /** Who the store last ordered from — pre-selected on a brand-new order. */
+    lastSupplierId?: string;
+    /** Resolves false when the save was refused: the form stays open and can be saved again. */
+    onSave: (po: PurchaseOrder, placeOrder: boolean) => void | Promise<unknown>;
     onCancel: () => void;
 }
 
+type Filter = 'low' | 'supplier' | 'all';
+
+const fmtQty = (q: number, kg: boolean) => (kg ? (Number.isInteger(q) ? String(q) : q.toFixed(2)) : String(Math.round(q)));
+
 /**
- * New / edit purchase order — the M3 wizard (Supplier → Add Items → Review).
- * PO domain logic (totals, reorder suggestions, place-order transition, id/number)
- * comes from the single source of truth `components/purchase-orders/poModel`.
+ * New / edit purchase order — two panes.
+ *
+ * Left: the catalogue to pick from (search, Low stock / This supplier / All,
+ * one tap adds a product with a sensible amount). Right: the order being
+ * built (supplier, lines with −/+, totals, and the single primary action).
+ * On a phone the panes stack behind a Products / Order switch, with the total
+ * and Place order pinned to the bottom.
+ *
+ * PO domain logic (totals, reorder rule, place-order transition, id/number)
+ * comes from `components/purchase-orders/poModel`.
  */
 export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
-    poToEdit, suppliers, products, storeSettings, initialSupplierId, initialItems, onSave, onCancel, }) => {
+    poToEdit, suppliers, products, storeSettings, initialSupplierId, initialItems, lastSupplierId, onSave, onCancel,
+}) => {
     const { showToast } = useToast();
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
-        const prefill = initialSupplierId ? suppliers.find(s => s.id === initialSupplierId) : null;
+        const prefillId = initialSupplierId || lastSupplierId;
+        const prefill = prefillId ? suppliers.find(s => s.id === prefillId) : null;
         return {
             supplierId: prefill?.id || '', supplierName: prefill?.name || '', status: 'draft',
             items: initialItems ? initialItems.map(i => ({ ...i })) : [], notes: '', subtotal: 0, shippingCost: 0, tax: 0, total: 0,
             expectedAt: undefined, isMarketplaceOrder: !!prefill?.linkedStoreId,
         };
     });
-    const [step, setStep] = useState<Step>('build');
-    const [supplierPickerOpen, setSupplierPickerOpen] = useState(!poToEdit && !initialSupplierId);
-    const [itemPickerOpen, setItemPickerOpen] = useState(false);
-    const [productSearch, setProductSearch] = useState('');
+    const [supplierOpen, setSupplierOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    // Phone layout: which pane is showing.
+    const [pane, setPane] = useState<'products' | 'order'>(
+        poToEdit || (initialItems && initialItems.length) ? 'order' : 'products',
+    );
+    const searchRef = useRef<HTMLInputElement>(null);
+    const savingRef = useRef(false);
+    const [saving, setSaving] = useState(false);
+    const [justAdded, setJustAdded] = useState<string | null>(null);
 
-    const selectSupplier = (supplier: Supplier) => {
-        // Items survive a supplier change now that any product can be ordered
-        // from any supplier — switching who you buy from shouldn't wipe the
-        // basket you just built.
-        setPo(prev => ({
-            ...prev,
-            supplierId: supplier.id,
-            supplierName: supplier.name,
-            isMarketplaceOrder: !!supplier.linkedStoreId,
-        }));
-        setSupplierPickerOpen(false);
-    };
+    const supplier = useMemo(() => suppliers.find(s => s.id === po.supplierId) || null, [suppliers, po.supplierId]);
+    const productById = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
+    const inOrder = useMemo(() => new Set(po.items.map(i => i.productId)), [po.items]);
 
-    /** Raise the order with no supplier named; it can be set before receiving. */
-    const clearSupplier = () => {
-        setPo(prev => ({ ...prev, supplierId: '', supplierName: '', isMarketplaceOrder: false }));
-        setSupplierPickerOpen(false);
-    };
+    const lowForOrder = useMemo(
+        () => suggestReorder(products, po.supplierId, inOrder, storeSettings),
+        [products, po.supplierId, inOrder, storeSettings],
+    );
+    const lowCount = useMemo(
+        () => products.filter(p => p.status === 'active' && isLow(p, storeSettings)
+            && (!po.supplierId || p.supplierId === po.supplierId)).length,
+        [products, po.supplierId, storeSettings],
+    );
+    const [filter, setFilter] = useState<Filter>(() => (lowCount > 0 ? 'low' : 'all'));
 
-    const addProductToPO = (product: Product, quantity = 1) => {
-        setPo(prev => {
-            if (prev.items.some(i => i.productId === product.id)) { showToast('Product is already in this PO.', 'info'); return prev; }
-            return { ...prev, items: [...prev.items, productToPoItem(product, quantity)] };
-        });
-    };
+    useEffect(() => {
+        if (pane === 'products' && !poToEdit) {
+            const t = setTimeout(() => searchRef.current?.focus(), 60);
+            return () => clearTimeout(t);
+        }
+    }, [pane, poToEdit]);
 
-    const updateItem = (productId: string, field: 'quantity' | 'costPrice', value: number) => {
-        setPo(prev => ({ ...prev, items: prev.items.map(i => i.productId === productId ? { ...i, [field]: Math.max(0, value) } : i) }));
-    };
-    const removeItem = (productId: string) => setPo(prev => ({ ...prev, items: prev.items.filter(i => i.productId !== productId) }));
-
-    // Recompute totals via the shared PO money model.
+    // Totals through the shared PO money model.
     useEffect(() => {
         const { subtotal, tax, total } = computePoTotals(po.items, po.shippingCost, storeSettings.taxRate);
         setPo(prev => ({ ...prev, subtotal, tax, total }));
     }, [po.items, po.shippingCost, storeSettings.taxRate]);
 
-    const supplier = useMemo(() => suppliers.find(s => s.id === po.supplierId) || null, [suppliers, po.supplierId]);
+    const selectSupplier = (s: Supplier | null) => {
+        // The basket survives a supplier change: any product can be bought from anyone.
+        setPo(prev => ({
+            ...prev,
+            supplierId: s?.id || '',
+            supplierName: s?.name || '',
+            isMarketplaceOrder: !!s?.linkedStoreId,
+        }));
+        setSupplierOpen(false);
+    };
 
-    // The whole catalogue is orderable, not just what is already linked to the
-    // chosen supplier: stores buy the same product from whoever has it, and a
-    // product with no supplier on file could not be ordered at all before.
-    // Products already tied to this supplier simply sort first.
-    const availableProducts = useMemo(() => {
-        const inPo = new Set(po.items.map(i => i.productId));
-        const term = productSearch.trim().toLowerCase();
+    const cartonOf = (p?: Product) => (p && p.unitOfMeasure !== 'kg' && num(p.unitsPerCarton) > 1 ? num(p.unitsPerCarton) : 1);
+
+    /** A sensible first amount: the reorder suggestion if low, else one carton, else one. */
+    const firstQty = (p: Product) => (isLow(p, storeSettings) ? reorderQty(p, storeSettings) : cartonOf(p));
+
+    const addProduct = (p: Product, quantity = firstQty(p)) => {
+        if (inOrder.has(p.id)) return;
+        setPo(prev => ({ ...prev, items: [...prev.items, productToPoItem(p, quantity)] }));
+        setJustAdded(p.id);
+        setTimeout(() => setJustAdded(id => (id === p.id ? null : id)), 900);
+    };
+
+    const addAllLow = () => {
+        if (lowForOrder.length === 0) return;
+        setPo(prev => ({ ...prev, items: [...prev.items, ...lowForOrder.map(p => productToPoItem(p, p.suggestedQty))] }));
+        showToast(`Added ${lowForOrder.length} low-stock product${lowForOrder.length === 1 ? '' : 's'}.`, 'success');
+    };
+
+    const setQty = (productId: string, q: number) =>
+        setPo(prev => ({ ...prev, items: prev.items.map(i => (i.productId === productId ? { ...i, quantity: Math.max(0, q) } : i)) }));
+    const setCost = (productId: string, c: number) =>
+        setPo(prev => ({ ...prev, items: prev.items.map(i => (i.productId === productId ? { ...i, costPrice: Math.max(0, c) } : i)) }));
+    const removeItem = (productId: string) => setPo(prev => ({ ...prev, items: prev.items.filter(i => i.productId !== productId) }));
+
+    const step = (it: POItem, dir: 1 | -1) => {
+        const p = productById.get(it.productId);
+        const kg = p?.unitOfMeasure === 'kg';
+        const next = Math.max(0, num(it.quantity) + dir * cartonOf(p));
+        setQty(it.productId, kg ? Math.round(next * 100) / 100 : next);
+    };
+
+    // The catalogue, filtered. Products this supplier normally provides sort first.
+    const catalogue = useMemo(() => {
+        const term = search.trim().toLowerCase();
         return products
-            .filter(p => p.status === 'active' && !inPo.has(p.id)
-                && (!term || p.name.toLowerCase().includes(term) || (p.sku || '').toLowerCase().includes(term)))
+            .filter(p => p.status === 'active')
+            .filter(p => !term || p.name.toLowerCase().includes(term) || (p.sku || '').toLowerCase().includes(term) || (p.barcode || '').toLowerCase() === term)
+            .filter(p => term ? true
+                : filter === 'low' ? isLow(p, storeSettings) && (!po.supplierId || p.supplierId === po.supplierId)
+                    : filter === 'supplier' ? !!po.supplierId && p.supplierId === po.supplierId
+                        : true)
             .sort((a, b) => {
                 const aOwn = po.supplierId && a.supplierId === po.supplierId ? 0 : 1;
                 const bOwn = po.supplierId && b.supplierId === po.supplierId ? 0 : 1;
                 return aOwn - bOwn || a.name.localeCompare(b.name);
             });
-    }, [po.supplierId, po.items, products, productSearch]);
+    }, [products, search, filter, po.supplierId, storeSettings]);
 
-    const suggested = useMemo(
-        () => suggestReorder(products, po.supplierId, new Set(po.items.map(i => i.productId))),
-        [po.supplierId, po.items, products],
-    );
-
-    const addAllSuggested = () => {
-        if (suggested.length === 0) { showToast(po.supplierId ? 'Nothing to reorder for this supplier.' : 'Nothing is below its reorder point.', 'info'); return; }
-        setPo(prev => ({
-            ...prev,
-            items: [...prev.items, ...suggested.map(p => productToPoItem(p, p.suggestedQty))],
-        }));
-        showToast(`Added ${suggested.length} suggested product${suggested.length === 1 ? '' : 's'}.`, 'success');
-    };
-
-    const totalUnits = po.items.reduce((n, it) => n + num(it.quantity), 0);
+    const lines = po.items.length;
+    const canSave = lines > 0 && po.items.some(i => num(i.quantity) > 0);
 
     const save = (placeOrder: boolean) => {
+        if (!canSave || savingRef.current) return; // one order per tap, however fast the taps
+        savingRef.current = true;
         const ids = poToEdit
             ? { id: poToEdit.id, poNumber: poToEdit.poNumber, createdAt: poToEdit.createdAt }
             : newPoIdentifiers();
-        const base: PurchaseOrder = { ...po, ...ids, status: poToEdit ? po.status : 'draft' };
-        onSave(applyPlaceOrder(base, placeOrder), placeOrder);
+        const base: PurchaseOrder = {
+            ...po,
+            items: po.items.filter(i => num(i.quantity) > 0),
+            ...ids,
+            status: poToEdit ? po.status : 'draft',
+        };
+        setSaving(true);
+        Promise.resolve(onSave(applyPlaceOrder(base, placeOrder), placeOrder)).then(ok => {
+            if (ok === false) { savingRef.current = false; setSaving(false); }
+        }, () => { savingRef.current = false; setSaving(false); });
     };
 
-    const canContinue = po.items.length > 0;
-    const sym = storeSettings.currency?.symbol ?? '$';
+    const canPlace = !poToEdit || po.status === 'draft';
+    const total = formatMoney(po.total, storeSettings);
+
+    const primary = canPlace ? (
+        <button type="button" className="crm-btn crm-btn--primary pof-primary" disabled={!canSave || saving} aria-busy={saving} onClick={() => save(true)}>
+            <Icon name={saving ? "hourglass_top" : "send"} size={20} /> {saving ? "Placing…" : "Place order"}
+        </button>
+    ) : (
+        <button type="button" className="crm-btn crm-btn--primary pof-primary" disabled={!canSave || saving} aria-busy={saving} onClick={() => save(false)}>
+            <Icon name={saving ? "hourglass_top" : "check"} size={20} /> {saving ? "Saving…" : "Save changes"}
+        </button>
+    );
 
     return (
-        <div className="crm-form-overlay" role="dialog" aria-modal="true" aria-label={poToEdit ? 'Edit purchase order' : 'New purchase order'}>
-            <header className="crm-form-bar">
-                <div className="crm-form-bar__left">
-                    <button type="button" className="crm-iconbtn" aria-label="Back" onClick={step === 'review' ? () => setStep('build') : onCancel} style={{ color: 'var(--c-primary)' }}>
-                        <Icon name="arrow_back" />
-                    </button>
-                    <h1 className="crm-form-bar__title">{poToEdit ? `Edit ${poToEdit.poNumber}` : 'New Purchase Order'}</h1>
+        <div className="crm-form-overlay pof" role="dialog" aria-modal="true" aria-label={poToEdit ? 'Edit purchase order' : 'New purchase order'}>
+            {/* ── Top bar ── */}
+            <header className="pof-bar">
+                <button type="button" className="crm-iconbtn" aria-label="Close" onClick={onCancel}>
+                    <Icon name="close" />
+                </button>
+                <div className="pof-bar__title">
+                    <h1>{poToEdit ? `Edit ${poToEdit.poNumber}` : 'New purchase order'}</h1>
+                    <p>{lines === 0 ? 'Pick products to order' : `${lines} product${lines === 1 ? '' : 's'} · ${total}`}</p>
                 </div>
+                {canPlace && (
+                    <button type="button" className="crm-btn crm-btn--ghost pof-bar__draft" disabled={!canSave || saving} onClick={() => save(false)}>
+                        Save draft
+                    </button>
+                )}
             </header>
 
-            <div className="crm-form-scroll">
-                <div className="crm-form-inner" style={{ maxWidth: 880 }}>
-                    {/* Progress */}
-                    <div className="po-steps">
-                        <div className="po-steps__labels">
-                            <span className={po.supplierId ? 'is-done' : 'is-active'}>Supplier (optional)</span>
-                            <span className={step === 'build' ? 'is-active' : 'is-done'}>Add Items</span>
-                            <span className={step === 'review' ? 'is-active' : ''}>Review</span>
-                        </div>
-                        <div className="po-steps__bar">
-                            <div className="po-steps__seg is-on" />
-                            <div className={`po-steps__seg${(po.items.length > 0 || step === 'review') ? ' is-on2' : ''}`} />
-                            <div className={`po-steps__seg${step === 'review' ? ' is-on' : ''}`} />
-                        </div>
-                    </div>
-
-                    {step === 'build' ? (
-                        <>
-                            {/* Supplier */}
-                            <section style={{ marginBottom: 32 }}>
-                                <div className="po-sec-head">
-                                    <h2 className="crm-form-section__title">Supplier <span style={{ fontWeight: 400, color: 'var(--c-on-surface-variant)' }}>(optional)</span></h2>
-                                    {!supplierPickerOpen && (
-                                        <button type="button" className="crm-btn crm-btn--ghost" onClick={() => setSupplierPickerOpen(true)} style={{ padding: '6px 14px' }}>
-                                            <Icon name="sync" size={18} /> {po.supplierId ? 'Change Supplier' : 'Choose Supplier'}
-                                        </button>
-                                    )}
-                                </div>
-
-                                {!supplierPickerOpen && !supplier ? (
-                                    <div className="po-supplier">
-                                        <Avatar name="?" size={56} square />
-                                        <div style={{ minWidth: 0, flex: 1 }}>
-                                            <h3 className="po-supplier__name">No supplier yet</h3>
-                                            <p className="po-supplier__addr">You can add the supplier before receiving the stock.</p>
-                                        </div>
-                                    </div>
-                                ) : supplier && !supplierPickerOpen ? (
-                                    <div className="po-supplier">
-                                        <Avatar name={supplier.name} size={56} square />
-                                        <div style={{ minWidth: 0, flex: 1 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                <h3 className="po-supplier__name">{supplier.name}</h3>
-                                                {supplier.linkedStoreId && <Icon name="verified" size={18} fill={1} className="po-supplier__verified" />}
-                                            </div>
-                                            {supplier.address && <p className="po-supplier__addr">{supplier.address}</p>}
-                                            <div className="po-supplier__contacts">
-                                                {supplier.phone && <span><Icon name="call" size={16} /> {supplier.phone}</span>}
-                                                {supplier.email && <span><Icon name="mail" size={16} /> {supplier.email}</span>}
-                                            </div>
-                                        </div>
-                                        {supplier.paymentTerms && <span className="crm-badge crm-badge--silver">{supplier.paymentTerms}</span>}
-                                    </div>
-                                ) : (
-                                    <div className="po-picker">
-                                        <button type="button" className={`po-picker__row${!po.supplierId ? ' is-active' : ''}`} onClick={clearSupplier}>
-                                            <span className="po-picker__thumb"><Icon name="help" size={20} /></span>
-                                            <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                                                <p className="po-picker__name">No supplier yet</p>
-                                                <p className="po-picker__meta">Raise the order now, name the supplier later</p>
-                                            </div>
-                                            {!po.supplierId && <Icon name="check_circle" size={20} fill={1} className="po-picker__check" />}
-                                        </button>
-                                        {suppliers.length === 0 ? (
-                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>No suppliers on file yet — you can still order without one.</p>
-                                        ) : suppliers.map(s => (
-                                            <button key={s.id} type="button" className={`po-picker__row${s.id === po.supplierId ? ' is-active' : ''}`} onClick={() => selectSupplier(s)}>
-                                                <Avatar name={s.name} size={40} square />
-                                                <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                                                    <p className="po-picker__name">{s.name}</p>
-                                                    <p className="po-picker__meta">{s.contactPerson || s.email || 'Supplier'}</p>
-                                                </div>
-                                                {s.id === po.supplierId && <Icon name="check_circle" size={20} fill={1} className="po-picker__check" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </section>
-
-                            {/* Items */}
-                            <section style={{ marginBottom: 32 }}>
-                                <div className="po-sec-head">
-                                    <h2 className="crm-form-section__title">Order Items</h2>
-                                    <button type="button" className="crm-btn crm-btn--primary" onClick={() => setItemPickerOpen(o => !o)} style={{ padding: '8px 16px' }}>
-                                        <Icon name="add" size={20} /> Add Item
-                                    </button>
-                                </div>
-
-                                {suggested.length > 0 && (
-                                    <button type="button" className="po-suggest" onClick={addAllSuggested}>
-                                        <Icon name="auto_awesome" size={18} fill={1} />
-                                        <span>{suggested.length} product{suggested.length === 1 ? '' : 's'} below reorder point — tap to add suggested quantities.</span>
-                                        <Icon name="add_circle" size={20} />
-                                    </button>
-                                )}
-
-                                {itemPickerOpen && (
-                                    <div className="po-picker" style={{ marginBottom: 16 }}>
-                                        <div className="crm-search" style={{ marginBottom: 8 }}>
-                                            <Icon name="search" size={20} />
-                                            <input type="text" value={productSearch} onChange={e => setProductSearch(e.target.value)} placeholder="Search products to add..." />
-                                        </div>
-                                        {availableProducts.length === 0 ? (
-                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>
-                                                {productSearch.trim() ? `No products match “${productSearch.trim()}”.` : 'Every product is already on this order.'}
-                                            </p>
-                                        ) : availableProducts.slice(0, 40).map(p => (
-                                            <button key={p.id} type="button" className="po-picker__row" onClick={() => { addProductToPO(p); setProductSearch(''); }}>
-                                                <span className="po-picker__thumb"><Icon name="inventory_2" size={20} /></span>
-                                                <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                                                    <p className="po-picker__name">{p.name}</p>
-                                                    <p className="po-picker__meta">
-                                                        SKU {p.sku || '—'} · {formatMoney(num(p.costPrice), storeSettings)} cost
-                                                        {po.supplierId && p.supplierId === po.supplierId ? ' · usual supplier' : ''}
-                                                    </p>
-                                                </div>
-                                                <Icon name="add" size={20} className="po-picker__check" />
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {po.items.length === 0 ? (
-                                    <div className="crm-empty" style={{ padding: '40px 16px', background: 'var(--c-surface-low)', borderRadius: 'var(--c-radius-lg)' }}>
-                                        <Icon name="inventory_2" size={36} />
-                                        <p className="crm-empty__text">No items yet. Tap “Add Item”.</p>
-                                    </div>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                        {po.items.map(it => (
-                                            <div key={it.productId} className="po-item">
-                                                <div className="po-item__id">
-                                                    <span className="po-item__thumb"><Icon name="inventory_2" size={22} /></span>
-                                                    <div style={{ minWidth: 0 }}>
-                                                        <p className="po-item__name">{it.productName}</p>
-                                                        <p className="po-item__sku">SKU: {it.sku}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="po-item__fields">
-                                                    <label className="po-field">
-                                                        <span>Quantity</span>
-                                                        <input type="number" min={0} value={it.quantity} onChange={e => updateItem(it.productId, 'quantity', parseFloat(e.target.value) || 0)} />
-                                                    </label>
-                                                    <label className="po-field">
-                                                        <span>Unit Cost</span>
-                                                        <div className="po-field__money"><i>{sym}</i><input type="number" min={0} step="0.01" value={it.costPrice} onChange={e => updateItem(it.productId, 'costPrice', parseFloat(e.target.value) || 0)} /></div>
-                                                    </label>
-                                                    <div className="po-item__total">
-                                                        <span>Total</span>
-                                                        <p>{formatMoney(num(it.quantity) * num(it.costPrice), storeSettings)}</p>
-                                                    </div>
-                                                    <button type="button" className="crm-iconbtn" aria-label="Remove item" style={{ color: 'var(--c-error)' }} onClick={() => removeItem(it.productId)}>
-                                                        <Icon name="delete" size={20} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </section>
-
-                            {/* Summary */}
-                            {po.items.length > 0 && (
-                                <section className="po-summary">
-                                    <div className="po-summary__head"><Icon name="analytics" size={22} /> <h2 className="crm-form-section__title" style={{ margin: 0 }}>Order Summary</h2></div>
-                                    <div className="po-summary__rows">
-                                        <div className="po-summary__row"><span>Total Items</span><b>{totalUnits} Units</b></div>
-                                        <div className="po-summary__row"><span>Subtotal</span><b>{formatMoney(po.subtotal, storeSettings)}</b></div>
-                                        <div className="po-summary__row"><span>Tax / VAT ({num(storeSettings.taxRate)}%)</span><b>{formatMoney(po.tax, storeSettings)}</b></div>
-                                    </div>
-                                    <div className="po-summary__grand"><span>Grand Total</span><b>{formatMoney(po.total, storeSettings)}</b></div>
-                                </section>
-                            )}
-                        </>
-                    ) : (
-                        /* Review */
-                        <section>
-                            <h2 className="crm-form-section__title" style={{ marginBottom: 16 }}>Review &amp; confirm</h2>
-                            <div className="po-supplier" style={{ marginBottom: 20 }}>
-                                <Avatar name={supplier?.name || '?'} size={48} square />
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <h3 className="po-supplier__name">{supplier?.name || 'No supplier'}</h3>
-                                    <p className="po-supplier__addr">{po.items.length} line{po.items.length === 1 ? '' : 's'} · {totalUnits} units</p>
-                                </div>
-                            </div>
-
-                            <div className="crm-form-section" style={{ gap: 14 }}>
-                                {po.items.map(it => (
-                                    <div key={it.productId} className="po-review-row">
-                                        <div style={{ minWidth: 0 }}>
-                                            <p className="po-item__name">{it.productName}</p>
-                                            <p className="po-item__sku">{it.quantity} × {formatMoney(num(it.costPrice), storeSettings)}</p>
-                                        </div>
-                                        <b>{formatMoney(num(it.quantity) * num(it.costPrice), storeSettings)}</b>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="crm-input-group" style={{ marginTop: 20 }}>
-                                <label className="crm-input-group__label">Expected delivery (optional)</label>
-                                <input type="date" className="crm-input" value={po.expectedAt ? po.expectedAt.slice(0, 10) : ''} onChange={e => setPo(prev => ({ ...prev, expectedAt: e.target.value ? new Date(e.target.value).toISOString() : undefined }))} />
-                            </div>
-                            <div className="crm-input-group" style={{ marginTop: 16 }}>
-                                <label className="crm-input-group__label">Notes (optional)</label>
-                                <textarea className="crm-input" rows={3} value={po.notes || ''} onChange={e => setPo(prev => ({ ...prev, notes: e.target.value }))} placeholder="Delivery instructions, references..." />
-                            </div>
-
-                            <section className="po-summary" style={{ marginTop: 24 }}>
-                                <div className="po-summary__rows">
-                                    <div className="po-summary__row"><span>Subtotal</span><b>{formatMoney(po.subtotal, storeSettings)}</b></div>
-                                    <div className="po-summary__row"><span>Tax / VAT ({num(storeSettings.taxRate)}%)</span><b>{formatMoney(po.tax, storeSettings)}</b></div>
-                                </div>
-                                <div className="po-summary__grand"><span>Grand Total</span><b>{formatMoney(po.total, storeSettings)}</b></div>
-                            </section>
-                        </section>
-                    )}
-                </div>
+            {/* Phone: switch between the two panes */}
+            <div className="pof-switch" role="tablist" aria-label="Order sections">
+                <button type="button" role="tab" aria-selected={pane === 'products'} className={pane === 'products' ? 'is-on' : ''} onClick={() => setPane('products')}>
+                    Products
+                </button>
+                <button type="button" role="tab" aria-selected={pane === 'order'} className={pane === 'order' ? 'is-on' : ''} onClick={() => setPane('order')}>
+                    Order{lines > 0 ? <span className="pof-count">{lines}</span> : null}
+                </button>
             </div>
 
-            <footer className="crm-form-foot">
-                <div className="crm-form-foot__inner" style={{ justifyContent: 'space-between' }}>
-                    <button type="button" className="crm-btn crm-btn--ghost" style={{ color: 'var(--c-on-surface-variant)', padding: '14px 22px' }} onClick={step === 'review' ? () => setStep('build') : onCancel}>
-                        {step === 'review' ? 'Back' : 'Discard'}
-                    </button>
-                    {step === 'build' ? (
-                        <button type="button" className="crm-btn crm-btn--primary" disabled={!canContinue} style={{ opacity: canContinue ? 1 : 0.5, padding: '14px 28px' }} onClick={() => setStep('review')}>
-                            Continue to Review <Icon name="arrow_forward" size={20} />
-                        </button>
-                    ) : (
-                        <div style={{ display: 'flex', gap: 12 }}>
-                            <button type="button" className="crm-btn crm-btn--outline" style={{ padding: '14px 22px' }} onClick={() => save(false)}>Save Draft</button>
-                            <button type="button" className="crm-btn crm-btn--primary" style={{ padding: '14px 26px' }} onClick={() => save(true)}>
-                                <Icon name="check" size={20} /> Place Order
+            <div className={`pof-body pof-body--${pane}`}>
+                {/* ════ Left: catalogue ════ */}
+                <section className="pof-pane pof-cat" aria-label="Products">
+                    <div className="pof-cat__head">
+                        <div className="pof-search">
+                            <Icon name="search" size={20} />
+                            <input
+                                ref={searchRef}
+                                type="search"
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search name, SKU or barcode"
+                                aria-label="Search products"
+                            />
+                        </div>
+                        <div className="pof-chips" role="radiogroup" aria-label="Show">
+                            <button type="button" role="radio" aria-checked={filter === 'low'} className={`pof-chip${filter === 'low' ? ' is-on' : ''}`} onClick={() => setFilter('low')}>
+                                Low stock{lowCount > 0 && <span className="pof-chip__n">{lowCount}</span>}
+                            </button>
+                            {supplier && (
+                                <button type="button" role="radio" aria-checked={filter === 'supplier'} className={`pof-chip${filter === 'supplier' ? ' is-on' : ''}`} onClick={() => setFilter('supplier')}>
+                                    From {supplier.name}
+                                </button>
+                            )}
+                            <button type="button" role="radio" aria-checked={filter === 'all'} className={`pof-chip${filter === 'all' ? ' is-on' : ''}`} onClick={() => setFilter('all')}>
+                                All products
                             </button>
                         </div>
-                    )}
-                </div>
+                        {filter === 'low' && !search && lowForOrder.length > 1 && (
+                            <button type="button" className="pof-addall" onClick={addAllLow}>
+                                <Icon name="playlist_add" size={20} />
+                                Add all {lowForOrder.length} at suggested amounts
+                            </button>
+                        )}
+                    </div>
+
+                    <ul className="pof-list">
+                        {catalogue.length === 0 ? (
+                            <li className="pof-empty">
+                                <Icon name={search ? 'search_off' : filter === 'low' ? 'task_alt' : 'inventory_2'} size={32} />
+                                <p>
+                                    {search ? `No product matches “${search.trim()}”.`
+                                        : filter === 'low' ? 'Nothing is running low.'
+                                            : filter === 'supplier' ? `No products are linked to ${supplier?.name}.` : 'No products yet.'}
+                                </p>
+                                {!search && filter !== 'all' && (
+                                    <button type="button" className="crm-link" onClick={() => setFilter('all')}>Show all products</button>
+                                )}
+                            </li>
+                        ) : catalogue.slice(0, 80).map(p => {
+                            const kg = p.unitOfMeasure === 'kg';
+                            const stock = num(p.stock);
+                            const thr = thresholdFor(p, storeSettings);
+                            const tone = stock <= 0 ? 'out' : stock <= thr ? 'low' : 'ok';
+                            const added = inOrder.has(p.id);
+                            const suggest = firstQty(p);
+                            return (
+                                <li key={p.id} className={`pof-prod${added ? ' is-added' : ''}${justAdded === p.id ? ' is-flash' : ''}`}>
+                                    <span className={`pof-dot pof-dot--${tone}`} aria-hidden />
+                                    <div className="pof-prod__text">
+                                        <p className="pof-prod__name">{p.name}</p>
+                                        <p className="pof-prod__meta">
+                                            <span className={tone !== 'ok' ? `pof-tone--${tone}` : undefined}>{fmtQty(stock, kg)}{kg ? ' kg' : ''} left</span>
+                                            {' · '}{formatMoney(num(p.costPrice), storeSettings)} cost
+                                            {po.supplierId && p.supplierId === po.supplierId ? ' · usual supplier' : ''}
+                                        </p>
+                                    </div>
+                                    {added ? (
+                                        <span className="pof-added" aria-label={`${p.name} is on the order`}>
+                                            <Icon name="check" size={18} /> Added
+                                        </span>
+                                    ) : (
+                                        <button type="button" className="pof-add" onClick={() => addProduct(p)} aria-label={`Add ${fmtQty(suggest, kg)}${kg ? ' kg' : ''} of ${p.name}`}>
+                                            <Icon name="add" size={18} /> {fmtQty(suggest, kg)}{kg ? ' kg' : ''}
+                                        </button>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </section>
+
+                {/* ════ Right: the order ════ */}
+                <section className="pof-pane pof-order" aria-label="Order">
+                    <div className="pof-card">
+                        {/* Supplier */}
+                        <div className="pof-supplier">
+                            <Avatar name={supplier?.name || '?'} size={44} square />
+                            <div className="pof-supplier__text">
+                                <span className="pof-label">Supplier</span>
+                                <p className="pof-supplier__name">{supplier?.name || 'Not chosen yet'}</p>
+                                {supplier?.phone && <p className="pof-supplier__meta">{supplier.phone}</p>}
+                                {!supplier && <p className="pof-supplier__meta">You can name the supplier before receiving.</p>}
+                            </div>
+                            <button type="button" className="crm-btn crm-btn--outline pof-supplier__change" aria-expanded={supplierOpen} onClick={() => setSupplierOpen(o => !o)}>
+                                {supplier ? 'Change' : 'Choose'}
+                            </button>
+                        </div>
+                        {supplierOpen && (
+                            <div className="pof-suppliers" role="listbox" aria-label="Suppliers">
+                                {suppliers.map(s => (
+                                    <button key={s.id} type="button" role="option" aria-selected={s.id === po.supplierId} className={s.id === po.supplierId ? 'is-on' : ''} onClick={() => selectSupplier(s)}>
+                                        <Avatar name={s.name} size={32} square />
+                                        <span>{s.name}</span>
+                                        {s.id === po.supplierId && <Icon name="check" size={18} />}
+                                    </button>
+                                ))}
+                                <button type="button" role="option" aria-selected={!po.supplierId} className={!po.supplierId ? 'is-on' : ''} onClick={() => selectSupplier(null)}>
+                                    <span className="pof-suppliers__none"><Icon name="help" size={18} /></span>
+                                    <span>Decide later</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Lines */}
+                        <div className="pof-lines-head">
+                            <span className="pof-label">Items</span>
+                            {lines > 0 && <span className="pof-label">{lines} product{lines === 1 ? '' : 's'}</span>}
+                        </div>
+                        {lines === 0 ? (
+                            <div className="pof-lines-empty">
+                                <Icon name="shopping_cart" size={28} />
+                                <p>Nothing on the order yet.</p>
+                                <p className="pof-muted">Tap <b>+</b> on a product to add it.</p>
+                                <button type="button" className="crm-link pof-only-phone" onClick={() => setPane('products')}>Browse products</button>
+                            </div>
+                        ) : (
+                            <ul className="pof-lines">
+                                {po.items.map(it => {
+                                    const p = productById.get(it.productId);
+                                    const kg = p?.unitOfMeasure === 'kg';
+                                    const lineTotal = num(it.quantity) * num(it.costPrice);
+                                    return (
+                                        <li key={it.productId} className={`pof-line${justAdded === it.productId ? ' is-flash' : ''}`}>
+                                            <div className="pof-line__top">
+                                                <p className="pof-line__name">{it.productName}</p>
+                                                <button type="button" className="pof-x" aria-label={`Remove ${it.productName}`} onClick={() => removeItem(it.productId)}>
+                                                    <Icon name="close" size={18} />
+                                                </button>
+                                            </div>
+                                            <div className="pof-line__row">
+                                                <div className="pof-stepper">
+                                                    <button type="button" aria-label={`Fewer ${it.productName}`} onClick={() => step(it, -1)}>−</button>
+                                                    <input
+                                                        type="text"
+                                                        inputMode={kg ? 'decimal' : 'numeric'}
+                                                        value={fmtQty(num(it.quantity), !!kg)}
+                                                        onChange={e => { const v = e.target.value; if (/^\d*(\.\d{0,2})?$/.test(v)) setQty(it.productId, parseFloat(v) || 0); }}
+                                                        aria-label={`Quantity of ${it.productName}`}
+                                                    />
+                                                    <button type="button" aria-label={`More ${it.productName}`} onClick={() => step(it, 1)}>+</button>
+                                                </div>
+                                                <label className="pof-cost">
+                                                    <span>@</span>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="decimal"
+                                                        defaultValue={num(it.costPrice) ? String(num(it.costPrice)) : ''}
+                                                        placeholder="0.00"
+                                                        onBlur={e => setCost(it.productId, parseFloat(e.target.value) || 0)}
+                                                        onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                                                        aria-label={`Unit cost of ${it.productName}`}
+                                                    />
+                                                </label>
+                                                <p className="pof-line__total">{formatMoney(lineTotal, storeSettings)}</p>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+
+                        {/* Delivery & note */}
+                        <details className="pof-more" open={!!(po.expectedAt || po.notes)}>
+                            <summary>Delivery date &amp; note</summary>
+                            <div className="pof-more__grid">
+                                <label>
+                                    <span className="pof-label">Expected delivery</span>
+                                    <input type="date" className="crm-input" value={po.expectedAt ? po.expectedAt.slice(0, 10) : ''} onChange={e => setPo(prev => ({ ...prev, expectedAt: e.target.value ? new Date(e.target.value).toISOString() : undefined }))} />
+                                </label>
+                                <label>
+                                    <span className="pof-label">Note to supplier</span>
+                                    <input type="text" className="crm-input" value={po.notes || ''} onChange={e => setPo(prev => ({ ...prev, notes: e.target.value }))} placeholder="e.g. deliver before 10am" />
+                                </label>
+                            </div>
+                        </details>
+
+                        {/* Totals + action */}
+                        <div className="pof-totals">
+                            <div><span>Subtotal</span><b>{formatMoney(po.subtotal, storeSettings)}</b></div>
+                            {num(storeSettings.taxRate) > 0 && (
+                                <div><span>Tax ({num(storeSettings.taxRate)}%)</span><b>{formatMoney(po.tax, storeSettings)}</b></div>
+                            )}
+                            <div className="pof-totals__grand"><span>Total</span><b>{total}</b></div>
+                        </div>
+                        <div className="pof-actions">{primary}</div>
+                    </div>
+                </section>
+            </div>
+
+            {/* Phone: total + primary action always in reach */}
+            <footer className="pof-dock">
+                <button type="button" className="pof-dock__sum" onClick={() => setPane(pane === 'products' ? 'order' : 'products')}>
+                    <span className="pof-dock__total">{total}</span>
+                    <span className="pof-dock__meta">{lines} product{lines === 1 ? '' : 's'} · {pane === 'products' ? 'View order' : 'Add products'}</span>
+                </button>
+                {primary}
             </footer>
         </div>
     );

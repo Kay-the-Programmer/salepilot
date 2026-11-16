@@ -34,7 +34,7 @@ export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, stor
                         type="button"
                         onClick={onGeneratePO}
                     >
-                        <Icon name="shopping_cart" size={20} /> Generate PO
+                        <Icon name="shopping_cart" size={20} /> Buy stock
                     </button>
                 )}
             </div>

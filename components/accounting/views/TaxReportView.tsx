@@ -1,181 +1,101 @@
-import { totalRevenue } from '../../../utils/revenue';
-import React, { useState, useMemo } from 'react';
-import { Sale, StoreSettings } from '../../../types';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
-import { toDateInputValue } from '../../../utils/date';
-import {
-    ArrowTrendingUpIcon,
-    BanknotesIcon,
-    CalculatorIcon,
-    CalendarDaysIcon,
-    InformationCircleIcon,
-    ReceiptPercentIcon,
-} from '../../icons';
+import { getTaxReport, TaxReport, downloadCsv, niceDate } from '../booksApi';
+import { usePeriod, PeriodPicker, Card, Row, ExportButton, LoadState } from './booksUi';
 
-interface TaxReportViewProps {
-    sales: Sale[];
-    storeSettings: StoreSettings;
-}
+/**
+ * VAT for a period, the way the return is filled in:
+ *   VAT charged on sales (by tax class)
+ * − VAT given back on refunds
+ * − VAT paid on stock you bought (recoverable)
+ * = VAT to pay
+ * Computed by the server from every sale, refund and supplier bill in the period.
+ */
 
-const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) => {
-    const [startDate, setStartDate] = useState(() => {
-        const d = new Date();
-        d.setDate(1);
-        return toDateInputValue(d);
-    });
-    const [endDate, setEndDate] = useState(() => toDateInputValue(new Date()));
+const CLASS_LABEL: Record<string, string> = {
+    standard: 'Standard-rated sales',
+    zero: 'Zero-rated sales',
+    exempt: 'Exempt sales',
+};
 
-    const filteredData = useMemo(() => {
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
+const TaxReportView: React.FC<{ storeSettings: StoreSettings }> = ({ storeSettings }) => {
+    const money = (n: number) => formatCurrency(n, storeSettings);
+    const period = usePeriod('last_month');
+    const [data, setData] = useState<TaxReport | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-        // Cancelled sales are excluded (their GL postings are voided); taxable
-        // sales are net of discounts, matching the revenue definition everywhere else.
-        const relevantSales = sales.filter(s => {
-            if (s.fulfillmentStatus === 'cancelled') return false;
-            const saleDate = new Date(s.timestamp);
-            return saleDate >= start && saleDate <= end;
-        });
+    const load = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            setData(await getTaxReport(period.from, period.to));
+        } catch (e: any) {
+            setError(e?.message || 'Could not load the VAT report.');
+        } finally {
+            setLoading(false);
+        }
+    }, [period.from, period.to]);
+    useEffect(() => { load(); }, [load]);
 
-        const totalSales = totalRevenue(relevantSales);
-        const totalTax = relevantSales.reduce((sum, s) => sum + (s.tax || 0), 0);
-        const totalTransactions = relevantSales.reduce((sum, s) => sum + (s.total || 0), 0);
+    const exportCsv = () => {
+        if (!data) return;
+        downloadCsv(`vat_${period.from}_to_${period.to}.csv`, [
+            ['VAT report', `${period.from} to ${period.to}`],
+            ['Line', 'Sales (excl. VAT)', 'VAT'],
+            ...data.output.map(o => [`${CLASS_LABEL[o.taxClass] || o.taxClass}${o.taxClass === 'standard' && o.ratePct ? ` (${o.ratePct}%)` : ''}`, o.net, o.tax]),
+            ['VAT charged on sales', '', data.outputTax],
+            ['Less: VAT refunded to customers', data.refundsNet, -data.refundsTax],
+            ['Less: VAT paid on purchases', '', -data.inputTax],
+            [data.netPayable >= 0 ? 'VAT to pay' : 'VAT to reclaim', '', data.netPayable],
+        ]);
+    };
 
-        return {
-            totalSales,
-            totalTax,
-            totalTransactions,
-            numberOfTransactions: relevantSales.length,
-            averageTransaction: relevantSales.length > 0 ? totalTransactions / relevantSales.length : 0
-        };
-    }, [sales, startDate, endDate]);
-
-    const taxRate = storeSettings.taxRate;
-    const dateInput = "w-full sm:w-auto pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium m3-bg-surface-container m3-text-on-surface border m3-border-outline-variant focus:outline-none focus:ring-2 focus:ring-[color:var(--m3-primary)] focus:border-transparent transition-all";
-
+    const owe = (data?.netPayable ?? 0) >= 0;
     return (
-        <div className="space-y-6 md:space-y-8 pb-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Sales Tax Report</h3>
-                    <p className="text-sm m3-text-on-surface-variant mt-1">Track and report sales tax collections</p>
-                </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <div className="relative group flex-1 sm:flex-none">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                            <CalendarDaysIcon className="w-4 h-4 m3-text-on-surface-variant" />
-                        </div>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={e => setStartDate(e.target.value)}
-                            className={dateInput}
-                        />
-                    </div>
-                    <span className="hidden sm:block m3-text-on-surface-variant px-1">-</span>
-                    <div className="relative group flex-1 sm:flex-none">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                            <CalendarDaysIcon className="w-4 h-4 m3-text-on-surface-variant" />
-                        </div>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={e => setEndDate(e.target.value)}
-                            className={dateInput}
-                        />
-                    </div>
+        <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-lg font-bold m3-text-on-surface">VAT</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                    <PeriodPicker period={period} />
+                    <ExportButton onClick={exportCsv} disabled={!data || loading} />
                 </div>
             </div>
 
-            {/* Tax Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs font-medium m3-text-primary uppercase tracking-widest">Taxable Sales</div>
-                        <ArrowTrendingUpIcon className="w-5 h-5 m3-text-primary opacity-70" />
-                    </div>
-                    <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
-                    <div className="text-xs m3-text-on-surface-variant mt-1">Subject to Tax</div>
-                </div>
-
-                <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs font-medium m3-text-secondary uppercase tracking-widest">Tax Collected</div>
-                        <BanknotesIcon className="w-5 h-5 m3-text-secondary opacity-70" />
-                    </div>
-                    <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
-                    <div className="text-xs m3-text-on-surface-variant mt-1">At {taxRate}% tax rate</div>
-                </div>
-
-                <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs font-medium m3-text-tertiary uppercase tracking-widest">Transactions</div>
-                        <ReceiptPercentIcon className="w-5 h-5 m3-text-tertiary opacity-70" />
-                    </div>
-                    <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{filteredData.numberOfTransactions}</div>
-                    <div className="text-xs m3-text-on-surface-variant mt-1">Total Count</div>
-                </div>
-
-                <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs font-medium m3-text-on-surface-variant uppercase tracking-widest">Avg Transaction</div>
-                        <CalculatorIcon className="w-5 h-5 m3-text-on-surface-variant opacity-70" />
-                    </div>
-                    <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{formatCurrency(filteredData.averageTransaction, storeSettings)}</div>
-                    <div className="text-xs m3-text-on-surface-variant mt-1">Inc. Tax</div>
-                </div>
-            </div>
-
-            {/* Tax Calculation Details */}
-            <div className="m3-bg-surface-lowest rounded-2xl border m3-border-outline-variant shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b m3-border-outline-variant m3-bg-surface-container">
-                    <div className="flex items-center gap-2">
-                        <CalculatorIcon className="w-5 h-5 m3-text-primary" />
-                        <h3 className="text-base font-bold m3-text-on-surface tracking-tight">Tax Calculation Breakdown</h3>
-                    </div>
-                </div>
-                <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-4 m3-bg-surface-container rounded-lg border m3-border-outline-variant">
-                            <div className="text-xs font-medium m3-text-on-surface-variant mb-1">Taxable Sales</div>
-                            <div className="text-lg font-bold m3-text-on-surface tracking-tight">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
-                            <div className="text-xs m3-text-on-surface-variant mt-1">Base amount</div>
-                        </div>
-
-                        <div className="p-4 m3-bg-primary-fixed rounded-lg">
-                            <div className="text-xs font-medium m3-text-primary mb-1">Tax Collected</div>
-                            <div className="text-lg font-bold m3-text-primary tracking-tight">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
-                            <div className="text-xs m3-text-primary mt-1" style={{ opacity: 0.7 }}>To be remitted ({taxRate}%)</div>
-                        </div>
-
-                        <div className="p-4 m3-bg-secondary-fixed rounded-lg">
-                            <div className="text-xs font-medium m3-text-secondary mb-1">Total inclusive</div>
-                            <div className="text-lg font-bold m3-text-secondary tracking-tight">
-                                {formatCurrency(filteredData.totalSales + filteredData.totalTax, storeSettings)}
-                            </div>
-                            <div className="text-xs m3-text-secondary mt-1" style={{ opacity: 0.7 }}>Sum of sales and tax</div>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 p-4 m3-bg-surface-container rounded-lg border m3-border-outline-variant border-dashed">
-                        <div className="flex items-start gap-3">
-                            <InformationCircleIcon className="w-5 h-5 m3-text-on-surface-variant mt-0.5" />
-                            <div>
-                                <p className="text-sm m3-text-on-surface-variant leading-relaxed">
-                                    This report summarizes the total sales tax collected at the rate of <span className="font-semibold m3-text-on-surface">{taxRate}%</span> for the selected period.
-                                    The tax amount of <span className="font-semibold m3-text-primary">{formatCurrency(filteredData.totalTax, storeSettings)}</span> should be remitted to the relevant tax authorities.
-                                </p>
-                                <div className="mt-2 text-xs m3-text-on-surface-variant flex items-center gap-1.5">
-                                    <div className="w-1 h-1 rounded-full" style={{ background: 'var(--m3-outline)' }}></div>
-                                    Simplified report based on a single tax rate
-                                </div>
+            <LoadState loading={loading && !data} error={error} onRetry={load} />
+            {data && !error && (
+                <div className="grid gap-4 lg:grid-cols-[1fr_320px]" style={{ opacity: loading ? 0.6 : 1 }}>
+                    <Card>
+                        <Row label="Sales" value="VAT" muted />
+                        {data.output.length === 0 && <div className="px-4 py-3 text-sm m3-text-on-surface-variant">No sales in this period</div>}
+                        {data.output.map(o => (
+                            <Row
+                                key={o.taxClass}
+                                label={`${CLASS_LABEL[o.taxClass] || o.taxClass}${o.taxClass === 'standard' && o.ratePct ? ` (${o.ratePct}%)` : ''}`}
+                                hint={`${money(o.net)} before VAT`}
+                                value={money(o.tax)}
+                            />
+                        ))}
+                        <Row label="VAT charged on sales" value={money(data.outputTax)} strong />
+                        <Row label="Less: VAT refunded to customers" hint={data.refundsNet ? `On ${money(data.refundsNet)} of refunds` : undefined} value={`− ${money(data.refundsTax)}`} />
+                        <Row label="Less: VAT paid on purchases" hint="From supplier bills that show VAT" value={`− ${money(data.inputTax)}`} />
+                        <Row label={owe ? 'VAT to pay' : 'VAT to reclaim'} value={money(Math.abs(data.netPayable))} strong />
+                    </Card>
+                    <div className="space-y-4">
+                        <div className={`rounded-2xl p-5 border ${owe ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800' : 'border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-800'}`}>
+                            <div className="text-sm font-semibold m3-text-on-surface-variant">{owe ? 'VAT to pay' : 'VAT to reclaim'}</div>
+                            <div className="text-3xl font-bold tabular-nums m3-text-on-surface">{money(Math.abs(data.netPayable))}</div>
+                            <div className="text-xs m3-text-on-surface-variant mt-1">
+                                {niceDate(period.from)} – {niceDate(period.to)} · {data.salesCount} sale{data.salesCount === 1 ? '' : 's'}
                             </div>
                         </div>
+                        <p className="text-xs m3-text-on-surface-variant px-1">
+                            Cancelled sales are left out. Once you have filed this return, close the period under Reports so these figures can't change.
+                        </p>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

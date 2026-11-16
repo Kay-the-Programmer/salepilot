@@ -17,6 +17,8 @@ import '../../pages/assistant/assistant.css';
 import { toDateInputValue } from '../../utils/date';
 import {
     ON_ACCOUNT,
+    QUICK_CATEGORY_NAMES,
+    accountForCategory,
     accountForMethod,
     accountLabel,
     buildExpensePayload,
@@ -73,6 +75,8 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
     const [expenseAccountId, setExpenseAccountId] = useState('');
+    // Quick category the cashier tapped; it picks the ledger account.
+    const [category, setCategory] = useState('');
     const [paymentAccountId, setPaymentAccountId] = useState('');
     // The store's OWN tender for this expense — the same list Settings offers
     // and the till records on a sale. ON_ACCOUNT means it isn't paid yet, which
@@ -102,7 +106,9 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
             );
             setExpenseAccounts(data.expenseAccounts || []);
             setPaymentAccounts(data.paymentAccounts || []);
-            setExpenseAccountId(prev => prev || data.expenseAccounts?.[0]?.id || '');
+            // No default: the first expense account is Cost of Goods Sold, so
+            // defaulting to it filed every till expense as stock cost. The
+            // cashier taps a category instead, which picks the account.
             setPaymentAccountId(prev => prev || data.paymentAccounts?.[0]?.id || '');
         } catch {
             setError('Could not load expense categories. Check your connection and try again.');
@@ -149,6 +155,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                     paymentAccountId,
                     paymentMethod,
                     reference,
+                    category: category || undefined,
                 },
                 [...expenseAccounts, ...paymentAccounts],
             ));
@@ -156,6 +163,8 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
             setAmount('');
             setReference('');
             setDate(today());
+            setCategory('');
+            setExpenseAccountId('');
             await loadExpenses();
             showToast('Expense recorded', 'success');
         } catch (err: any) {
@@ -285,17 +294,41 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                                                 </div>
 
                                                 <div className="mb-3">
-                                                    <label className={LABEL} htmlFor="exp-account">Expense Account</label>
-                                                    <select
-                                                        id="exp-account"
-                                                        className={FIELD}
-                                                        value={expenseAccountId}
-                                                        onChange={e => setExpenseAccountId(e.target.value)}
-                                                    >
-                                                        {expenseAccounts.map(a => (
-                                                            <option key={a.id} value={a.id}>{accountLabel(a)}</option>
-                                                        ))}
-                                                    </select>
+                                                    <span className={LABEL}>What was it for?</span>
+                                                    <div className="pof-chips" role="radiogroup" aria-label="Expense category" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                                        {QUICK_CATEGORY_NAMES.map(cat => {
+                                                            const acc = accountForCategory(expenseAccounts, cat);
+                                                            const on = category === cat;
+                                                            return (
+                                                                <button
+                                                                    key={cat}
+                                                                    type="button"
+                                                                    role="radio"
+                                                                    aria-checked={on}
+                                                                    className={`crm-chip${on ? ' is-active' : ''}`}
+                                                                    onClick={() => { setCategory(cat); setExpenseAccountId(acc?.id || ''); }}
+                                                                >
+                                                                    {cat}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {category && !expenseAccountId && (
+                                                        <div style={{ marginTop: 10 }}>
+                                                            <label className={LABEL} htmlFor="exp-account">This shop has no {category} account — pick the closest</label>
+                                                            <select
+                                                                id="exp-account"
+                                                                className={FIELD}
+                                                                value={expenseAccountId}
+                                                                onChange={e => setExpenseAccountId(e.target.value)}
+                                                            >
+                                                                <option value="">Select account…</option>
+                                                                {expenseAccounts.map(a => (
+                                                                    <option key={a.id} value={a.id}>{accountLabel(a)}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div className="mb-3">

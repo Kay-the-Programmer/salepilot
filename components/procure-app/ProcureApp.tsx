@@ -18,12 +18,15 @@ interface ProcureAppProps {
     purchaseOrders: PurchaseOrder[];
     supplierInvoices: SupplierInvoice[];
     storeSettings: StoreSettings | null;
-    onSaveSupplier: (supplier: Supplier) => void;
+    onSaveSupplier: (supplier: Supplier) => void | Promise<unknown>;
     onDeleteSupplier: (supplierId: string) => void;
-    onSavePurchaseOrder: (po: PurchaseOrder) => void;
+    /** Resolves false when the save was refused, so the form stays open. */
+    onSavePurchaseOrder: (po: PurchaseOrder) => void | Promise<unknown>;
     onDeletePurchaseOrder: (poId: string) => void;
-    onReceivePOItems: (poId: string, items: { productId: string; quantity: number }[]) => void;
+    onReceivePOItems: (poId: string, items: { productId: string; quantity: number }[]) => Promise<unknown> | void;
     onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
+    /** Reload app data after orders are placed directly (Buy stock). */
+    onRefresh?: () => void;
     onNavigate: (section: ProcSection) => void;
     onExit: () => void;
     onLogout: () => void;
@@ -37,7 +40,7 @@ interface ProcureAppProps {
  */
 export const ProcureApp: React.FC<ProcureAppProps> = ({
     section, user, suppliers, products, categories, purchaseOrders, supplierInvoices, storeSettings,
-    onSaveSupplier, onDeleteSupplier, onSavePurchaseOrder, onDeletePurchaseOrder, onReceivePOItems, onSaveProduct, onNavigate, onExit, onLogout,
+    onSaveSupplier, onDeleteSupplier, onSavePurchaseOrder, onDeletePurchaseOrder, onReceivePOItems, onSaveProduct, onRefresh, onNavigate, onExit, onLogout,
 }) => {
     const [draftSupplierId, setDraftSupplierId] = useState<string | null>(null);
     const [autoSignal, setAutoSignal] = useState(false);
@@ -54,8 +57,8 @@ export const ProcureApp: React.FC<ProcureAppProps> = ({
     );
 
     const reorderCount = useMemo(
-        () => countReorderItems(products),
-        [products],
+        () => countReorderItems(products, storeSettings),
+        [products, storeSettings],
     );
 
     const placeOrder = (supplierId?: string) => { setDraftSupplierId(supplierId ?? null); onNavigate('orders'); };
@@ -94,6 +97,8 @@ export const ProcureApp: React.FC<ProcureAppProps> = ({
                 onConsumeAutoGenerate={() => setAutoSignal(false)}
                 importedDraft={listDraftPo}
                 onConsumeImportedDraft={() => setListDraftPo(null)}
+                onRefresh={onRefresh}
+                onSaveProduct={onSaveProduct}
             />
         );
     } else if (section === 'lists') {

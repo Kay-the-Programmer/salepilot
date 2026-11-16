@@ -175,7 +175,7 @@ export interface Sale {
     originalTotal?: number;
     // New fields for invoicing
     paymentStatus: 'paid' | 'unpaid' | 'partially_paid';
-    fulfillmentStatus?: 'pending' | 'fulfilled' | 'shipped' | 'cancelled';
+    fulfillmentStatus?: 'pending' | 'accepted' | 'fulfilled' | 'shipped' | 'cancelled';
     channel?: 'pos' | 'online';
     customerDetails?: {
         name: string;

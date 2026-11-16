@@ -55,13 +55,9 @@ export interface InventoryOverview {
     topMover?: { name: string; units: number };
 }
 
-/** Effective reorder threshold for a product. */
-export const thresholdFor = (p: Product, settings?: StoreSettings | null): number => {
-    const rp = num(p.reorderPoint);
-    if (rp > 0) return rp;
-    const ss = num(settings?.lowStockThreshold);
-    return ss > 0 ? ss : 5;
-};
+/** Effective reorder threshold for a product — the one shared reorder rule. */
+import { thresholdFor } from '../purchase-orders/poModel';
+export { thresholdFor };
 
 /**
  * Unit value for stock on hand: cost price, and nothing else.

@@ -7,7 +7,8 @@ import { initials, avatarColor, formatMoney } from './crmModel';
 interface CrmCustomerFormProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (customer: Customer) => void;
+    /** May return a promise; the form shows Saving and blocks a second tap until it settles. */
+    onSave: (customer: Customer) => void | Promise<unknown>;
     customerToEdit?: Customer | null;
     storeSettings?: StoreSettings | null;
 }
@@ -66,8 +67,11 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
         setCustomer(prev => ({ ...prev, address: { ...prev.address!, [name]: value } }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [saving, setSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (saving) return;
         if (!customer.name.trim()) {
             setError('Customer name is required.');
             return;
@@ -77,7 +81,8 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
             id: customerToEdit?.id || `cust_${new Date().toISOString()}`,
             createdAt: customerToEdit?.createdAt || new Date().toISOString(),
         };
-        onSave(finalCustomer);
+        setSaving(true);
+        try { await onSave(finalCustomer); } finally { setSaving(false); }
     };
 
     if (!isOpen) return null;
@@ -248,8 +253,8 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
                     <button type="button" className="crm-btn crm-btn--ghost" onClick={onClose} style={{ color: 'var(--c-on-surface-variant)', padding: '14px 24px' }}>
                         Discard
                     </button>
-                    <button type="submit" form="crm-customer-form" className="crm-btn crm-btn--primary" style={{ padding: '14px 28px' }}>
-                        <Icon name="person_add" size={20} /> {customerToEdit ? 'Save Changes' : 'Save Customer'}
+                    <button type="submit" form="crm-customer-form" className="crm-btn crm-btn--primary" style={{ padding: '14px 28px', opacity: saving ? 0.6 : 1 }} disabled={saving}>
+                        <Icon name="person_add" size={20} /> {saving ? 'Saving…' : customerToEdit ? 'Save Changes' : 'Save Customer'}
                     </button>
                 </div>
             </footer>

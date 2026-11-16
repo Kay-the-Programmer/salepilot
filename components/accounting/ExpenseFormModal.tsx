@@ -20,9 +20,13 @@ import { toDateInputValue } from '../../utils/date';
 import { useToast } from '../../contexts/ToastContext';
 import {
     QUICK_CATEGORY_NAMES,
+    accountForCategory,
     buildExpensePayload,
+    categoryForAccount,
     expenseAccountsOf,
+    lastPaymentAccount,
     paymentAccountsOf,
+    rememberPaymentAccount,
     validateExpenseDraft,
 } from './expenseModel';
 import { Modal } from '../ui/Modal';
@@ -82,6 +86,9 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     const { showToast } = useToast();
     const [mode, setMode] = useState<Mode>('one-time');
     const [showOptional, setShowOptional] = useState(false);
+    // The ledger account is chosen by the category; the picker is only for
+    // someone who deliberately wants a different one.
+    const [showAccountPicker, setShowAccountPicker] = useState(false);
     const [formData, setFormData] = useState({
         date: toDateInputValue(new Date()),
         description: '',
@@ -112,13 +119,13 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 amount: recurringToEdit.amount.toString(),
                 expenseAccountId: recurringToEdit.expenseAccountId,
                 paymentAccountId: recurringToEdit.paymentAccountId,
-                category: recurringToEdit.category || '',
+                category: recurringToEdit.category || categoryForAccount(accounts.find(a => a.id === recurringToEdit.expenseAccountId)) || '',
                 reference: recurringToEdit.reference || '',
                 frequency: recurringToEdit.frequency,
                 startDate: recurringToEdit.startDate.split('T')[0],
                 status: recurringToEdit.status,
             });
-            setShowOptional(!!(recurringToEdit.category || recurringToEdit.reference));
+            setShowOptional(!!recurringToEdit.reference);
         } else if (expenseToEdit) {
             setMode('one-time');
             setFormData({
@@ -127,22 +134,25 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 amount: expenseToEdit.amount.toString(),
                 expenseAccountId: expenseToEdit.expenseAccountId,
                 paymentAccountId: expenseToEdit.paymentAccountId,
-                category: expenseToEdit.category || '',
+                category: expenseToEdit.category || categoryForAccount(accounts.find(a => a.id === expenseToEdit.expenseAccountId)) || '',
                 reference: expenseToEdit.reference || '',
                 frequency: 'monthly',
                 startDate: today,
                 status: 'active',
             });
-            setShowOptional(!!(expenseToEdit.category || expenseToEdit.reference));
+            setShowOptional(!!expenseToEdit.reference);
         } else {
             setMode(initialMode ?? 'one-time');
             setFormData({
                 date: today, description: '', amount: '', expenseAccountId: '',
-                paymentAccountId: paymentAccounts[0]?.id || '', category: '', reference: '',
+                // How this device usually pays, else the first way to pay.
+                paymentAccountId: lastPaymentAccount(paymentAccounts)?.id || paymentAccounts[0]?.id || '',
+                category: '', reference: '',
                 frequency: 'monthly', startDate: today, status: 'active',
             });
             setShowOptional(false);
         }
+        setShowAccountPicker(false);
     }, [isOpen, expenseToEdit, recurringToEdit, initialMode]);
 
     if (!isOpen) return null;
@@ -187,6 +197,8 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             reference: payload.reference,
         };
 
+        rememberPaymentAccount(formData.paymentAccountId);
+
         if (mode === 'recurring') {
             onSaveRecurring({
                 ...(recurringToEdit?.id ? { id: recurringToEdit.id } : {}),
@@ -208,8 +220,10 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     };
 
     const handleQuickCategorySelect = (catName: string) => {
-        const match = expenseAccounts.find(acc => acc.name.toLowerCase().includes(catName.toLowerCase()));
-        set(match ? { expenseAccountId: match.id, category: catName } : { category: catName });
+        const match = accountForCategory(accounts, catName);
+        set({ expenseAccountId: match?.id || '', category: catName });
+        // No account for this category in this store's chart: let them pick.
+        setShowAccountPicker(!match);
     };
 
     const recurring = mode === 'recurring';
@@ -305,17 +319,33 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                             </div>
                         </div>
 
-                        {/* Accounts */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Where it is booked — set by the category, changeable on purpose */}
+                        {formData.expenseAccountId && !showAccountPicker ? (
+                            <p className="text-xs text-brand-text-muted -mt-2">
+                                Charged to <span className="font-bold text-brand-text">{expenseName}</span>
+                                {' · '}
+                                <button type="button" className="font-bold text-primary hover:underline" onClick={() => setShowAccountPicker(true)}>
+                                    Change
+                                </button>
+                            </p>
+                        ) : (formData.category || showAccountPicker || isEditing) ? (
                             <div>
-                                <label className={LABEL}>Expense Account</label>
+                                <label className={LABEL}>Charge to account</label>
                                 <Select value={formData.expenseAccountId} onChange={e => set({ expenseAccountId: e.target.value })} required>
                                     <option value="">Select account…</option>
                                     {expenseAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                                 </Select>
+                                {formData.category && !accountForCategory(accounts, formData.category) && (
+                                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                                        This shop has no {formData.category} account yet — pick the closest one.
+                                    </p>
+                                )}
                             </div>
+                        ) : null}
+
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className={LABEL}>Payment Method</label>
+                                <label className={LABEL}>Paid from</label>
                                 <Select value={formData.paymentAccountId} onChange={e => set({ paymentAccountId: e.target.value })} required>
                                     <option value="">Select method…</option>
                                     {paymentAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
@@ -379,16 +409,12 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                                     <ChevronRightIcon className="w-3.5 h-3.5" />
                                 </span>
                                 <span className="text-xs font-bold text-brand-text-muted group-hover:text-brand-text transition-colors">
-                                    {showOptional ? 'Hide additional details' : 'Add reference & category'}
+                                    {showOptional ? 'Hide reference' : 'Add a reference (receipt or invoice no.)'}
                                 </span>
                             </button>
 
                             {showOptional && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 animate-fade-in">
-                                    <div>
-                                        <label className={LABEL}>Category Override</label>
-                                        <input type="text" value={formData.category} onChange={e => set({ category: e.target.value })} placeholder="e.g. Fixed cost" className={FIELD} />
-                                    </div>
+                                <div className="grid grid-cols-1 gap-4 mt-4 animate-fade-in">
                                     <div>
                                         <label className={LABEL}>Reference / Note</label>
                                         <input type="text" value={formData.reference} onChange={e => set({ reference: e.target.value })} placeholder="e.g. INV-2024-001" className={FIELD} />

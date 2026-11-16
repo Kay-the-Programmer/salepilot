@@ -63,7 +63,13 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            showToast('Enter how much was paid. It must be more than zero.', 'error');
+            const n = parseFloat(amount);
+            showToast(
+                n > balanceDue + 0.001
+                    ? `That is more than the ${formatCurrency(balanceDue, storeSettings as any)} still due on this invoice.`
+                    : 'Enter how much was paid. It must be more than zero.',
+                'error',
+            );
             return;
         }
         onSave(invoiceId, { date, amount: parseFloat(amount), method, reference });

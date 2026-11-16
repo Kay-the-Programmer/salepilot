@@ -8,6 +8,7 @@ import {
     addMovement,
     closeSession,
     getCurrentSession,
+    listSessions,
     openSession,
     recordNoSale,
 } from '../../services/cashSession';
@@ -20,9 +21,25 @@ interface CashDrawerModalProps {
     isOpen: boolean;
     onClose: () => void;
     storeSettings: StoreSettings;
+    /** Opened automatically at the start of the day: explain why, offer Not now. */
+    startOfDay?: boolean;
+    /** Called once a till has been opened. */
+    onOpened?: () => void;
 }
 
 type View = 'loading' | 'closed' | 'open' | 'counting' | 'result';
+
+/**
+ * Notes and coins to count by, largest first. Zambian kwacha by default (the
+ * home market); other currencies get a generic set. Counting by note is where
+ * closing errors go away: "4 × K100, 7 × K50…" is far harder to get wrong than
+ * adding a whole drawer in your head.
+ */
+const DENOMINATIONS: Record<string, number[]> = {
+    ZMW: [100, 50, 20, 10, 5, 2, 1, 0.5],
+    USD: [100, 50, 20, 10, 5, 1, 0.25, 0.1, 0.05],
+};
+const denominationsFor = (code?: string) => DENOMINATIONS[(code || '').toUpperCase()] ?? [100, 50, 20, 10, 5, 2, 1, 0.5];
 
 /**
  * The cash drawer, as a shift.
@@ -33,7 +50,7 @@ type View = 'loading' | 'closed' | 'open' | 'counting' | 'result';
  * themselves — and the expected figure only appears after a count is committed.
  * A count made against a visible target checks nothing.
  */
-const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, storeSettings }) => {
+const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, storeSettings, startOfDay = false, onOpened }) => {
     const [view, setView] = useState<View>('loading');
     const [session, setSession] = useState<CashSession | null>(null);
     const [busy, setBusy] = useState(false);
@@ -45,6 +62,13 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
     const [moveType, setMoveType] = useState<'pay_in' | 'pay_out'>('pay_out');
     const [moveAmount, setMoveAmount] = useState('');
     const [moveReason, setMoveReason] = useState('');
+    // The float the last shift opened with — most shops start every day the same.
+    const [lastFloat, setLastFloat] = useState<number | null>(null);
+    // Closing count by note (default) or as one typed total.
+    const [byNote, setByNote] = useState(true);
+    const [noteCounts, setNoteCounts] = useState<Record<string, string>>({});
+    const denoms = denominationsFor(storeSettings.currency?.code);
+    const noteTotal = Math.round(denoms.reduce((a, d) => a + d * (parseInt(noteCounts[String(d)] || '0', 10) || 0), 0) * 100) / 100;
     // A drawer opening the server refused for want of a manager, held so the
     // approval can be applied without the cashier starting again.
     const [pendingApproval, setPendingApproval] = useState<
@@ -63,6 +87,16 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
             const current = await getCurrentSession();
             setSession(current);
             setView(current ? 'open' : 'closed');
+            if (!current) {
+                // Pre-fill the float from the last shift; harmless if it fails.
+                listSessions(1).then(list => {
+                    const last = list?.[0];
+                    if (last && Number.isFinite(Number(last.openingFloat))) {
+                        setLastFloat(Number(last.openingFloat));
+                        setFloat(prev => prev || String(Number(last.openingFloat)));
+                    }
+                }).catch(() => {});
+            }
         } catch {
             setError('Could not load the till.');
             setView('closed');
@@ -73,6 +107,8 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
         if (!isOpen) return;
         setFloat('');
         setCounted('');
+        setNoteCounts({});
+        setByNote(true);
         setNotes('');
         setMoveAmount('');
         setMoveReason('');
@@ -109,6 +145,9 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
         if (value === null) throw new Error('Enter the float you are starting with.');
         setSession(await openSession(value));
         setView('open');
+        onOpened?.();
+        // At the start of the day the point was to get selling: go straight back.
+        if (startOfDay) onClose();
     });
 
     const doMovement = () => run(async () => {
@@ -156,8 +195,11 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
 
     const doClose = () => run(async () => {
         if (!session) return;
-        const value = amount(counted);
+        const value = byNote ? noteTotal : amount(counted);
         if (value === null) throw new Error('Count the drawer and enter the total.');
+        if (byNote && !Object.values(noteCounts).some(v => (parseInt(v, 10) || 0) > 0)) {
+            throw new Error('Enter how many of each note and coin are in the drawer.');
+        }
         setSession(await closeSession(session.id, value, notes.trim() || undefined));
         setView('result');
     });
@@ -174,13 +216,18 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
             return (
                 <div className="space-y-3">
                     <p className="text-sm text-brand-text-muted">
-                        Count the money you are starting with and enter it below. Everything sold,
-                        refunded and paid out from now until you close is measured against it.
+                        {startOfDay
+                            ? <>The till isn&rsquo;t open yet. Sales rung up without an open till don&rsquo;t appear in the end-of-day cash report.</>
+                            : <>Count the money you are starting with and enter it below. Everything sold,
+                                refunded and paid out from now until you close is measured against it.</>}
                     </p>
                     <div>
-                        <label className={label} htmlFor="till-float">Opening float</label>
+                        <label className={label} htmlFor="till-float">Cash in the drawer to start (float)</label>
                         <input id="till-float" className={field} inputMode="decimal" value={float}
                             onChange={e => setFloat(e.target.value)} placeholder="0.00" autoFocus />
+                        {lastFloat !== null && float === String(lastFloat) && (
+                            <p className="mt-1.5 text-[11px] text-brand-text-muted">Same as last time — change it if today is different.</p>
+                        )}
                     </div>
                 </div>
             );
@@ -190,14 +237,53 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
             return (
                 <div className="space-y-3">
                     <p className="text-sm text-brand-text-muted">
-                        Count everything in the drawer, notes and coins, and enter the total.
-                        You will see how it compares once you submit.
+                        {byNote
+                            ? 'Count how many of each note and coin are in the drawer. The total adds itself up.'
+                            : 'Count everything in the drawer, notes and coins, and enter the total.'}
+                        {' '}You will see how it compares once you submit.
                     </p>
-                    <div>
-                        <label className={label} htmlFor="till-count">Counted total</label>
-                        <input id="till-count" className={field} inputMode="decimal" value={counted}
-                            onChange={e => setCounted(e.target.value)} placeholder="0.00" autoFocus />
-                    </div>
+                    {byNote ? (
+                        <div>
+                            <div className="grid grid-cols-2 gap-2">
+                                {denoms.map((d, i) => {
+                                    const key = String(d);
+                                    const n = parseInt(noteCounts[key] || '0', 10) || 0;
+                                    return (
+                                        <label key={key} className="flex items-center gap-2 rounded-lg border border-brand-border px-2.5 py-1.5">
+                                            <span className="w-16 text-sm font-bold text-brand-text tnum">{money(d)}</span>
+                                            <span className="text-brand-text-muted text-xs">×</span>
+                                            <input
+                                                className="w-14 rounded-md border border-brand-border bg-surface px-2 py-1.5 text-sm text-brand-text text-center tnum focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                                inputMode="numeric"
+                                                value={noteCounts[key] ?? ''}
+                                                placeholder="0"
+                                                autoFocus={i === 0}
+                                                aria-label={`How many ${money(d)}`}
+                                                onChange={e => { if (/^\d*$/.test(e.target.value)) setNoteCounts(prev => ({ ...prev, [key]: e.target.value })); }}
+                                            />
+                                            <span className="ml-auto text-xs text-brand-text-muted tnum">{n > 0 ? money(d * n) : ''}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-3 flex items-center justify-between rounded-lg bg-surface-variant/60 px-3 py-2.5">
+                                <span className="text-xs font-bold uppercase tracking-wider text-brand-text-muted">Counted</span>
+                                <span className="text-lg font-bold text-brand-text tnum">{money(noteTotal)}</span>
+                            </div>
+                            <button type="button" className="mt-2 text-xs font-bold text-primary hover:underline" onClick={() => setByNote(false)}>
+                                Type the total instead
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            <label className={label} htmlFor="till-count">Counted total</label>
+                            <input id="till-count" className={field} inputMode="decimal" value={counted}
+                                onChange={e => setCounted(e.target.value)} placeholder="0.00" autoFocus />
+                            <button type="button" className="mt-2 text-xs font-bold text-primary hover:underline" onClick={() => setByNote(true)}>
+                                Count by note instead
+                            </button>
+                        </div>
+                    )}
                     <div>
                         <label className={label} htmlFor="till-notes">Notes (optional)</label>
                         <input id="till-notes" className={field} value={notes}
@@ -321,7 +407,7 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
                         <>
                             <button type="button" onClick={onClose}
                                 className="rounded-lg px-3 py-2 text-sm font-bold text-brand-text-muted hover:text-brand-text">
-                                Cancel
+                                {startOfDay ? 'Not now' : 'Cancel'}
                             </button>
                             <button type="button" disabled={busy} onClick={doOpen}
                                 className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50">

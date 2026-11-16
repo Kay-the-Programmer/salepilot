@@ -21,6 +21,7 @@ import JournalView from '../../components/accounting/views/JournalView';
 import FinancialStatementsView from '../../components/accounting/views/FinancialStatementsView';
 import TaxReportView from '../../components/accounting/views/TaxReportView';
 import { useToast } from '../../contexts/ToastContext';
+import BooksHealthCard from '../../components/accounting/BooksHealthCard';
 
 // Modals (lazy — only loaded when opened).
 // One modal now handles both one-time and recurring expenses.
@@ -55,6 +56,8 @@ interface AccountingAppProps {
   onDeleteAccount: (accountId: string) => void;
   onAddManualJournalEntry: (entry: Omit<JournalEntry, 'id'>) => void;
   onRecordPayment: (saleId: string, payment: Omit<Payment, 'id'>) => void;
+  /** Reload app data after something was saved directly (e.g. a customer payment). */
+  onDataChanged?: () => void;
   onSaveSupplierInvoice: (invoice: SupplierInvoice) => void;
   onRecordSupplierPayment: (invoiceId: string, payment: Omit<SupplierPayment, 'id'>) => void;
   onSaveExpense: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
@@ -83,7 +86,7 @@ const TAB_NAMES = ACCT_NAV.map((n) => n.id) as string[];
 const AccountingApp: React.FC<AccountingAppProps> = ({
   accounts, journalEntries, sales, customers, suppliers, supplierInvoices, purchaseOrders,
   expenses, recurringExpenses, storeSettings, isLoading, error,
-  onSaveAccount, onDeleteAccount, onAddManualJournalEntry, onRecordPayment,
+  onSaveAccount, onDeleteAccount, onRecordPayment, onDataChanged,
   onSaveSupplierInvoice, onRecordSupplierPayment, onSaveExpense, onDeleteExpense,
   onSaveRecurringExpense, onDeleteRecurringExpense,
   user, onExit, onLogout,
@@ -268,6 +271,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
             storeSettings={storeSettings}
             onRecordPayment={onRecordPayment}
             onViewInvoice={setViewingARInvoice}
+            onCustomerPaid={onDataChanged}
           />
         );
       case 'ap_management':
@@ -281,6 +285,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
             onSaveInvoice={onSaveSupplierInvoice}
             onViewInvoice={setViewingAPInvoice}
             onOpenInvoiceForm={() => { setEditingSupplierInvoice(null); setIsSupplierInvoiceFormOpen(true); }}
+            onSupplierPaid={onDataChanged}
           />
         );
       case 'chart_of_accounts':
@@ -296,14 +301,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
         );
       case 'journal':
         return (
-          <JournalView
-            entries={journalEntries}
-            accounts={accounts}
-            sales={sales}
-            customers={customers}
-            storeSettings={storeSettings}
-            onAddEntry={onAddManualJournalEntry}
-          />
+          <JournalView accounts={accounts} storeSettings={storeSettings} />
         );
       case 'expenses':
         return (
@@ -323,9 +321,9 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
           />
         );
       case 'taxes':
-        return <TaxReportView sales={sales} storeSettings={storeSettings} />;
+        return <TaxReportView storeSettings={storeSettings} />;
       case 'reports':
-        return <FinancialStatementsView accounts={accounts} journalEntries={journalEntries} storeSettings={storeSettings} />;
+        return <FinancialStatementsView storeSettings={storeSettings} />;
       case 'overview':
       default:
         return renderOverview();
@@ -339,25 +337,25 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
         {/* Header + encapsulated date picker */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold m3-text-on-surface tracking-tight">Financial Pulse</h2>
-            <p className="text-sm m3-text-on-surface-variant mt-1">Business health · {range.label}</p>
+            <h2 className="text-2xl font-bold m3-text-on-surface tracking-tight">Overview</h2>
+            <p className="text-sm m3-text-on-surface-variant mt-1">How the business did · {range.label}</p>
           </div>
           <AccountingDatePicker value={range} onChange={setRange} />
         </div>
 
         {/* KPI row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Revenue" value={fmt(fin.period.revenue)} icon="trending_up" accent="m3-text-primary" />
-          <StatCard label="Gross Profit" value={fmt(fin.period.grossProfit)} icon="savings" accent="m3-text-tertiary" sub="Revenue − COGS" />
-          <StatCard label="Total Costs" value={fmt(fin.period.expenses + fin.period.cogs)} icon="trending_down" accent="m3-text-error" sub="COGS + operating" />
+          <StatCard label="Sales" value={fmt(fin.period.revenue)} icon="trending_up" accent="m3-text-primary" sub="After discounts, without VAT" />
+          <StatCard label="Gross profit" value={fmt(fin.period.grossProfit)} icon="savings" accent="m3-text-tertiary" sub="Sales − what the goods cost" />
+          <StatCard label="Total costs" value={fmt(fin.period.expenses + fin.period.cogs)} icon="trending_down" accent="m3-text-error" sub="Goods sold + running costs" />
           <div className="m3-bg-primary-container rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="material-symbols-outlined m3-text-on-primary-container" style={{ fontSize: 22 }}>account_balance_wallet</span>
               {margin !== null && (
-                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full m3-text-on-primary-container" style={{ background: 'rgba(255,255,255,.15)' }}>{margin.toFixed(1)}%</span>
+                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full m3-text-on-primary-container" style={{ background: 'rgba(255,255,255,.15)' }} title="Profit as a share of sales">{margin.toFixed(1)}% margin</span>
               )}
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest m3-text-on-primary-container" style={{ opacity: 0.85 }}>Net Profit</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest m3-text-on-primary-container" style={{ opacity: 0.85 }}>Profit</p>
             <p className="text-2xl font-bold m3-text-on-primary-container tracking-tight mt-0.5">{fmt(fin.period.netIncome)}</p>
           </div>
         </div>
@@ -392,7 +390,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
           {/* Pending payments */}
           <div className="lg:col-span-1 m3-bg-surface-lowest rounded-2xl p-5 shadow-sm border m3-border-outline-variant">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold m3-text-on-surface">Pending Payments</h3>
+              <h3 className="text-base font-bold m3-text-on-surface">Bills to pay</h3>
               <button onClick={() => goTab('ap_management')} className="text-xs font-semibold m3-text-primary">View all</button>
             </div>
             {pending.length === 0 ? (
@@ -407,7 +405,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
                     <span className="w-9 h-9 rounded-full m3-bg-surface-high flex items-center justify-center shrink-0"><span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 20 }}>store</span></span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold m3-text-on-surface truncate">{inv.supplierName}</p>
-                      <p className="text-[11px] m3-text-on-surface-variant">{overdue ? `Overdue ${Math.abs(days)}d` : `Due in ${days}d`}</p>
+                      <p className="text-[11px] m3-text-on-surface-variant">{[inv.invoiceNumber || inv.poNumber, overdue ? `overdue ${Math.abs(days)}d` : `due in ${days}d`].filter(Boolean).join(' · ')}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold m3-text-on-surface">{fmt(due)}</p>
@@ -421,7 +419,10 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
 
           {/* Recent ledger — full width */}
           <div className="lg:col-span-3">
-            <LedgerCard title="Recent Ledger" entries={recentLedger} fmt={fmt} entryAmount={entryAmount} onExport={() => exportLedgerCSV(recentLedger)} onViewAll={() => goTab('journal')} />
+            <BooksHealthCard storeSettings={storeSettings} onOpenReports={() => goTab('reports')} />
+          </div>
+          <div className="lg:col-span-3">
+            <LedgerCard title="Recent activity" entries={recentLedger} fmt={fmt} entryAmount={entryAmount} onExport={() => exportLedgerCSV(recentLedger)} onViewAll={() => goTab('journal')} />
           </div>
         </div>
       </div>
@@ -551,7 +552,7 @@ const LedgerCard: React.FC<{ title: string; entries: JournalEntry[]; fmt: (n: nu
           <div key={e.id} className="flex items-center gap-3 py-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium m3-text-on-surface truncate">{e.description}</p>
-              <p className="text-[11px] m3-text-on-surface-variant">{fmtLocalDate(e.date)} · {e.reference || e.source?.type}</p>
+              <p className="text-[11px] m3-text-on-surface-variant">{[fmtLocalDate(e.date), e.reference].filter(Boolean).join(' · ')}</p>
             </div>
             {e.source?.type && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full m3-bg-tertiary-fixed m3-text-tertiary capitalize">{e.source.type}</span>}
             <span className="text-sm font-bold m3-text-on-surface">{fmt(entryAmount(e))}</span>

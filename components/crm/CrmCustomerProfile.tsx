@@ -4,6 +4,8 @@ import { Icon, Avatar } from './CrmBits';
 import { CustomerMetrics, LoyaltyConfig, formatMoney, formatDate, formatMonthYear, timeAgo, parseApiDate } from './crmModel';
 import { crmService, OutreachEntry } from '../../services/crmService';
 import loyaltyService, { RedemptionRow } from './loyaltyService';
+import ReceiveCustomerPaymentModal, { openInvoicesOf } from '../accounting/ReceiveCustomerPaymentModal';
+import { waChatLink } from '../../utils/whatsapp';
 
 interface CrmCustomerProfileProps {
     metrics: CustomerMetrics;
@@ -19,6 +21,8 @@ interface CrmCustomerProfileProps {
     onUpgrade: () => void;
     onRedeem: () => void;
     onDelete?: () => void;
+    /** Reload customers and sales after a payment is received here. */
+    onRefreshData?: () => void | Promise<void>;
 }
 
 const statusPill = (s: Sale) => {
@@ -27,8 +31,33 @@ const statusPill = (s: Sale) => {
     return <span className="crm-pill-status crm-pill-status--due">UNPAID</span>;
 };
 
-export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics, sales, storeSettings, config, canManage, messagingEntitled = false, onBack, onEdit, onMessage, onUpgrade, onRedeem, onDelete }) => {
+export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics, sales, storeSettings, config, canManage, messagingEntitled = false, onBack, onEdit, onMessage, onUpgrade, onRedeem, onDelete, onRefreshData }) => {
     const c = metrics.customer;
+    const [receiveOpen, setReceiveOpen] = useState(false);
+
+    // What they owe, from their unpaid invoices (oldest first).
+    const unpaid = useMemo(() => openInvoicesOf(sales, c.id), [sales, c.id]);
+    const owed = Math.round(unpaid.reduce((a, s) => a + Math.max(0, (Number(s.total) || 0) - (Number(s.amountPaid) || 0)), 0) * 100) / 100;
+    const overdue = unpaid.filter(s => s.dueDate && new Date(s.dueDate).getTime() < Date.now()).length;
+
+    /** A polite statement for WhatsApp, sent from the shop's own phone. */
+    const reminderLink = useMemo(() => {
+        if (owed <= 0) return null;
+        const money = (n: number) => storeSettings ? formatMoney(n, storeSettings) : n.toFixed(2);
+        const lines = unpaid.map(s => {
+            const due = Math.max(0, (Number(s.total) || 0) - (Number(s.amountPaid) || 0));
+            return '• ' + new Date(s.timestamp).toLocaleDateString() + ' — ' + money(due) + (s.dueDate ? ' (due ' + new Date(s.dueDate).toLocaleDateString() + ')' : '');
+        });
+        const text = [
+            'Hello ' + c.name + ',',
+            '',
+            'A friendly reminder from ' + (storeSettings?.name || 'us') + ' that ' + money(owed) + ' is outstanding on your account:',
+            ...lines,
+            '',
+            'You can pay at the shop or by mobile money. Thank you!',
+        ].join(String.fromCharCode(10));
+        return waChatLink(c.phone, text);
+    }, [owed, unpaid, c.name, c.phone, storeSettings]);
 
     const ownSales = useMemo(
         () => sales.filter(s => s.customerId === c.id).sort((a, b) => (parseApiDate(b.timestamp)?.getTime() ?? 0) - (parseApiDate(a.timestamp)?.getTime() ?? 0)),
@@ -112,6 +141,32 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
                                     </button>
                                 )}
                             </div>
+                            {owed > 0 && (
+                                <div
+                                    className="crm-panel"
+                                    style={{ marginTop: 14, padding: '12px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, borderLeft: `4px solid ${overdue ? 'var(--c-error)' : 'var(--c-secondary-container)'}` }}
+                                >
+                                    <div style={{ flex: '1 1 160px' }}>
+                                        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--c-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Owes</p>
+                                        <p style={{ margin: '2px 0 0', fontSize: 22, fontWeight: 800, color: overdue ? 'var(--c-error)' : 'var(--c-on-bg)' }}>
+                                            {storeSettings ? formatMoney(owed, storeSettings) : owed.toFixed(2)}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: 12, color: 'var(--c-on-surface-variant)' }}>
+                                            {unpaid.length} unpaid invoice{unpaid.length === 1 ? '' : 's'}{overdue ? ` · ${overdue} overdue` : ''}
+                                        </p>
+                                    </div>
+                                    <button className="crm-btn crm-btn--filled" type="button" onClick={() => setReceiveOpen(true)}>
+                                        <Icon name="payments" size={20} /> Receive payment
+                                    </button>
+                                    {reminderLink ? (
+                                        <a className="crm-btn crm-btn--outline" href={reminderLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                                            <Icon name="chat" size={20} /> Send reminder
+                                        </a>
+                                    ) : (
+                                        <span style={{ fontSize: 12, color: 'var(--c-on-surface-variant)' }}>Add a phone number to send a WhatsApp reminder.</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="crm-hero__side">
                             <div className="crm-hero__stat">
@@ -331,6 +386,17 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
                     </div>
                 )}
             </div>
+            {storeSettings && (
+                <ReceiveCustomerPaymentModal
+                    isOpen={receiveOpen}
+                    onClose={() => setReceiveOpen(false)}
+                    customers={[c]}
+                    sales={sales}
+                    storeSettings={storeSettings}
+                    customerId={c.id}
+                    onPaid={() => { void onRefreshData?.(); }}
+                />
+            )}
         </main>
     );
 };

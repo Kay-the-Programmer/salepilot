@@ -12,7 +12,8 @@ import {
 interface CategoryFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (category: Category) => void;
+    /** May return a promise; the form shows Saving and blocks a second tap until it settles. */
+    onSave: (category: Category) => void | Promise<unknown>;
     categoryToEdit?: Category | null;
     allCategories: Category[];
     accounts: Account[];
@@ -73,8 +74,11 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
         setCategory(prev => ({ ...prev, attributes: newAttributes }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [saving, setSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (saving) return;
         if (!category.name.trim()) {
             setError('Category name is required');
             return;
@@ -84,7 +88,8 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
             ...category,
             id: categoryToEdit?.id || `cat_${new Date().toISOString()}`,
         };
-        onSave(finalCategory);
+        setSaving(true);
+        try { await onSave(finalCategory); } finally { setSaving(false); }
     };
 
     const availableParents = allCategories.filter(c => c.id !== categoryToEdit?.id);
@@ -329,9 +334,10 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                 <Button
                                     type="submit"
                                     variant="primary"
+                                    disabled={saving}
                                     className="w-full sm:w-auto px-8 py-3 rounded-lg font-semibold active:scale-95 transition-all"
                                 >
-                                    {categoryToEdit ? 'Save Changes' : 'Create Category'}
+                                    {saving ? 'Saving…' : categoryToEdit ? 'Save Changes' : 'Create Category'}
                                 </Button>
                             </div>
                         </div>

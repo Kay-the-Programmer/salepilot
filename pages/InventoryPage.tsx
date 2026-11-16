@@ -14,6 +14,7 @@ import {
 import CategoryList from '../components/CategoryList';
 import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal, { ReceiveLink } from '../components/StockAdjustmentModal';
+import ReorderSheet from '../components/purchase-orders/ReorderSheet';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import ProductEditForm from '../components/products/ProductEditForm';
@@ -53,9 +54,9 @@ interface InventoryPageProps {
     onArchiveProduct: (productId: string) => void;
     onStockChange: (productId: string, newStock: number) => void;
     onAdjustStock: (productId: string, newQuantity: number, reason: string) => void;
-    onReceivePOItems?: (poId: string, items: { productId: string, quantity: number }[]) => void;
+    onReceivePOItems?: (poId: string, items: { productId: string, quantity: number }[]) => Promise<unknown> | void;
     onSavePurchaseOrder?: (po: PurchaseOrder) => void;
-    onSaveCategory?: (category: Category) => void;
+    onSaveCategory?: (category: Category) => void | Promise<unknown>;
     onDeleteCategory?: (categoryId: string) => void;
     isLoading: boolean;
     error: string | null;
@@ -66,6 +67,8 @@ interface InventoryPageProps {
     embedded?: boolean;
     /** Re-pull products + categories — used after a bulk CSV import writes many rows. */
     onRefreshCatalog?: () => void | Promise<void>;
+    /** Reload everything (orders included) after a reorder is placed. */
+    onRefreshData?: () => void;
 }
 
 const InventoryPage: React.FC<InventoryPageProps> = ({
@@ -91,6 +94,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     currentUser,
     embedded = false,
     onRefreshCatalog,
+    onRefreshData,
 }) => {
     const { showToast } = useToast();
     const [importOpen, setImportOpen] = useState(false);
@@ -103,6 +107,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [stockAdjustProduct, setStockAdjustProduct] = useState<Product | null>(null);
     const [stockAdjustInitialReason, setStockAdjustInitialReason] = useState<string | undefined>(undefined);
+    // Product being reordered from its page (Reorder sheet).
+    const [reorderProduct, setReorderProduct] = useState<Product | null>(null);
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
     const [productToPrint, setProductToPrint] = useState<Product | null>(null);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -478,9 +484,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setEditingCategory(null);
     };
 
-    const handleSaveCategoryInternal = (category: Category) => {
+    const handleSaveCategoryInternal = async (category: Category) => {
         if (onSaveCategory) {
-            onSaveCategory(category);
+            // Close only once it is saved: a refused save keeps what was typed.
+            const ok = await onSaveCategory(category);
+            if (ok === false) return;
             logEvent('Inventory', category.id ? 'update_category' : 'create_category', category.name);
         }
         handleCloseCategoryModal();
@@ -1062,6 +1070,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onPrintLabel={handleOpenPrintModal}
                                             onAdjustStock={handleOpenStockModal}
                                             onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
+                                            onReorder={canManageProducts ? setReorderProduct : undefined}
                                             onQuickEdit={canManageProducts ? async (patch) => {
                                                 await saveProductPatch(detailedProduct, patch);
                                                 logEvent('Inventory', 'quick_edit', Object.keys(patch).join(','));
@@ -1106,6 +1115,23 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     initialReason={stockAdjustInitialReason}
                     openPurchaseOrders={openPurchaseOrdersFor(stockAdjustProduct)}
                     newPoSupplierName={newPoSupplierFor(stockAdjustProduct)?.name}
+                />
+            )}
+
+            {canManageProducts && reorderProduct && (
+                <ReorderSheet
+                    isOpen={!!reorderProduct}
+                    product={reorderProduct}
+                    onClose={() => setReorderProduct(null)}
+                    suppliers={suppliers}
+                    purchaseOrders={purchaseOrders}
+                    products={products}
+                    storeSettings={storeSettings}
+                    onPlaced={() => onRefreshData?.()}
+                    onSaveProduct={async (prod) => {
+                        await onSaveProduct(prod);
+                        setDetailedProduct(prev => (prev && prev.id === prod.id ? { ...prev, supplierId: prod.supplierId } : prev));
+                    }}
                 />
             )}
 

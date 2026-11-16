@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
-import { PurchaseOrder, StoreSettings } from '../../types';
+import { Product, PurchaseOrder, StoreSettings, Supplier } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { num, formatMoney, formatDate } from '../crm/crmModel';
 import { OPEN_STATUSES } from './procureModel';
 import PoStatusChip from '../purchase-orders/PoStatusChip';
 import { useConfirm } from '../ui/useConfirm';
+import SendOrderButtons from '../purchase-orders/SendOrderButtons';
 
 interface ProcureOrderDetailProps {
     po: PurchaseOrder;
@@ -12,8 +13,15 @@ interface ProcureOrderDetailProps {
     onBack: () => void;
     onEdit: () => void;
     onReceive: () => void;
+    /** A receipt for this order is in flight — Receive stays disabled. */
+    receiving?: boolean;
+    onDownloadPdf?: () => void;
+    pdfBusy?: boolean;
     onUpdateStatus: (status: PurchaseOrder['status']) => void;
     onDelete: () => void;
+    /** For "Send on WhatsApp": the supplier's phone and product units. */
+    suppliers?: Supplier[];
+    products?: Product[];
 }
 
 const STEPS: { id: PurchaseOrder['status']; label: string }[] = [
@@ -23,7 +31,7 @@ const STEPS: { id: PurchaseOrder['status']; label: string }[] = [
     { id: 'received', label: 'Received' },
 ];
 
-export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, storeSettings, onBack, onEdit, onReceive, onUpdateStatus, onDelete }) => {
+export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, storeSettings, onBack, onEdit, onReceive, onUpdateStatus, onDelete, suppliers = [], products, receiving = false, onDownloadPdf, pdfBusy = false }) => {
     const { confirm } = useConfirm();
 
     const m = useMemo(() => {
@@ -75,14 +83,24 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
                     </div>
                 </div>
                 <div className="proc-prof-actions">
+                    {onDownloadPdf && (
+                        <button type="button" className="crm-btn crm-btn--outline" disabled={pdfBusy} style={pdfBusy ? { opacity: 0.6 } : undefined} onClick={onDownloadPdf}>
+                            <Icon name={pdfBusy ? 'hourglass_top' : 'picture_as_pdf'} size={20} /> {pdfBusy ? 'Building…' : 'PDF'}
+                        </button>
+                    )}
                     {po.status === 'received' ? (
                         <span className="crm-badge crm-badge--platinum" style={{ alignSelf: 'center' }}><Icon name="lock" size={14} fill={1} /> Received · locked</span>
                     ) : (
                         <button type="button" className="crm-btn crm-btn--outline" onClick={onEdit}><Icon name="edit" size={20} /> Edit</button>
                     )}
                     {canPlace && <button type="button" className="crm-btn crm-btn--primary" onClick={() => onUpdateStatus('ordered')}><Icon name="send" size={20} /> Place Order</button>}
-                    {canReceive && <button type="button" className="crm-btn crm-btn--primary" onClick={onReceive}><Icon name="inventory" size={20} /> Receive Stock</button>}
+                    {canReceive && <button type="button" className="crm-btn crm-btn--primary" disabled={receiving} style={receiving ? { opacity: 0.6 } : undefined} onClick={onReceive}><Icon name={receiving ? 'hourglass_top' : 'inventory'} size={20} /> {receiving ? 'Receiving…' : 'Receive Stock'}</button>}
                 </div>
+                {(po.status === 'ordered' || po.status === 'partially_received') && (
+                    <div style={{ marginTop: 12 }}>
+                        <SendOrderButtons po={po} suppliers={suppliers} products={products} storeName={storeSettings?.name} />
+                    </div>
+                )}
             </div>
 
             {/* Status timeline */}

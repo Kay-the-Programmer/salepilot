@@ -29,7 +29,8 @@ interface CrmAppProps {
     canManage: boolean;
     onNavigate: (section: CrmSection) => void;
     onUpgrade: () => void;
-    onSaveCustomer: (customer: Customer) => void | Promise<void>;
+    /** Resolves false when the save was refused, so the form stays open. */
+    onSaveCustomer: (customer: Customer) => void | Promise<void | boolean>;
     onDeleteCustomer: (id: string) => void | Promise<void>;
     /** Re-pull customers + sales from the backend (after a server-side change). */
     onRefreshData?: () => void | Promise<void>;
@@ -140,8 +141,9 @@ export const CrmApp: React.FC<CrmAppProps> = ({
     // The host Dashboard reports the save outcome (it owns the API call and
     // knows whether it was queued offline), so this doesn't toast on top of it.
     const handleSave = async (c: Customer) => {
-        setFormOpen(false); setEditing(null);
-        await onSaveCustomer(c);
+        // Close only once it is saved: a refused save keeps what was typed.
+        const ok = await onSaveCustomer(c);
+        if (ok !== false) { setFormOpen(false); setEditing(null); }
     };
 
     const handleDelete = async (c: Customer) => {
@@ -285,6 +287,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 onUpgrade={onUpgrade}
                 onRedeem={() => handleRedeem(selected.customer.id)}
                 onDelete={() => handleDelete(selected.customer)}
+                onRefreshData={onRefreshData}
             />
         );
     } else if (section === 'customers') {

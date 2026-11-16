@@ -7,10 +7,13 @@ import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
 import ReceiptSetupWizard, { markReceiptSetupDone, shouldOfferReceiptSetup } from '../components/receipts/ReceiptSetupWizard';
 import CashDrawerModal from '../components/sales/CashDrawerModal';
+import { getCurrentSession } from '../services/cashSession';
 import ManagerOverrideModal from '../components/sales/ManagerOverrideModal';
 import { OverrideAction, overrideRequestFrom } from '../services/overrides';
 import { computeTax, toTaxClass } from '../utils/tax';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
+import SwitchCashierModal from '../components/sales/SwitchCashierModal';
+import { receiptWhatsAppLink } from '../utils/receiptWhatsApp';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
@@ -109,13 +112,24 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [activeCategory] = useState('All Items');
     const [discount, setDiscount] = useState<string>('0');
     const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
-    const [heldSales, setHeldSales] = useState<CartItem[][]>([]);
+    // A held sale keeps everything about the customer, not just the items.
+    type HeldSale = { cart: CartItem[]; discount: string; discountType: 'amount' | 'percentage'; customer: Customer | null; phone: string; heldAt: string };
+    const [heldSales, setHeldSales] = useState<HeldSale[]>([]);
     const [showReceiptModal, setShowReceiptModal] = useState(false);
     // Reachable before any sale is made. Pairing a printer used to mean
     // ringing something up first, just to get at the cog on the receipt.
     const [showPrinterSettings, setShowPrinterSettings] = useState(false);
     const [showReceiptSetup, setShowReceiptSetup] = useState(false);
     const [showCashDrawer, setShowCashDrawer] = useState(false);
+    const [showSwitchCashier, setShowSwitchCashier] = useState(false);
+    // Is a till open for this cashier? null = not known yet (offline, loading).
+    const [tillOpen, setTillOpen] = useState<boolean | null>(null);
+    const [tillStartOfDay, setTillStartOfDay] = useState(false);
+    // Set the moment the dialog opens a till: the dialog closes itself in the
+    // same tick, before tillOpen state has updated, and "Not now" must not be
+    // recorded for a till that was just opened.
+    const tillJustOpenedRef = useRef(false);
+
 
     /**
      * Offer receipt setup once, to a shop that plainly has not done it.
@@ -178,6 +192,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         // The till is already free for the next customer, so the outcome is a
         // toast, not a dialog that must be dismissed. Change due leads it —
         // it is the one number the cashier still has to act on.
+        const waReceipt = receiptWhatsAppLink(sale, storeSettings);
         const announce = (withReceiptButton: boolean) => {
             const change = sale.changeDue || 0;
             showToast(
@@ -186,9 +201,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     : 'Sale complete',
                 'success',
                 {
-                    ...(withReceiptButton
-                        ? { action: { label: 'Receipt', onClick: () => setShowReceiptModal(true) } }
-                        : {}),
+                    // A phone was taken: the receipt goes to WhatsApp in one tap.
+                    // The printed one stays under Last Receipt in the menu.
+                    ...(waReceipt
+                        ? { action: { label: 'WhatsApp receipt', onClick: () => { window.open(waReceipt, '_blank', 'noopener'); } } }
+                        : withReceiptButton
+                            ? { action: { label: 'Receipt', onClick: () => setShowReceiptModal(true) } }
+                            : {}),
                     // Long enough to read the change out, even with no button.
                     ...(change > 0 ? { duration: 8000 } : {}),
                 },
@@ -251,6 +270,46 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Keep the view in sync when the route flips between /pos and /pos/history
     // (same component instance, different prop).
     useEffect(() => { setPosView(initialView || 'sell'); }, [initialView]);
+
+    /**
+     * Sales rung up with no open till belong to no shift, so they never reach
+     * the end-of-day cash report. The till used to live only in the POS menu
+     * with nothing asking for it; now the first visit of the day offers to open
+     * it (once — "Not now" holds until tomorrow), and the top bar says when
+     * it is closed.
+     */
+    useEffect(() => {
+        if (posView !== 'sell') return;
+        let cancelled = false;
+        getCurrentSession().then(current => {
+            if (cancelled) return;
+            setTillOpen(!!current);
+            if (current) return;
+            const key = `salepilot.till.notNow.${storeSettings?.storeId || 'store'}`;
+            const today = new Date().toDateString();
+            let dismissed = false;
+            try { dismissed = localStorage.getItem(key) === today; } catch { /* storage off */ }
+            if (!dismissed) {
+                setTillStartOfDay(true);
+                setShowCashDrawer(true);
+            }
+        }).catch(() => { /* offline — say nothing rather than nag */ });
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [posView, storeSettings?.storeId]);
+
+    const closeCashDrawer = () => {
+        if (tillStartOfDay && !tillOpen && !tillJustOpenedRef.current) {
+            try {
+                localStorage.setItem(`salepilot.till.notNow.${storeSettings?.storeId || 'store'}`, new Date().toDateString());
+            } catch { /* storage off */ }
+        }
+        tillJustOpenedRef.current = false;
+        setTillStartOfDay(false);
+        setShowCashDrawer(false);
+        // Re-check: the dialog may have opened or closed the till.
+        getCurrentSession().then(c => setTillOpen(!!c)).catch(() => {});
+    };
     const [posMenuOpen, setPosMenuOpen] = useState(false);
     const [appliedStoreCredit, setAppliedStoreCredit] = useState(0);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
@@ -462,6 +521,35 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setMobileMoneyTxnId('');
     }, []);
 
+    /**
+     * Keep the cart and held sales on this device, per shop, so a refresh, a
+     * crash or a flat battery doesn't lose a customer's basket.
+     */
+    const posKey = `salepilot.pos.${storeSettings?.storeId || 'store'}`;
+    const posLoadedRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (posLoadedRef.current === posKey) return;
+        posLoadedRef.current = posKey;
+        try {
+            const saved = JSON.parse(localStorage.getItem(posKey) || 'null');
+            if (!saved) return;
+            if (Array.isArray(saved.held)) setHeldSales(saved.held.filter((h: any) => Array.isArray(h?.cart)));
+            if (Array.isArray(saved.cart) && saved.cart.length) {
+                setCart(saved.cart);
+                setDiscount(saved.discount || '0');
+                setDiscountType(saved.discountType || 'amount');
+                setSelectedCustomer(saved.customer || null);
+                setCustomerPhone(saved.phone || '');
+            }
+        } catch { /* storage off or corrupt: start empty */ }
+    }, [posKey]);
+    useEffect(() => {
+        if (posLoadedRef.current !== posKey) return;
+        try {
+            localStorage.setItem(posKey, JSON.stringify({ cart, discount, discountType, customer: selectedCustomer, phone: customerPhone, held: heldSales }));
+        } catch { /* storage full or off */ }
+    }, [posKey, cart, discount, discountType, selectedCustomer, customerPhone, heldSales]);
+
     const clearCart = useCallback(() => {
         if (cart.length === 0) return;
         resetSale();
@@ -470,7 +558,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const handleHoldSale = () => {
         if (cart.length === 0) return;
-        setHeldSales([...heldSales, cart]);
+        setHeldSales([...heldSales, { cart, discount, discountType, customer: selectedCustomer, phone: customerPhone, heldAt: new Date().toISOString() }]);
         resetSale();
         showToast('Sale held for later', 'info');
     };
@@ -480,9 +568,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
             showToast("Please complete or hold current sale first", 'error');
             return;
         }
-        setCart(heldSales[index]);
+        const h = heldSales[index];
+        setCart(h.cart);
+        setDiscount(h.discount || '0');
+        setDiscountType(h.discountType || 'amount');
+        setSelectedCustomer(h.customer);
+        setCustomerPhone(h.phone || '');
         setHeldSales(heldSales.filter((_, i) => i !== index));
-        showToast(`Held sale #${index + 1} recalled`, 'success');
+        showToast(h.customer ? `${h.customer.name}'s sale is back` : `Held sale #${index + 1} recalled`, 'success');
     };
 
     const filteredProducts = useMemo(() => {
@@ -867,6 +960,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <div className="sale__topactions">
                     <SyncStatusPill />
 
+                    {posView === 'sell' && tillOpen === false && (
+                        <button
+                            type="button"
+                            className="sale__scanbadge"
+                            style={{ cursor: 'pointer', border: 'none', background: 'var(--v2-color-accent-soft, #ffdbc9)', color: '#7a2e00' }}
+                            onClick={() => { setTillStartOfDay(false); setShowCashDrawer(true); }}
+                            title="Sales made now won't appear in the end-of-day cash report"
+                        >
+                            <PosIcon name="point_of_sale" size={16} /> Till closed · Open
+                        </button>
+                    )}
+
                     {isExternalScannerActive && (
                         <span className="sale__scanbadge" title="External barcode scanner is active">
                             <span className="sale__scanbadge-dot" />
@@ -972,6 +1077,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     >
                                         <PosIcon name="point_of_sale" size={20} />
                                         Cash Drawer
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
+                                        onClick={() => { setShowSwitchCashier(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="switch_account" size={20} />
+                                        Switch cashier
                                     </button>
                                     <div className="sale__menu-sep" />
                                     <button
@@ -1246,13 +1360,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 ) : heldSales.length > 0 ? (
                                     <div className="cart__lines">
                                         <div className="cart__held-head">Held Sales <span>{heldSales.length}</span></div>
-                                        {heldSales.map((hc, i) => {
+                                        {heldSales.map((held, i) => {
+                                            const hc = held.cart;
                                             const heldTotal = hc.reduce((a, it) => a + it.price * it.quantity, 0);
                                             const heldUnits = hc.reduce((a, it) => a + it.quantity, 0);
                                             return (
                                                 <div className="heldcard" key={i}>
                                                     <div className="heldcard__info">
-                                                        <span className="heldcard__title">Held #{i + 1}</span>
+                                                        <span className="heldcard__title">{held.customer?.name || held.phone || `Held #${i + 1}`}</span>
                                                         <span className="heldcard__sub tnum">
                                                             {heldUnits} {heldUnits === 1 ? 'item' : 'items'} · {formatCurrency(heldTotal, storeSettings)}
                                                         </span>
@@ -1325,10 +1440,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
             )}
 
             {/* ── Modals ── */}
+            <SwitchCashierModal isOpen={showSwitchCashier} onClose={() => setShowSwitchCashier(false)} currentName={user?.name} />
             <HeldSalesModal
                 isOpen={showHeldPanel}
                 onClose={() => setShowHeldPanel(false)}
-                heldSales={heldSales}
+                heldSales={heldSales.map(h => h.cart)}
                 onRecallSale={handleRecallSale}
                 storeSettings={storeSettings}
             />
@@ -1350,8 +1466,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             <CashDrawerModal
                 isOpen={showCashDrawer}
-                onClose={() => setShowCashDrawer(false)}
+                onClose={closeCashDrawer}
                 storeSettings={storeSettings}
+                startOfDay={tillStartOfDay}
+                onOpened={() => { tillJustOpenedRef.current = true; setTillOpen(true); }}
             />
 
             <ManagerOverrideModal

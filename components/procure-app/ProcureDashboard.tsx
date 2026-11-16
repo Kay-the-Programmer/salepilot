@@ -150,7 +150,7 @@ export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, st
                             </div>
                             {reorderCount > 0 && (
                                 <button className="crm-btn crm-btn--primary" type="button" onClick={onAutoReorder} style={{ padding: '8px 14px', fontSize: 13 }}>
-                                    Generate
+                                    Buy stock
                                 </button>
                             )}
                         </div>

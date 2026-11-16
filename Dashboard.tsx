@@ -827,17 +827,24 @@ export default function Dashboard() {
         }
     };
 
-    const handleProcessReturn = async (returnInfo: Return) => {
+    /**
+     * Record a return. Resolves to the saved return — whose refundAmount is the
+     * server's figure — or null when it was refused, so the refund screen can
+     * confirm the real amount, or keep the form open. The screen shows the
+     * success message itself.
+     */
+    const handleProcessReturn = async (returnInfo: Return): Promise<Return | null> => {
         try {
             const result = await api.post<Return>('/returns', returnInfo);
             if ((result as any).offline) {
-                showToast('Offline: Return queued for sync.', 'info');
-            } else {
-                showToast('Return processed successfully!', 'success');
-                fetchData();
+                showToast('Offline: return saved on this device and queued — the refund amount is confirmed when it syncs.', 'info');
+                return { ...returnInfo, offline: true } as Return;
             }
+            fetchData();
+            return result as Return;
         } catch (err: any) {
-            showToast(err.message, 'error');
+            showToast(err?.body?.message || err.message, 'error');
+            return null;
         }
     };
 
@@ -846,7 +853,10 @@ export default function Dashboard() {
         entityName: string,
         endpoint: string,
         currentState: T[]
-    ) => async (item: T) => {
+    ) => async (item: T): Promise<boolean> => {
+        // Resolves true once saved (or queued offline) and false when refused,
+        // so a form can stay open with what was typed instead of closing on a
+        // save that then fails.
         try {
             const isUpdating = currentState.some(e => e.id === item.id);
             const result = await (isUpdating ? api.put(`${endpoint}/${item.id}`, item) : api.post(endpoint, item));
@@ -856,8 +866,10 @@ export default function Dashboard() {
                 showToast(`${entityName} ${isUpdating ? 'updated' : 'saved'}!`, 'success');
                 fetchData();
             }
+            return true;
         } catch (err: any) {
-            showToast(err.message, 'error');
+            showToast(err?.body?.message || err.message, 'error');
+            return false;
         }
     };
 
@@ -958,22 +970,38 @@ export default function Dashboard() {
         }
     };
 
-    const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]) => {
+    /**
+     * Receive goods against a PO. Resolves once the server has answered AND
+     * the screen has the refreshed order, so callers can keep their Receive
+     * button disabled for the whole round trip — releasing it earlier left a
+     * stale "open" order on screen that could be received a second time.
+     * Returns true when stock was booked.
+     */
+    const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]): Promise<boolean> => {
         try {
             // The dedicated receive endpoint updates the PO's received quantities,
             // increments stock with weighted-average costing and posts the correct
             // journal entry (Dr Inventory / Cr Goods Received Not Invoiced) in one
             // transaction — never adjust stock separately here, that double-posts.
-            const result = await api.post(`/purchase-orders/${poId}/receive`, receivedItems);
+            const result = await api.post<any>(`/purchase-orders/${poId}/receive`, receivedItems);
 
             if ((result as any).offline) {
                 showToast('Offline: Stock reception queued.', 'info');
-            } else {
-                showToast('Stock received into inventory.', 'success');
-                fetchData();
+                return true;
             }
+            showToast(
+                (result as any)?.capped
+                    ? 'Stock received. Only what was still outstanding on the order was added.'
+                    : 'Stock received into inventory.',
+                'success',
+            );
+            await fetchData();
+            return true;
         } catch (err: any) {
-            showToast(err.message, 'error');
+            showToast(err?.body?.message || err.message, 'error');
+            // A 409 means it was already received — refresh so the screen shows that.
+            if (err?.status === 409) await fetchData();
+            return false;
         }
     };
 
@@ -1424,6 +1452,7 @@ export default function Dashboard() {
                             onDeleteAccount={handleDeleteAccount}
                             onAddManualJournalEntry={handleAddManualJournalEntry}
                             onRecordPayment={handleRecordPayment}
+                            onDataChanged={fetchData}
                             onSaveSupplierInvoice={handleSaveSupplierInvoice}
                             onRecordSupplierPayment={handleRecordSupplierPayment}
                             onSaveExpense={handleSaveExpense as any}
@@ -1723,6 +1752,7 @@ export default function Dashboard() {
                             onDeletePurchaseOrder={handleDeletePurchaseOrder}
                             onReceivePOItems={handleReceivePOItems}
                             onSaveProduct={handleSaveProduct}
+                            onRefresh={fetchData}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
@@ -1791,7 +1821,7 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             renderItems={() => (
                                 <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded onRefreshCatalog={refreshCatalog} />
+                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded onRefreshCatalog={refreshCatalog} onRefreshData={fetchData} />
                                 </Suspense>
                             )}
                             renderStockTakes={() => (
@@ -1803,7 +1833,7 @@ export default function Dashboard() {
                             onPos={() => navigate('/pos')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
-                            onGeneratePO={() => navigate('/procure/orders')}
+                            onGeneratePO={() => navigate('/procure/orders?buy=1')}
                         />
                     </Suspense>
                 </NotificationProvider>

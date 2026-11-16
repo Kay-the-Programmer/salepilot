@@ -181,14 +181,7 @@ export const ClosingStockReport: React.FC<ClosingStockReportProps> = ({
                 </div>
 
                 <div className="closing-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                    <button
-                        type="button"
-                        className="crm-btn crm-btn--outline"
-                        onClick={handlePrint}
-                        title="Print this closing stock report"
-                    >
-                        <Icon name="print" size={18} /> Print
-                    </button>
+
                     <button
                         type="button"
                         className="crm-btn crm-btn--outline"
@@ -545,15 +538,14 @@ export const ClosingStockReport: React.FC<ClosingStockReportProps> = ({
                                             </div>
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
-                                            <span className={`inv-stock-pill ${
-                                                item.status === 'in_stock'
+                                            <span className={`inv-stock-pill ${item.status === 'in_stock'
                                                     ? 'closing-pill--in'
                                                     : item.status === 'low_stock'
                                                         ? 'inv-stock-pill--low'
                                                         : item.status === 'negative'
                                                             ? 'closing-pill--negative'
                                                             : 'inv-stock-pill--out'
-                                            }`}>
+                                                }`}>
                                                 {item.status === 'in_stock'
                                                     ? 'In Stock'
                                                     : item.status === 'low_stock'

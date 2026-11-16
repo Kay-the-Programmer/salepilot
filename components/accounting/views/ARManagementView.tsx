@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Customer, StoreSettings, Payment } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 import UnifiedRecordPaymentModal from '../UnifiedRecordPaymentModal';
 import CustomerStatementModal from '../modals/CustomerStatementModal';
+import ReceiveCustomerPaymentModal from '../ReceiveCustomerPaymentModal';
+import { getOpenInvoices } from '../booksApi';
 import {
     BanknotesIcon,
     CalculatorIcon,
@@ -19,6 +21,8 @@ interface ARManagementViewProps {
     storeSettings: StoreSettings;
     onRecordPayment: (saleId: string, payment: Omit<Payment, 'id'>) => void;
     onViewInvoice: (invoice: Sale) => void;
+    /** Reload after a customer payment is booked. */
+    onCustomerPaid?: () => void;
 }
 
 const FILTERS: { id: string; label: string }[] = [
@@ -36,7 +40,22 @@ const paidAmount = (s: Sale) => (s.payments && s.payments.length > 0)
 const isSalePaid = (s: Sale) => s.paymentStatus === 'paid' || Math.round((s.total - paidAmount(s)) * 100) <= 0;
 const isSaleOverdue = (s: Sale) => !isSalePaid(s) && !!s.dueDate && new Date(s.dueDate) < new Date();
 
-const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, storeSettings, onRecordPayment, onViewInvoice }) => {
+const ARManagementView: React.FC<ARManagementViewProps> = ({ sales: loadedSales, customers, storeSettings, onRecordPayment, onViewInvoice, onCustomerPaid }) => {
+    // The app's sales list holds only the newest 1,000 sales, so older unpaid
+    // invoices fell off this screen. Merge in every open invoice from the server.
+    const [openFromServer, setOpenFromServer] = useState<Sale[] | null>(null);
+    useEffect(() => {
+        let live = true;
+        getOpenInvoices().then(r => { if (live) setOpenFromServer(r); }).catch(() => { /* fall back to the loaded list */ });
+        return () => { live = false; };
+    }, [loadedSales]);
+    const sales = useMemo(() => {
+        if (!openFromServer) return loadedSales;
+        const byId = new Map(loadedSales.map(s => [s.transactionId, s] as [string, Sale]));
+        for (const s of openFromServer) byId.set(s.transactionId, s);
+        return [...byId.values()];
+    }, [loadedSales, openFromServer]);
+    const [receiveOpen, setReceiveOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<Sale | null>(null);
     const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
@@ -109,10 +128,20 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Accounts Receivable</h3>
-                    <p className="text-sm m3-text-on-surface-variant mt-1">Manage customer invoices and payments</p>
+                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Customers owe you</h3>
+                    <p className="text-sm m3-text-on-surface-variant mt-1">Unpaid customer invoices (accounts receivable) and payments received</p>
                 </div>
-                <div className="relative self-start sm:self-auto w-full sm:w-64">
+                <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto w-full sm:w-auto">
+                <button
+                    type="button"
+                    onClick={() => setReceiveOpen(true)}
+                    disabled={owingCustomers.length === 0}
+                    className="px-4 py-2.5 rounded-lg text-sm font-bold bg-primary text-white disabled:opacity-50 whitespace-nowrap"
+                    title="A customer pays toward what they owe; the oldest invoices are settled first"
+                >
+                    Receive payment
+                </button>
+                <div className="relative w-full sm:w-64">
                     <UsersIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 m3-text-on-surface-variant pointer-events-none" />
                     <select
                         onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
@@ -125,6 +154,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                             <option key={c.id} value={c.id}>{c.name} ({formatCurrency(c.accountBalance, storeSettings)})</option>
                         ))}
                     </select>
+                </div>
                 </div>
             </div>
 
@@ -322,6 +352,14 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     storeSettings={storeSettings}
                 />
             )}
+            <ReceiveCustomerPaymentModal
+                isOpen={receiveOpen}
+                onClose={() => setReceiveOpen(false)}
+                customers={customers}
+                sales={sales}
+                storeSettings={storeSettings}
+                onPaid={() => onCustomerPaid?.()}
+            />
             {selectedCustomerForStatement && (
                 <CustomerStatementModal
                     isOpen={isStatementModalOpen}

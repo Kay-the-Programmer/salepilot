@@ -9,6 +9,7 @@ import PrinterSettingsModal from './PrinterSettingsModal';
 import { buildReceiptBytes, receiptCode } from '../../utils/receiptEscPos';
 import { PrinterError, PrinterStatus, getOpenDrawer, getPaperWidth, getPrinterStatus, isSupported, printBytes, reconnect } from '../../services/thermalPrinter';
 import { useToast } from '../../contexts/ToastContext';
+import { receiptWhatsAppLink } from '../../utils/receiptWhatsApp';
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -400,6 +401,18 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         <PosIcon name="print" size={18} />
                         Print receipt
                     </button>
+                    {receiptWhatsAppLink(saleData, storeSettings) && (
+                        <a
+                            href={receiptWhatsAppLink(saleData, storeSettings)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-none px-4 py-3 rounded-lg bg-[#25D366] text-white text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
+                            title={`Send to ${customerPhone}`}
+                        >
+                            <PosIcon name="chat" size={18} />
+                            WhatsApp
+                        </a>
+                    )}
                     {/* Always offered, including where this browser cannot drive a
                         printer at all. Hiding it left an iPhone with no way to find
                         out why — the settings screen is where that is explained, and

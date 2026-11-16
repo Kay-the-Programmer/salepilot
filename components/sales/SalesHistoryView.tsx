@@ -14,11 +14,13 @@ import {
     pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
 } from '../../utils/pdfDocument';
 import { useToast } from '../../contexts/ToastContext';
+import { computeRefund } from '../../utils/refund';
 
 interface SalesHistoryViewProps {
     storeSettings: StoreSettings;
     customers: Customer[];
-    onProcessReturn: (returnInfo: Return) => void;
+    /** Resolves to the saved return (with the server refund amount), or null when refused. */
+    onProcessReturn: (returnInfo: Return) => Promise<Return | null | undefined> | void;
     /** First-run CTA: jump back to the register to make the first sale. */
     onStartSelling?: () => void;
     /** Correcting a sale's date rewrites history, so it is admin-only. */
@@ -96,7 +98,6 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
     const [dateDraft, setDateDraft] = useState<string | null>(null);
     const [savingDate, setSavingDate] = useState(false);
 
-    const taxRate = storeSettings.taxRate / 100;
 
     // Debounced term actually sent to the server. Searching server-side is what
     // lets a product match reach past the 50 rows this view holds.
@@ -344,21 +345,46 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
         setItemsToReturn(prev => prev[productId] ? { ...prev, [productId]: { ...prev[productId], [field]: value } } : prev);
     };
 
-    const { refundSubtotal, refundDiscount, refundTax, refundTotal } = useMemo(() => {
+    // The same rule the server applies (utils/refund mirrors services/refund):
+    // each line at the tax class it was sold under, its share of the discount,
+    // the rate on the receipt. So the figure on the button is the figure paid.
+    // The list's `total` is already net of earlier refunds; add them back.
+    const { refundSubtotal, refundTax, refundTotal } = useMemo(() => {
         if (!selectedSale || Object.keys(itemsToReturn).length === 0) {
-            return { refundSubtotal: 0, refundDiscount: 0, refundTax: 0, refundTotal: 0 };
+            return { refundSubtotal: 0, refundTax: 0, refundTotal: 0 };
         }
-        const refundSubtotal = Object.values(itemsToReturn).reduce((a, i) => a + i.price * i.quantity, 0);
-        const originalSubtotal = selectedSale.cart.reduce((a, i) => a + i.price * i.quantity, 0);
-        const proportion = originalSubtotal > 0 ? refundSubtotal / originalSubtotal : 0;
-        const refundDiscount = (selectedSale.discount || 0) * proportion;
-        const taxable = Math.max(0, refundSubtotal - refundDiscount);
-        const refundTax = taxable * taxRate;
-        return { refundSubtotal, refundDiscount, refundTax, refundTotal: taxable + refundTax };
-    }, [itemsToReturn, selectedSale, taxRate]);
+        const alreadyRefunded = Number(selectedSale.totalRefunded) || 0;
+        const r = computeRefund(
+            selectedSale.cart.map(i => ({
+                productId: i.productId,
+                price: Number(i.price) || 0,
+                quantity: Number(i.quantity) || 0,
+                returned: Number(i.returnedQuantity) || 0,
+                taxClass: (i as any).taxClass ?? null,
+            })),
+            Object.entries(itemsToReturn).map(([productId, item]) => ({ productId, quantity: item.quantity })),
+            {
+                subtotal: Number(selectedSale.subtotal) || 0,
+                total: (Number(selectedSale.total) || 0) + alreadyRefunded,
+                deliveryFee: Number((selectedSale as any).deliveryFee) || 0,
+                taxBreakdown: (selectedSale as any).taxBreakdown ?? null,
+                alreadyRefunded,
+            },
+            Number(storeSettings.taxRate) || 0,
+        );
+        return { refundSubtotal: r.net, refundTax: r.tax, refundTotal: r.amount };
+    }, [itemsToReturn, selectedSale, storeSettings.taxRate]);
 
-    const processRefund = () => {
-        if (!selectedSale || refundTotal <= 0) return;
+    const [refunding, setRefunding] = useState(false);
+
+    /**
+     * Send the return and say "refunded" only once the server has booked it,
+     * with the amount the server paid. It used to announce success before the
+     * request was even answered, so a refused refund showed a success message
+     * and an error together.
+     */
+    const processRefund = async () => {
+        if (!selectedSale || refundTotal <= 0 || refunding) return;
         const returnInfo: Return = {
             id: `RET-${Date.now()}`,
             originalSaleId: selectedSale.transactionId,
@@ -370,18 +396,28 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                 reason: item.reason || 'Other',
                 addToStock: item.addToStock || false,
             })),
+            // Shown for reference only; the server works out the real amount.
             refundAmount: refundTotal,
             subtotalAmount: refundSubtotal,
             taxAmount: refundTax,
             refundMethod,
         };
-        onProcessReturn(returnInfo);
-        showToast(`Refund of ${formatCurrency(refundTotal, storeSettings)} processed`, 'success');
-        setRefundMode(false);
-        setSelectedSale(null);
-        setMobileDetailOpen(false);
-        // Pick up server-side changes (returnedQuantity / refundStatus).
-        setTimeout(fetchSales, 700);
+        setRefunding(true);
+        try {
+            const saved = await onProcessReturn(returnInfo);
+            if (saved === null) return; // refused — the error toast has said why; keep the form
+            if (!(saved as any)?.offline) {
+                const paid = saved && typeof saved === 'object' && Number((saved as Return).refundAmount) >= 0
+                    ? Number((saved as Return).refundAmount) : refundTotal;
+                showToast(`Refunded ${formatCurrency(paid, storeSettings)}`, 'success');
+            }
+            setRefundMode(false);
+            setSelectedSale(null);
+            setMobileDetailOpen(false);
+            await fetchSales(); // returnedQuantity / refundStatus from the server
+        } finally {
+            setRefunding(false);
+        }
     };
 
     const returnableCount = selectedSale
@@ -593,10 +629,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                             </div>
 
                             <dl className="cart__totals">
-                                <div><dt>Subtotal</dt><dd className="tnum">{formatCurrency(refundSubtotal, storeSettings)}</dd></div>
-                                {refundDiscount > 0 && (
-                                    <div className="cart__discount-row"><dt>Discount</dt><dd className="tnum">−{formatCurrency(refundDiscount, storeSettings)}</dd></div>
-                                )}
+                                <div><dt>Goods (after discount)</dt><dd className="tnum">{formatCurrency(refundSubtotal, storeSettings)}</dd></div>
                                 <div><dt>Tax</dt><dd className="tnum">{formatCurrency(refundTax, storeSettings)}</dd></div>
                             </dl>
                         </div>
@@ -604,11 +637,12 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                             <button
                                 type="button"
                                 className="cart__charge cart__charge--danger"
-                                disabled={refundTotal <= 0}
+                                disabled={refundTotal <= 0 || refunding}
+                                aria-busy={refunding}
                                 onClick={processRefund}
                             >
                                 <span className="cart__charge-label">
-                                    <PosIcon name="undo" size={22} fill={1} /> Process Refund
+                                    <PosIcon name={refunding ? "progress_activity" : "undo"} size={22} fill={1} /> {refunding ? "Refunding…" : "Process Refund"}
                                 </span>
                                 <span className="cart__charge-total tnum">{formatCurrency(refundTotal, storeSettings)}</span>
                             </button>

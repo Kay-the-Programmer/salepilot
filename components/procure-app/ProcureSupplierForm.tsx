@@ -5,7 +5,8 @@ import { Icon } from '../crm/CrmBits';
 interface ProcureSupplierFormProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (supplier: Supplier) => void;
+    /** May return a promise; the form shows Saving and blocks a second tap until it settles. */
+    onSave: (supplier: Supplier) => void | Promise<unknown>;
     supplierToEdit?: Supplier | null;
 }
 
@@ -33,11 +34,14 @@ export const ProcureSupplierForm: React.FC<ProcureSupplierFormProps> = ({ isOpen
 
     const change = (name: keyof Supplier, value: string) => setSupplier(prev => ({ ...prev, [name]: value }));
 
-    const submit = (e?: React.FormEvent) => {
+    const [saving, setSaving] = useState(false);
+    const submit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
+        if (saving) return;
         if (!supplier.name.trim()) { setError('Supplier name is required.'); return; }
         const finalSupplier: Supplier = { ...supplier, id: supplierToEdit?.id || `sup_${Date.now()}` } as Supplier;
-        onSave(finalSupplier);
+        setSaving(true);
+        try { await onSave(finalSupplier); } finally { setSaving(false); }
     };
 
     const termOptions = useMemo(() => {
@@ -147,8 +151,8 @@ export const ProcureSupplierForm: React.FC<ProcureSupplierFormProps> = ({ isOpen
                     <p className="crm-input-group__hint" style={{ margin: 0 }}>Company name is required to save.</p>
                     <div style={{ display: 'flex', gap: 12 }}>
                         <button type="button" className="crm-btn crm-btn--ghost" style={{ color: 'var(--c-on-surface-variant)', padding: '12px 22px' }} onClick={onClose}>Discard</button>
-                        <button type="button" className="crm-btn crm-btn--primary" style={{ padding: '12px 26px' }} onClick={() => submit()}>
-                            <Icon name="save" size={20} /> Save Supplier
+                        <button type="button" className="crm-btn crm-btn--primary" style={{ padding: '12px 26px', opacity: saving ? 0.6 : 1 }} disabled={saving} onClick={() => submit()}>
+                            <Icon name="save" size={20} /> {saving ? 'Saving…' : 'Save Supplier'}
                         </button>
                     </div>
                 </div>

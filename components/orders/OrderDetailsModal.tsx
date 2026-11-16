@@ -8,9 +8,9 @@ import {
     HiOutlineCheckCircle,
     HiOutlineShoppingBag,
     HiOutlineBanknotes,
-    HiOutlineTruck
 } from 'react-icons/hi2';
 import OrderDetailContent from './OrderDetailContent';
+import OrderActions from './OrderActions';
 
 interface OrderDetailsModalProps {
     isOpen: boolean;
@@ -19,7 +19,7 @@ interface OrderDetailsModalProps {
     order: Sale | null;
     storeSettings: StoreSettings;
     onRecordPayment?: (order: Sale) => void;
-    onUpdateStatus?: (orderId: string, status: NonNullable<Sale['fulfillmentStatus']>) => void;
+    onUpdateStatus?: (orderId: string, status: NonNullable<Sale['fulfillmentStatus']>) => Promise<boolean | void> | void;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
@@ -155,25 +155,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                         </button>
                                     )}
 
-                                    {order.fulfillmentStatus === 'pending' && onUpdateStatus && (
-                                        <button
-                                            onClick={() => onUpdateStatus(order.transactionId, 'fulfilled')}
-                                            className="h-12 px-6 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                                        >
-                                            <HiOutlineCheckCircle className="w-5 h-5" />
-                                            Fulfill Order
-                                        </button>
-                                    )}
-
-                                    {order.fulfillmentStatus === 'fulfilled' && onUpdateStatus && (
-                                        <button
-                                            onClick={() => onUpdateStatus(order.transactionId, 'shipped')}
-                                            className="h-12 px-6 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-                                        >
-                                            <HiOutlineTruck className="w-5 h-5" />
-                                            Mark Shipped
-                                        </button>
-                                    )}
+                                    {onUpdateStatus && <OrderActions order={order} storeSettings={storeSettings} onUpdateStatus={onUpdateStatus} />}
                                 </>
                             )}
                         </div>

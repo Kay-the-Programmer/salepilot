@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
-import { Icon, Avatar } from '../crm/CrmBits';
+import { Icon } from '../crm/CrmBits';
 import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
-import { OPEN_STATUSES, ReorderDraft } from './procureModel';
-import { api } from '../../services/api';
+import { OPEN_STATUSES } from './procureModel';
 import PoStatusChip from '../purchase-orders/PoStatusChip';
 import ProcureOrderForm from './ProcureOrderForm';
 import ProcureOrderReceive from './ProcureOrderReceive';
 import ProcureOrderDetail from './ProcureOrderDetail';
+import ProcureBuyStock from './ProcureBuyStock';
+import ProcureExportPdf from './ProcureExportPdf';
+import { downloadPurchaseOrderPdf } from '../purchase-orders/poPdf';
 import { useConfirm } from '../ui/useConfirm';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -16,9 +18,10 @@ interface ProcureOrdersProps {
     suppliers: Supplier[];
     products: Product[];
     storeSettings: StoreSettings;
-    onSave: (po: PurchaseOrder) => void;
+    /** Resolves false when the save was refused, so the form stays open. */
+    onSave: (po: PurchaseOrder) => void | Promise<unknown>;
     onDelete: (poId: string) => void;
-    onReceiveItems: (poId: string, items: { productId: string; quantity: number }[]) => void;
+    onReceiveItems: (poId: string, items: { productId: string; quantity: number }[]) => Promise<unknown> | void;
     /** Supplier id to pre-open the create form with (from "Place Order"). */
     draftSupplierId?: string | null;
     onConsumeDraft?: () => void;
@@ -30,6 +33,10 @@ interface ProcureOrdersProps {
      *  a supplier (required by the backend) before it is first saved. */
     importedDraft?: PurchaseOrder | null;
     onConsumeImportedDraft?: () => void;
+    /** Reload orders/products after orders are placed outside onSave. */
+    onRefresh?: () => void;
+    /** Syncs a product edited from Buy stock (its remembered supplier). */
+    onSaveProduct?: (product: Product) => Promise<unknown> | void;
 }
 
 type Filter = 'all' | 'drafts' | 'open' | 'received' | 'canceled';
@@ -43,15 +50,38 @@ const FILTERS: { id: Filter; label: string }[] = [
 
 export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     purchaseOrders, suppliers, products, storeSettings, onSave, onDelete, onReceiveItems, draftSupplierId, onConsumeDraft, autoGenerate, onConsumeAutoGenerate,
-    importedDraft, onConsumeImportedDraft,
+    importedDraft, onConsumeImportedDraft, onRefresh, onSaveProduct,
 }) => {
     const { showToast } = useToast();
-    const [view, setView] = useState<'list' | 'form' | 'suggest' | 'detail'>('list');
+    const [view, setView] = useState<'list' | 'form' | 'buy' | 'detail'>('list');
+    // Came back from "Add other products" in Buy stock — return there on cancel.
+    const [fromBuy, setFromBuy] = useState(false);
     const [editing, setEditing] = useState<PurchaseOrder | null>(null);
     const [createSupplierId, setCreateSupplierId] = useState<string | undefined>(undefined);
     const [formItems, setFormItems] = useState<POItem[] | undefined>(undefined);
-    const [drafts, setDrafts] = useState<ReorderDraft[]>([]);
     const [receivePo, setReceivePo] = useState<PurchaseOrder | null>(null);
+    // Orders with a receipt in flight. Their Receive buttons stay disabled
+    // until the server has answered and the refreshed order is on screen, so
+    // the same delivery cannot be booked twice from a stale "open" order.
+    const [receivingIds, setReceivingIds] = useState<Set<string>>(new Set());
+    const [exportOpen, setExportOpen] = useState(false);
+    // One order's PDF at a time; the icon shows it is being built.
+    const [pdfBusyId, setPdfBusyId] = useState<string | null>(null);
+    const downloadPdf = async (po: PurchaseOrder) => {
+        if (pdfBusyId) return;
+        setPdfBusyId(po.id);
+        try { await downloadPurchaseOrderPdf(po, suppliers, storeSettings); }
+        catch (err: any) { showToast(err?.message || 'Could not build the PDF.', 'error'); }
+        finally { setPdfBusyId(null); }
+    };
+    const receive = async (poId: string, items: { productId: string; quantity: number }[]) => {
+        setReceivingIds(prev => new Set(prev).add(poId));
+        try {
+            await onReceiveItems(poId, items);
+        } finally {
+            setReceivingIds(prev => { const next = new Set(prev); next.delete(poId); return next; });
+        }
+    };
     const [detailPo, setDetailPo] = useState<PurchaseOrder | null>(null);
     const [filter, setFilter] = useState<Filter>('all');
     const { confirm } = useConfirm();
@@ -61,38 +91,31 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
         setDetailPo(prev => (prev ? (purchaseOrders.find(p => p.id === prev.id) ?? null) : prev));
     }, [purchaseOrders]);
 
-    // Reorder drafts come from the server (GET /purchase-orders/reorder-suggestions),
-    // which is where the AUTO_REORDER entitlement is enforced. Generating them in
-    // the browser would make the add-on unenforceable — the check below is only
-    // there to show the upsell without a pointless round trip; a 402 from the
-    // API is the real gate, and the global paywall host picks it up.
-    const autoGenerateOrders = async () => {
-        try {
-            const { drafts: generated } = await api.get<{ drafts: ReorderDraft[] }>('/purchase-orders/reorder-suggestions');
-            if (!generated || generated.length === 0) {
-                showToast('All stock is above its reorder point — nothing to reorder.', 'info');
-                return;
-            }
-            if (generated.length === 1) {
-                openDraft(generated[0]);
-                return;
-            }
-            setDrafts(generated);
-            setView('suggest');
-        } catch (err: any) {
-            // A 402 here means the subscription lapsed; the API layer has
-            // already raised the one explanation for that, so just stop.
-            if (err?.status === 402) return;
-            showToast(err?.body?.message || err?.message || 'Could not build reorder suggestions.', 'error');
-        }
-    };
+    // "Buy stock" (and the old Auto-generate entry points) open the one-screen
+    // reorder. The quantities come from the server's reorder rule.
+    const openBuyStock = () => { setFromBuy(false); setView('buy'); };
 
-    const openDraft = (d: ReorderDraft) => {
+    const openInForm = (supplierId: string, items: POItem[]) => {
         setEditing(null);
-        setCreateSupplierId(d.supplierId);
-        setFormItems(d.items);
+        setCreateSupplierId(supplierId);
+        setFormItems(items);
+        setFromBuy(true);
         setView('form');
     };
+
+    // Deep link: /procure/orders?buy=1 (the Inventory low-stock alert).
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('buy')) {
+                openBuyStock();
+                params.delete('buy');
+                const q = params.toString();
+                window.history.replaceState(null, '', window.location.pathname + (q ? `?${q}` : ''));
+            }
+        } catch { /* no URL access — ignore */ }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Open a PO drafted from an order list in the form (as an "edit" of the
     // not-yet-saved draft, so its id/number/items/notes carry through). The
@@ -121,11 +144,17 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     // Auto-generate reorder drafts when triggered from the dashboard.
     useEffect(() => {
         if (autoGenerate) {
-            autoGenerateOrders();
+            openBuyStock();
             onConsumeAutoGenerate?.();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [autoGenerate]);
+
+    // Pre-pick whoever the store ordered from most recently on a new order.
+    const lastSupplierId = useMemo(() => [...purchaseOrders]
+        .filter(po => po.supplierId)
+        .sort((a, b) => (parseApiDate(b.createdAt)?.getTime() ?? 0) - (parseApiDate(a.createdAt)?.getTime() ?? 0))[0]?.supplierId,
+    [purchaseOrders]);
 
     const visible = useMemo(() => {
         const list = purchaseOrders.filter(po => {
@@ -144,7 +173,13 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
         setEditing(po); setCreateSupplierId(undefined); setFormItems(undefined); setView('form');
     };
     const openDetail = (po: PurchaseOrder) => { setDetailPo(po); setView('detail'); };
-    const handleSave = (po: PurchaseOrder) => { onSave(po); setFormItems(undefined); setView(detailPo ? 'detail' : 'list'); setEditing(null); };
+    const handleSave = async (po: PurchaseOrder): Promise<boolean> => {
+        // Leave the form only once it is saved: a refused save keeps the order as typed.
+        const ok = await onSave(po);
+        if (ok === false) return false;
+        setFormItems(undefined); setFromBuy(false); setView(detailPo ? 'detail' : 'list'); setEditing(null);
+        return true;
+    };
     const handleDelete = async (po: PurchaseOrder) => {
         const ok = await confirm({
             title: `Delete ${po.poNumber}?`,
@@ -176,8 +211,13 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                     onBack={() => { setDetailPo(null); setView('list'); }}
                     onEdit={() => openEdit(detailPo)}
                     onReceive={() => setReceivePo(detailPo)}
+                    receiving={receivingIds.has(detailPo.id)}
+                    onDownloadPdf={() => downloadPdf(detailPo)}
+                    pdfBusy={pdfBusyId === detailPo.id}
                     onUpdateStatus={updateStatus}
                     onDelete={() => handleDelete(detailPo)}
+                    suppliers={suppliers}
+                    products={products}
                 />
                 {receivePo && (
                     <ProcureOrderReceive
@@ -185,7 +225,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                         po={receivePo}
                         storeSettings={storeSettings}
                         onClose={() => setReceivePo(null)}
-                        onReceive={items => onReceiveItems(receivePo.id, items)}
+                        onReceive={items => receive(receivePo.id, items)}
                     />
                 )}
             </>
@@ -201,48 +241,24 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                 storeSettings={storeSettings}
                 initialSupplierId={createSupplierId}
                 initialItems={formItems}
+                lastSupplierId={lastSupplierId ?? undefined}
                 onSave={handleSave}
-                onCancel={() => { setView(editing && detailPo?.id === editing.id ? 'detail' : (drafts.length > 1 ? 'suggest' : 'list')); setEditing(null); setFormItems(undefined); }}
+                onCancel={() => { setView(editing && detailPo?.id === editing.id ? 'detail' : (fromBuy ? 'buy' : 'list')); setEditing(null); setFormItems(undefined); setFromBuy(false); }}
             />
         );
     }
 
-    if (view === 'suggest') {
+    if (view === 'buy') {
         return (
-            <main className="crm-main crm-section-fade">
-                <nav className="crm-crumbs">
-                    <button type="button" onClick={() => { setDrafts([]); setView('list'); }}>Orders</button>
-                    <Icon name="chevron_right" size={18} />
-                    <span className="crm-crumbs__current">Suggested reorders</span>
-                </nav>
-                <div className="crm-pagehead" style={{ marginBottom: 16 }}>
-                    <div>
-                        <p className="crm-pagehead__eyebrow">Auto-generated</p>
-                        <h2 className="crm-pagehead__title">Suggested Reorders</h2>
-                        <p className="crm-pagehead__sub">{drafts.length} draft order{drafts.length === 1 ? '' : 's'} from items at or below their reorder point. Review and place each.</p>
-                    </div>
-                </div>
-                <div className="crm-panel">
-                    <div className="proc-list">
-                        {drafts.map(d => (
-                            <div key={d.supplierId} className="proc-po">
-                                <Avatar name={d.supplierName} size={44} square />
-                                <div className="proc-po__body">
-                                    <p className="proc-po__no">{d.supplierName}</p>
-                                    <p className="proc-po__meta">{d.items.length} product{d.items.length === 1 ? '' : 's'} · {d.units} unit{d.units === 1 ? '' : 's'} to reorder</p>
-                                </div>
-                                <div className="proc-po__right">
-                                    <p className="proc-po__total">{formatMoney(d.total, storeSettings)}</p>
-                                    <PoStatusChip status="draft" />
-                                </div>
-                                <button type="button" className="crm-btn crm-btn--primary" style={{ padding: '10px 16px' }} onClick={() => openDraft(d)}>
-                                    <Icon name="rate_review" size={18} /> Review &amp; place
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </main>
+            <ProcureBuyStock
+                suppliers={suppliers}
+                products={products}
+                storeSettings={storeSettings}
+                onBack={() => setView('list')}
+                onPlaced={() => onRefresh?.()}
+                onOpenInForm={openInForm}
+                onSaveProduct={onSaveProduct}
+            />
         );
     }
 
@@ -255,12 +271,21 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                     <button
+                        className="crm-btn crm-btn--outline"
+                        type="button"
+                        onClick={() => setExportOpen(true)}
+                        disabled={purchaseOrders.length === 0}
+                        title="Download orders, past ones included, as a PDF"
+                    >
+                        <Icon name="picture_as_pdf" size={20} /> Export PDF
+                    </button>
+                    <button
                         className="crm-btn crm-btn--tonal"
                         type="button"
-                        onClick={autoGenerateOrders}
-                        title="Generate orders from low-stock items"
+                        onClick={openBuyStock}
+                        title="Order everything that is running low"
                     >
-                        <Icon name="auto_awesome" size={20} /> Auto-generate
+                        <Icon name="shopping_cart" size={20} /> Buy stock
                     </button>
                     <button className="crm-btn crm-btn--primary" type="button" onClick={openCreate}>
                         <Icon name="add" size={20} /> New Purchase Order
@@ -304,10 +329,31 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                                     </div>
                                     <div className="proc-card-actions">
                                         {canReceive && (
-                                            <button type="button" className="crm-iconbtn" title="Receive stock" aria-label="Receive stock" style={{ color: 'var(--c-primary)' }} onClick={() => setReceivePo(po)}>
-                                                <Icon name="inventory" size={20} />
+                                            <button
+                                                type="button"
+                                                className="crm-iconbtn"
+                                                title={receivingIds.has(po.id) ? 'Receiving…' : 'Receive stock'}
+                                                aria-label={receivingIds.has(po.id) ? 'Receiving stock' : 'Receive stock'}
+                                                aria-busy={receivingIds.has(po.id)}
+                                                disabled={receivingIds.has(po.id)}
+                                                style={{ color: 'var(--c-primary)', opacity: receivingIds.has(po.id) ? 0.4 : 1 }}
+                                                onClick={() => setReceivePo(po)}
+                                            >
+                                                <Icon name={receivingIds.has(po.id) ? 'hourglass_top' : 'inventory'} size={20} />
                                             </button>
                                         )}
+                                        <button
+                                            type="button"
+                                            className="crm-iconbtn"
+                                            title="Download PDF"
+                                            aria-label={`Download ${po.poNumber} as PDF`}
+                                            aria-busy={pdfBusyId === po.id}
+                                            disabled={!!pdfBusyId}
+                                            style={{ opacity: pdfBusyId && pdfBusyId !== po.id ? 0.4 : 1 }}
+                                            onClick={() => downloadPdf(po)}
+                                        >
+                                            <Icon name={pdfBusyId === po.id ? 'hourglass_top' : 'picture_as_pdf'} size={20} />
+                                        </button>
                                         {po.status !== 'received' && (
                                             <button type="button" className="crm-iconbtn" title="Edit" aria-label="Edit order" onClick={() => openEdit(po)}>
                                                 <Icon name="edit" size={20} />
@@ -334,9 +380,18 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                     po={receivePo}
                     storeSettings={storeSettings}
                     onClose={() => setReceivePo(null)}
-                    onReceive={items => onReceiveItems(receivePo.id, items)}
+                    onReceive={items => receive(receivePo.id, items)}
                 />
             )}
+
+            <ProcureExportPdf
+                isOpen={exportOpen}
+                onClose={() => setExportOpen(false)}
+                purchaseOrders={purchaseOrders}
+                suppliers={suppliers}
+                storeSettings={storeSettings}
+                initialStatus={filter}
+            />
 
         </main>
     );

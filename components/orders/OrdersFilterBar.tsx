@@ -22,7 +22,7 @@ const OrdersFilterBar: React.FC<OrdersFilterBarProps> = ({
 
             {/* Filter Tabs (Mobile Only) — soft rounded-lg chips, navy active */}
             <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-background">
-                {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
+                {['all', 'pending', 'accepted', 'fulfilled', 'shipped', 'cancelled'].map(status => (
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}

@@ -18,10 +18,10 @@ interface AccountingShellProps {
 export const ACCT_NAV: AppShellNavItem<AcctSection>[] = [
   { id: 'overview', label: 'Overview', icon: 'monitoring' },
   { id: 'reports', label: 'Reports', icon: 'bar_chart' },
-  { id: 'ar_management', label: 'Receivables', icon: 'trending_up' },
-  { id: 'ap_management', label: 'Payables', icon: 'trending_down' },
+  { id: 'ar_management', label: 'Customers owe you', icon: 'trending_up' },
+  { id: 'ap_management', label: 'Bills to pay', icon: 'trending_down' },
   { id: 'expenses', label: 'Expenses', icon: 'payments' },
-  { id: 'taxes', label: 'Taxes', icon: 'receipt_long' },
+  { id: 'taxes', label: 'Tax (VAT)', icon: 'receipt_long' },
   { id: 'chart_of_accounts', label: 'Accounts', icon: 'menu_book' },
   { id: 'journal', label: 'Journal', icon: 'list_alt' },
 ];
