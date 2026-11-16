@@ -21,7 +21,8 @@ interface ProductEditFormProps {
     categories: Category[];
     suppliers: Supplier[];
     storeSettings: StoreSettings;
-    onSave: (product: Product | Omit<Product, 'id'>) => Promise<void>;
+    /** `addAnother` asks the parent to open a fresh add form straight after saving. */
+    onSave: (product: Product | Omit<Product, 'id'>, opts?: { addAnother?: boolean }) => Promise<void>;
     onCancel: () => void;
     onAddCategory?: () => void;
     onDirtyChange?: (isDirty: boolean) => void;
@@ -78,6 +79,20 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
     const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>(suppliers);
+    // A new product needs only name, price and stock; the rest is folded away.
+    // Editing an existing one opens it, since that is usually why you came.
+    const [showMore, setShowMore] = useState<boolean>(!!productToEdit.id);
+    const nameRef = useRef<HTMLInputElement>(null);
+    const isNew = !productToEdit.id;
+
+    // Each fresh add form (including after "Save & add another") starts at the name.
+    useEffect(() => {
+        setShowMore(!!productToEdit.id);
+        if (!productToEdit.id) {
+            const t = setTimeout(() => nameRef.current?.focus(), 50);
+            return () => clearTimeout(t);
+        }
+    }, [productToEdit]);
 
     // Shared field styling (Confident Clarity, mobile-first)
     const labelCls = 'block text-[13px] font-semibold text-brand-text-muted mb-1.5';
@@ -118,7 +133,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
         }
     }, [product.name, product.description, product.price, product.categoryId, product.barcode, images.length, onDirtyChange]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent | React.MouseEvent, addAnother = false) => {
         e.preventDefault();
         if (isSaving) return;
 
@@ -144,9 +159,9 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
             if ((result as any)?.offline) {
                 const tempId = productToEdit.id || `temp_${Date.now()}`;
                 const payload = { ...productToEdit, ...product, id: tempId } as Product;
-                await onSave(payload);
+                await onSave(payload, { addAnother });
             } else {
-                await onSave(result as Product);
+                await onSave(result as Product, { addAnother });
             }
         } catch (error: any) {
             console.error('Save failed', error);
@@ -219,7 +234,10 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                     </button>
                 </header>
 
-                <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+                {/* noValidate: validate() is the gate. Native checks would also stop
+                    on fields folded inside "More details", where the browser cannot
+                    show the message and the save just silently does nothing. */}
+                <form onSubmit={handleSubmit} noValidate className="flex-1 overflow-hidden flex flex-col">
                     <div className="flex-1 overflow-y-auto scroll-smooth px-4 sm:px-6 py-5 space-y-4 max-w-4xl mx-auto w-full">
 
                         {error && (
@@ -260,7 +278,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                             <div className={`md:col-span-2 ${cardCls} space-y-4`}>
                                 <div>
                                     <label htmlFor="name" className={labelCls}>Product Name *</label>
-                                    <input type="text" name="name" id="name" value={product.name} onChange={handleChange} required placeholder="e.g. Artisanal Coffee Beans" className={fieldCls} />
+                                    <input ref={nameRef} type="text" name="name" id="name" value={product.name} onChange={handleChange} required placeholder="e.g. Artisanal Coffee Beans" className={fieldCls} />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
@@ -297,6 +315,90 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                             </div>
                         </section>
 
+                        {/* ── Price & stock — the essentials ── */}
+                        <section className={`${cardCls} space-y-4`}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
+                                        <label htmlFor="costPrice" className={`${labelCls} flex items-center justify-between`}>
+                                            <span>Cost Price</span>
+                                            {cartonMode && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                    Auto
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text-muted font-medium">{sym}</span>
+                                            <input type="number" name="costPrice" id="costPrice" value={product.costPrice === 0 ? '' : product.costPrice || ''} onChange={handleChange} readOnly={cartonMode} min="0" step="0.01" placeholder="0.00"
+                                                className={`w-full pl-9 pr-4 py-3.5 text-xl font-bold tabular-nums rounded-lg border outline-none transition-colors ${cartonMode ? 'border-brand-border bg-surface-variant text-brand-text-muted cursor-not-allowed' : 'border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20'}`} />
+                                            {cartonMode && <div className="absolute inset-0 z-10 cursor-not-allowed" title="Disable Carton Mode to edit manually" />}
+                                        </div>
+                                        <p className="text-[11px] text-brand-text-muted mt-1.5">What you paid for this item.</p>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="price" className={labelCls}>Selling Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
+                                            <input type="number" name="price" id="price" value={product.price} onChange={handleChange} min="0" step="0.01" placeholder="0.00"
+                                                className="w-full pl-9 pr-4 py-3.5 text-xl font-bold tabular-nums rounded-lg border border-brand-border bg-surface text-primary focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
+                                        </div>
+                                        {!(product.price > 0) && (
+                                            <p className="text-[11px] text-brand-text-muted mt-1.5">
+                                                Leave blank to record the product now and price it later — it stays off the register until it has a price.
+                                            </p>
+                                        )}
+                                        {(product.price > 0 && product.costPrice !== undefined) && (
+                                            <div className="flex justify-between items-center bg-success-muted mt-2 p-3 rounded-lg">
+                                                <span className="text-[12px] font-semibold text-brand-text-muted">Est. Profit Margin</span>
+                                                <span className={`text-sm font-extrabold tabular-nums ${profitMargin >= 0 ? 'text-primary' : 'text-danger'}`}>{profitMargin.toFixed(1)}%</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className={`transition-all duration-300 ${(cartonMode || productToEdit.id) ? 'opacity-80' : ''}`}>
+                                        <label htmlFor="stock" className={`${labelCls} flex items-center justify-between`}>
+                                            <span>{productToEdit.id ? 'Stock' : 'Opening Stock *'}</span>
+                                            {productToEdit.id ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-variant text-brand-text-muted">
+                                                    Adjust Stock only
+                                                </span>
+                                            ) : cartonMode && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                    Auto-sync
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="relative">
+                                            <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode || !!productToEdit.id} step={product.unitOfMeasure === 'kg' ? '0.01' : '1'}
+                                                className={`${fieldCls} ${(cartonMode || productToEdit.id) ? '!bg-surface-variant text-brand-text-muted cursor-not-allowed' : ''}`} />
+                                            {(cartonMode || productToEdit.id) && <div className="absolute inset-0 z-10 cursor-not-allowed" title={productToEdit.id ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : 'Update Cartons Received to change stock'} />}
+                                        </div>
+                                        {!!productToEdit.id && (
+                                            <p className="mt-1.5 text-[11px] text-brand-text-muted">
+                                                Use <strong>Adjust Stock</strong> on the product page to change stock — every change is audited and posted to your books.
+                                            </p>
+                                        )}
+                                    </div>
+                            </div>
+                        </section>
+
+                        {/* ── Everything else, folded away until wanted ── */}
+                        <details
+                            className="group/more"
+                            open={showMore}
+                            onToggle={(e) => setShowMore((e.currentTarget as HTMLDetailsElement).open)}
+                        >
+                            <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 px-5 py-4 rounded-lg border border-brand-border bg-surface hover:bg-surface-variant transition-colors [&::-webkit-details-marker]:hidden">
+                                <span>
+                                    <span className="block text-sm font-bold text-brand-text">More details</span>
+                                    <span className="block text-xs text-brand-text-muted mt-0.5">Supplier, barcode &amp; SKU, cartons, tax, wholesale, reorder level, photos</span>
+                                </span>
+                                <svg className="w-5 h-5 text-brand-text-muted transition-transform group-open/more:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                            </summary>
+                            <div className="space-y-4 pt-4">
                         {/* ── Details ── */}
                         <section className={cardCls}>
                             <h2 className={sectionTitleCls}>Details</h2>
@@ -468,46 +570,6 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     </div>
                                 </div>
 
-                                {/* Cost + Selling */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
-                                        <label htmlFor="costPrice" className={`${labelCls} flex items-center justify-between`}>
-                                            <span>Cost Price</span>
-                                            {cartonMode && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
-                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                                    Auto
-                                                </span>
-                                            )}
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text-muted font-medium">{sym}</span>
-                                            <input type="number" name="costPrice" id="costPrice" value={product.costPrice === 0 ? '' : product.costPrice || ''} onChange={handleChange} readOnly={cartonMode} min="0" step="0.01" placeholder="0.00"
-                                                className={`w-full pl-9 pr-4 py-3.5 text-xl font-bold tabular-nums rounded-lg border outline-none transition-colors ${cartonMode ? 'border-brand-border bg-surface-variant text-brand-text-muted cursor-not-allowed' : 'border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20'}`} />
-                                            {cartonMode && <div className="absolute inset-0 z-10 cursor-not-allowed" title="Disable Carton Mode to edit manually" />}
-                                        </div>
-                                        <p className="text-[11px] text-brand-text-muted mt-1.5">What you paid for this item.</p>
-                                    </div>
-                                    <div>
-                                        <label htmlFor="price" className={labelCls}>Selling Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''}</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
-                                            <input type="number" name="price" id="price" value={product.price} onChange={handleChange} min="0" step="0.01" placeholder="0.00"
-                                                className="w-full pl-9 pr-4 py-3.5 text-xl font-bold tabular-nums rounded-lg border border-brand-border bg-surface text-primary focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
-                                        </div>
-                                        {!(product.price > 0) && (
-                                            <p className="text-[11px] text-brand-text-muted mt-1.5">
-                                                Leave blank to record the product now and price it later — it stays off the register until it has a price.
-                                            </p>
-                                        )}
-                                        {(product.price > 0 && product.costPrice !== undefined) && (
-                                            <div className="flex justify-between items-center bg-success-muted mt-2 p-3 rounded-lg">
-                                                <span className="text-[12px] font-semibold text-brand-text-muted">Est. Profit Margin</span>
-                                                <span className={`text-sm font-extrabold tabular-nums ${profitMargin >= 0 ? 'text-primary' : 'text-danger'}`}>{profitMargin.toFixed(1)}%</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
 
                                 <div>
                                     <label htmlFor="taxClass" className={labelCls}>Tax treatment</label>
@@ -620,31 +682,6 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                         <section className={cardCls}>
                             <h2 className={sectionTitleCls}>Inventory</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className={`transition-all duration-300 ${(cartonMode || productToEdit.id) ? 'opacity-80' : ''}`}>
-                                    <label htmlFor="stock" className={`${labelCls} flex items-center justify-between`}>
-                                        <span>{productToEdit.id ? 'Stock' : 'Opening Stock *'}</span>
-                                        {productToEdit.id ? (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-variant text-brand-text-muted">
-                                                Adjust Stock only
-                                            </span>
-                                        ) : cartonMode && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
-                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                                Auto-sync
-                                            </span>
-                                        )}
-                                    </label>
-                                    <div className="relative">
-                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode || !!productToEdit.id} step={product.unitOfMeasure === 'kg' ? '0.01' : '1'}
-                                            className={`${fieldCls} ${(cartonMode || productToEdit.id) ? '!bg-surface-variant text-brand-text-muted cursor-not-allowed' : ''}`} />
-                                        {(cartonMode || productToEdit.id) && <div className="absolute inset-0 z-10 cursor-not-allowed" title={productToEdit.id ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : 'Update Cartons Received to change stock'} />}
-                                    </div>
-                                    {!!productToEdit.id && (
-                                        <p className="mt-1.5 text-[11px] text-brand-text-muted">
-                                            Use <strong>Adjust Stock</strong> on the product page to change stock — every change is audited and posted to your books.
-                                        </p>
-                                    )}
-                                </div>
                                 <div>
                                     <label htmlFor="reorderPoint" className={labelCls}>Reorder Point</label>
                                     <input type="number" name="reorderPoint" id="reorderPoint" value={product.reorderPoint || ''} onChange={handleChange} min="0" step="1" placeholder={`${storeSettings.lowStockThreshold}`} className={fieldCls} />
@@ -691,14 +728,22 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 <div className="text-center py-6 text-brand-text-muted text-sm">No images uploaded</div>
                             )}
                         </section>
+                            </div>
+                        </details>
                     </div>
 
                     {/* ── Bottom action bar ── */}
                     <div className="flex-none border-t border-brand-border bg-surface px-4 sm:px-6 py-3 safe-area-bottom">
                         <div className="max-w-4xl mx-auto flex gap-3">
-                            <button type="button" onClick={onCancel} disabled={isSaving} className="flex-1 py-3.5 rounded-lg border border-brand-border text-brand-text font-bold text-sm hover:bg-surface-variant active:scale-95 transition-colors disabled:opacity-50">
-                                Cancel
-                            </button>
+                            {isNew ? (
+                                <button type="button" onClick={(e) => handleSubmit(e, true)} disabled={isSaving} className="flex-1 py-3.5 rounded-lg border border-primary/40 text-primary font-bold text-sm hover:bg-primary/5 active:scale-95 transition-colors disabled:opacity-50">
+                                    Save &amp; add another
+                                </button>
+                            ) : (
+                                <button type="button" onClick={onCancel} disabled={isSaving} className="flex-1 py-3.5 rounded-lg border border-brand-border text-brand-text font-bold text-sm hover:bg-surface-variant active:scale-95 transition-colors disabled:opacity-50">
+                                    Cancel
+                                </button>
+                            )}
                             <button type="submit" disabled={isSaving} className="flex-[2] py-3.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-bold text-sm active:scale-95 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                                 {isSaving ? 'Saving…' : (productToEdit.id ? 'Save Changes' : 'Save Product')}
                             </button>

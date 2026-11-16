@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { Product, StockTakeSession } from '../types';
 import { useConfirm } from '../components/ui/useConfirm';
+import { useToast } from '../contexts/ToastContext';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
 const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
 import { HiOutlineXMark } from 'react-icons/hi2';
@@ -45,7 +46,12 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
     const [filter, setFilter] = useState('all'); // 'all', 'counted', 'uncounted', 'discrepancy'
     const [searchTerm, setSearchTerm] = useState('');
     const { confirm } = useConfirm();
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const { showToast } = useToast();
+    // 'jump' scans once and puts the caret in that item's count box;
+    // 'tally' keeps the camera open and adds one per scan.
+    const [scanMode, setScanMode] = useState<'jump' | 'tally' | null>(null);
+    const isScannerOpen = scanMode !== null;
+    const setIsScannerOpen = (open: boolean) => setScanMode(open ? 'jump' : null);
     const [scanNotice, setScanNotice] = useState<string | null>(null);
     // Local keystroke drafts so kg entries like "10." survive typing — the
     // committed numeric value still flows through onUpdateItem on every change.
@@ -128,19 +134,52 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
 
     // Scan-to-count: a scanned barcode (or SKU) jumps straight to that item's
     // count input so the operator can scan → type → scan through the shelf.
-    const handleScanSuccess = (code: string) => {
-        setIsScannerOpen(false);
-        const raw = (code || '').trim();
-        if (!raw || !session) return;
-
+    /** The count line a scanned barcode or SKU belongs to. */
+    const itemForCode = (raw: string) => {
+        if (!session) return undefined;
         const needle = raw.toLowerCase();
         const matchedProduct = (products || []).find(p =>
             (p.barcode && p.barcode.trim().toLowerCase() === needle) ||
             (p.sku && p.sku.trim().toLowerCase() === needle)
         );
-        const item = matchedProduct
+        return matchedProduct
             ? session.items.find(i => i.productId === matchedProduct.id)
             : session.items.find(i => i.sku && i.sku.trim().toLowerCase() === needle);
+    };
+
+    // Scan-to-count: every scan of a unit item adds one to its count, and the
+    // camera stays open for the next. Weighed items can't be counted this way.
+    const handleTallyScan = (code: string) => {
+        const raw = (code || '').trim();
+        if (!raw || !session) return;
+        const item = itemForCode(raw);
+        if (!item) {
+            showToast(`No product in this count matches “${raw}”`, 'error');
+            return;
+        }
+        if (isKgItem(item.productId)) {
+            showToast(`${item.name} is sold by weight — type its kg instead`, 'warning');
+            return;
+        }
+        const next = roundQty((item.counted ?? 0) + 1, false);
+        onUpdateItem(item.productId, next);
+        setDrafts(prev => { const d = { ...prev }; delete d[item.productId]; return d; });
+        showToast(`${item.name} · ${next} counted`, 'success', { duration: 1800 });
+    };
+
+    /** One tap for a line whose shelf count is exactly what the system expects. */
+    const markMatches = (item: { productId: string; expected: number }) => {
+        const kg = isKgItem(item.productId);
+        onUpdateItem(item.productId, roundQty(item.expected, kg));
+        setDrafts(prev => { const d = { ...prev }; delete d[item.productId]; return d; });
+    };
+
+    const handleScanSuccess = (code: string) => {
+        setIsScannerOpen(false);
+        const raw = (code || '').trim();
+        if (!raw || !session) return;
+
+        const item = itemForCode(raw);
 
         if (!item) {
             setScanNotice(`No product in this count matches “${raw}”.`);
@@ -247,8 +286,19 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
         );
     };
 
-    const countInput = (item: { productId: string; counted: number | null }, kg: boolean) => (
+    const countInput = (item: { productId: string; counted: number | null; expected: number; name: string }, kg: boolean) => (
         <div className="inline-flex items-center gap-1.5">
+            {item.counted === null && (
+                <button
+                    type="button"
+                    onClick={() => markMatches(item)}
+                    aria-label={`${item.name}: count matches expected ${fmtQty(item.expected, kg)}`}
+                    title="Count matches the expected amount"
+                    className="h-12 px-3 rounded-lg border border-success/40 bg-success/10 text-success text-xs font-bold whitespace-nowrap hover:bg-success/15 active:scale-95 transition-all"
+                >
+                    ✓ Matches
+                </button>
+            )}
             <input
                 ref={el => { inputRefs.current[item.productId] = el; }}
                 type="text"
@@ -346,6 +396,15 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                         <QrCodeIcon className="w-5 h-5" />
                         <span className="hidden sm:inline">Scan</span>
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setScanMode('tally')}
+                        className="h-12 px-4 inline-flex items-center gap-2 rounded-lg border border-sp-navy/30 bg-surface text-sp-navy text-sm font-bold hover:bg-sp-navy-soft transition-all active:scale-95 duration-300 flex-shrink-0"
+                        title="Keep the camera open — every scan adds one to that item's count"
+                    >
+                        <QrCodeIcon className="w-5 h-5" />
+                        <span>Scan to count</span>
+                    </button>
                 </div>
                 {scanNotice && (
                     <div className="max-w-xl px-4 py-2.5 rounded-lg bg-danger/15 text-danger text-sm font-medium" role="status">
@@ -433,8 +492,10 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                     <UnifiedScannerModal
                         isOpen={isScannerOpen}
                         onClose={() => setIsScannerOpen(false)}
-                        onScanSuccess={handleScanSuccess}
-                        title="Scan Product to Count"
+                        onScanSuccess={scanMode === 'tally' ? handleTallyScan : handleScanSuccess}
+                        continuous={scanMode === 'tally'}
+                        delayBetweenScans={1200}
+                        title={scanMode === 'tally' ? 'Scan each item — one scan, one counted' : 'Scan Product to Count'}
                     />
                 </Suspense>
             )}

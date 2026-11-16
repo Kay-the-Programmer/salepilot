@@ -775,7 +775,8 @@ export default function Dashboard() {
                 setPendingSyncCount(c => c + 1);
                 return pendingSale;
             } else {
-                showToast('Sale completed successfully!', 'success');
+                // No toast here: the till announces the sale itself, with the
+                // change due and a Receipt button.
                 logEvent('Sales', 'Process Sale', `Total: ${sale.total}`);
                 fetchData();
                 return result;

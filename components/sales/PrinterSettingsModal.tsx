@@ -305,7 +305,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
                         <p className="text-[11px] font-black uppercase tracking-wider text-brand-text-muted mb-1.5">After each sale</p>
                         <div className="space-y-1.5">
                             {([
-                                { v: 'ask' as const, label: 'Show the receipt', hint: 'Opens the receipt to print, share or dismiss.' },
+                                { v: 'ask' as const, label: 'Offer the receipt', hint: 'The sale-complete notice has a Receipt button to print or share it. The till does not wait.' },
                                 { v: 'print' as const, label: 'Print it and carry on', hint: 'Sends it straight to the printer above. Needs a connected printer.' },
                                 { v: 'skip' as const, label: 'Do nothing', hint: 'Fastest at a busy till. Get it later from POS menu → Last Receipt.' },
                             ]).map(opt => (

@@ -13,7 +13,7 @@ import {
 } from '../components/inventory/BulkActions';
 import CategoryList from '../components/CategoryList';
 import CategoryFormModal from '../components/CategoryFormModal';
-import StockAdjustmentModal from '../components/StockAdjustmentModal';
+import StockAdjustmentModal, { ReceiveLink } from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import ProductEditForm from '../components/products/ProductEditForm';
@@ -31,7 +31,6 @@ import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboard
 
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
 const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
-import LinkToPOModal from '../components/LinkToPOModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 import { barcodeService } from '../services/barcodeService';
@@ -40,6 +39,7 @@ import { logEvent } from '../src/utils/analytics';
 import { generateLowStockPDF } from '../utils/pdfExport';
 import { useToast } from '../contexts/ToastContext';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import { ONBOARDING_ACTIONS } from '../services/onboardingService';
 
 interface InventoryPageProps {
@@ -108,10 +108,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
     const [isManualLookupOpen, setIsManualLookupOpen] = useState(false);
 
-    // Link to PO State
-    const [isLinkPOModalOpen, setIsLinkPOModalOpen] = useState(false);
-    const [linkPOProduct, setLinkPOProduct] = useState<Product | null>(null);
-    const [linkPOQuantity, setLinkPOQuantity] = useState<number>(0);
 
 
     // Category Management State
@@ -297,15 +293,41 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
 
 
+    /**
+     * Write a few fields of an existing product to the server, then sync the
+     * screen. The server's PUT keeps every column the body leaves out, so a
+     * patch of just `{ price }` is safe. `onSaveProduct` alone only updates
+     * local state for a product that already has an id (the full edit form
+     * saves itself first), so it must not be the write.
+     */
+    const saveProductPatch = async (product: Product, patch: Partial<Product>): Promise<Product> => {
+        const res = await api.put<Product>(`/products/${product.id}`, patch);
+        const saved: Product = (res as any)?.offline || !(res as any)?.id
+            ? { ...product, ...patch }
+            : { ...product, ...(res as Product) };
+        await onSaveProduct(saved);
+        setDetailedProduct(prev => (prev && prev.id === product.id ? saved : prev));
+        return saved;
+    };
+
     const handleCloseEditForm = () => {
         setIsEditingProduct(false);
         setEditingProduct(null);
     };
 
-    const handleSave = async (productData: Product | Omit<Product, 'id'>) => {
+    const handleSave = async (productData: Product | Omit<Product, 'id'>, opts?: { addAnother?: boolean }) => {
         try {
             const savedProduct = await onSaveProduct(productData);
-            handleCloseEditForm();
+            if (opts?.addAnother) {
+                // Straight into the next one. Category and unit carry over: a
+                // run of new products is usually a delivery of the same kind.
+                handleOpenAddModal({
+                    categoryId: savedProduct.categoryId,
+                    unitOfMeasure: savedProduct.unitOfMeasure,
+                });
+            } else {
+                handleCloseEditForm();
+            }
             setSearchTerm('');
             setPage(1);
 
@@ -331,24 +353,28 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setStockAdjustInitialReason(undefined);
     };
 
-    const handleSaveStockAdjustment = (productId: string, newQuantity: number, reason: string) => {
-        console.log('handleSaveStockAdjustment called', { productId, newQuantity, reason });
-        console.log('Props checks', { hasOnReceive: !!onReceivePOItems, hasOnSavePO: !!onSavePurchaseOrder });
+    /** Open POs a reception of this product could be booked against. */
+    const openPurchaseOrdersFor = (product: Product | null): PurchaseOrder[] =>
+        !product || !onReceivePOItems ? [] : purchaseOrders.filter(po =>
+            (po.status === 'ordered' || po.status === 'partially_received') &&
+            po.items.some(item => item.productId === product.id));
 
-        // Intercept "Receiving Stock" reason to check for POs
-        if (reason === 'Receiving Stock' && onReceivePOItems && onSavePurchaseOrder) {
+    /** Supplier a fresh "received" PO record would be raised against, if any. */
+    const newPoSupplierFor = (product: Product | null): Supplier | undefined =>
+        !product || !onSavePurchaseOrder ? undefined
+            : product.supplierId ? suppliers.find(s => s.id === product.supplierId) : suppliers[0];
+
+    const handleSaveStockAdjustment = (productId: string, newQuantity: number, reason: string, link?: ReceiveLink) => {
+        // Receptions carry their purchase-order choice from the sheet itself.
+        // For "Receiving Stock", newQuantity is the delta, not the total.
+        if (reason === 'Receiving Stock' && newQuantity > 0 && link && link.kind !== 'none') {
             const product = products.find(p => p.id === productId);
             if (product) {
-                // Check if stock is increasing (it should be for receiving)
-                // For "Receiving Stock", newQuantity is the adjustment amount (delta), not the total stock
-                if (newQuantity > 0) {
-                    setLinkPOProduct(product);
-                    setLinkPOQuantity(newQuantity);
-                    // Close stock modal first, then open link modal
-                    handleCloseStockModal();
-                    setIsLinkPOModalOpen(true);
-                    return;
-                }
+                if (link.kind === 'po') receiveAgainstPO(product, newQuantity, link.po);
+                else createReceivedPO(product, newQuantity);
+                logEvent('Inventory', 'adjust_stock', reason);
+                handleCloseStockModal();
+                return;
             }
         }
 
@@ -371,36 +397,29 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         handleCloseStockModal();
     };
 
-    const handleLinkToPO = (po: PurchaseOrder) => {
-        if (!linkPOProduct) return;
-
-        if (onReceivePOItems) {
-            onReceivePOItems(po.id, [{ productId: linkPOProduct.id, quantity: linkPOQuantity }]);
-        }
-
-        setIsLinkPOModalOpen(false);
-        setLinkPOProduct(null);
-        setLinkPOQuantity(0);
+    /** Book a reception against an open purchase order (the server moves the stock). */
+    const receiveAgainstPO = (product: Product, quantity: number, po: PurchaseOrder) => {
+        onReceivePOItems?.(po.id, [{ productId: product.id, quantity }]);
+        applyLocalStockDelta(product.id, quantity);
     };
 
-    const handleCreateNewPO = () => {
-        if (!linkPOProduct || !onSavePurchaseOrder) return;
-
-        // A purchase order MUST reference a supplier (the column is NOT NULL with a
-        // foreign key). Prefer the product's own supplier, then the store's first
-        // supplier. If neither exists we cannot create a PO — receive the goods as a
-        // plain stock adjustment instead of sending an empty supplier that errors.
-        const supplier = linkPOProduct.supplierId
-            ? suppliers.find(s => s.id === linkPOProduct.supplierId)
-            : suppliers[0];
-
-        if (!supplier) {
-            showToast('No supplier is set for this product, so a purchase order can’t be created. Recorded the goods as a stock reception — assign a supplier to link a PO next time.', 'info');
-            handleSkipLinkPO();
+    /**
+     * Record a reception as a fresh, already-received purchase order.
+     *
+     * A purchase order MUST reference a supplier (the column is NOT NULL with a
+     * foreign key). Prefer the product's own supplier, then the store's first
+     * supplier; with neither, the goods are received as a plain adjustment.
+     */
+    const createReceivedPO = (product: Product, quantity: number) => {
+        const supplier = newPoSupplierFor(product);
+        if (!supplier || !onSavePurchaseOrder) {
+            showToast('No supplier is set for this product, so a purchase order can’t be created. Recorded the goods as a stock reception.', 'info');
+            onAdjustStock(product.id, quantity, 'Receiving Stock');
+            applyLocalStockDelta(product.id, quantity);
             return;
         }
 
-        const cost = linkPOProduct.costPrice || 0;
+        const cost = product.costPrice || 0;
         // Created as fully received: the PO carries the reception, and the stock +
         // GR/IR journal are posted by the "Receiving Stock" adjustment below.
         const newPO: PurchaseOrder = {
@@ -410,43 +429,27 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             supplierName: supplier.name,
             status: 'received',
             items: [{
-                productId: linkPOProduct.id,
-                productName: linkPOProduct.name,
-                sku: linkPOProduct.sku,
-                quantity: linkPOQuantity,
+                productId: product.id,
+                productName: product.name,
+                sku: product.sku,
+                quantity,
                 costPrice: cost,
-                receivedQuantity: linkPOQuantity
+                receivedQuantity: quantity
             }],
             createdAt: new Date().toISOString(),
             orderedAt: new Date().toISOString(),
             receivedAt: new Date().toISOString(),
-            subtotal: cost * linkPOQuantity,
+            subtotal: cost * quantity,
             shippingCost: 0,
             tax: 0,
-            total: cost * linkPOQuantity,
+            total: cost * quantity,
         };
 
         onSavePurchaseOrder(newPO);
         // Record the goods themselves as a signed DELTA — the backend adds it to
-        // the current stock for every reason except 'Stock Count'. (Passing the
-        // absolute total here used to double the received quantity.)
-        onAdjustStock(linkPOProduct.id, linkPOQuantity, 'Receiving Stock');
-        applyLocalStockDelta(linkPOProduct.id, linkPOQuantity);
-
-        setIsLinkPOModalOpen(false);
-        setLinkPOProduct(null);
-        setLinkPOQuantity(0);
-    };
-
-    const handleSkipLinkPO = () => {
-        if (!linkPOProduct) return;
-        // Plain reception without a PO — signed delta, same as above.
-        onAdjustStock(linkPOProduct.id, linkPOQuantity, 'Receiving Stock');
-        applyLocalStockDelta(linkPOProduct.id, linkPOQuantity);
-
-        setIsLinkPOModalOpen(false);
-        setLinkPOProduct(null);
-        setLinkPOQuantity(0);
+        // the current stock for every reason except 'Stock Count'.
+        onAdjustStock(product.id, quantity, 'Receiving Stock');
+        applyLocalStockDelta(product.id, quantity);
     };
 
     /** Optimistically mirror a stock delta on the open detail view (numeric-safe:
@@ -670,7 +673,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             const patch = patchFor(product);
             if (!patch) continue;
             try {
-                await onSaveProduct({ ...product, ...patch });
+                await saveProductPatch(product, patch);
                 done++;
             } catch {
                 failed.push(product.id);
@@ -773,6 +776,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     // Desktop: Two-panel layout with left having header + products, right having full-height details
     const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
+    // On a wide screen an open product sits beside the list rather than over
+    // it, so moving to the next product is one tap — no "Back to list" first.
+    // The edit form still takes the full width. 1280px, not 1024: the app's own
+    // side rail takes ~256px, and below this the product page gets too narrow
+    // for its stat grid.
+    const isWide = useMediaQuery('(min-width: 1280px)');
+    const isSplit = isWide && activeTab === 'products' && !!selectedProductId && !isEditingProduct;
 
     return (
         <div className="h-[100dvh] w-full bg-background flex flex-col overflow-hidden relative selection:bg-primary/30">
@@ -924,6 +934,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     selectedProductId={selectedProductId}
                     onAddProduct={handleOpenAddModal}
                     onScan={() => setIsScanModalOpen(true)}
+                    onQuickStock={canManageProducts ? (p) => handleOpenStockModal(p) : undefined}
                     canManage={canManageProducts}
                     isLoading={isLoading}
                     embedded={embedded}
@@ -933,10 +944,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
 
             <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
-                {/* Left Panel: List View — hidden while a product/category is open;
-                    the detail view takes the full screen (back button returns here). */}
+                {/* Left Panel: List View — a narrow column beside an open product on
+                    wide screens; otherwise hidden while a product/category is open
+                    (the back button returns here). */}
                 <div
-                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${(isEditingProduct || selectedItem) ? '!hidden' : ''} md:w-full`}
+                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${isSplit
+                        ? 'w-[340px] 2xl:w-[400px] flex-none border-r border-brand-border'
+                        : `${(isEditingProduct || selectedItem) ? '!hidden' : ''} md:w-full`}`}
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
@@ -947,12 +961,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         categories={categories}
                                         onSelectProduct={handleSelectProduct}
                                         onStockChange={onStockChange}
-                                        onAdjustStock={handleOpenStockModal}
+                                        onAdjustStock={canManageProducts ? (p) => handleOpenStockModal(p) : undefined}
                                         isLoading={isLoading}
                                         error={error}
                                         storeSettings={storeSettings}
                                         userRole={currentUser.role as any}
-                                        viewMode={viewMode}
+                                        viewMode={isSplit ? 'list' : viewMode}
                                         selectedProductId={selectedProductId}
                                         onAddProduct={products.length === 0 && canManageProducts ? handleAddFirstProduct : undefined}
                                         bulkSelectedIds={bulkIds}
@@ -1048,6 +1062,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onPrintLabel={handleOpenPrintModal}
                                             onAdjustStock={handleOpenStockModal}
                                             onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
+                                            onQuickEdit={canManageProducts ? async (patch) => {
+                                                await saveProductPatch(detailedProduct, patch);
+                                                logEvent('Inventory', 'quick_edit', Object.keys(patch).join(','));
+                                            } : undefined}
                                             onBack={handleBackToList}
                                         />
                                     ) : null}
@@ -1086,6 +1104,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     onSave={handleSaveStockAdjustment}
                     product={stockAdjustProduct}
                     initialReason={stockAdjustInitialReason}
+                    openPurchaseOrders={openPurchaseOrdersFor(stockAdjustProduct)}
+                    newPoSupplierName={newPoSupplierFor(stockAdjustProduct)?.name}
                 />
             )}
 
@@ -1230,18 +1250,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                 }}
             />
-
-            {linkPOProduct && (
-                <LinkToPOModal
-                    isOpen={isLinkPOModalOpen}
-                    onClose={() => setIsLinkPOModalOpen(false)}
-                    product={linkPOProduct}
-                    purchaseOrders={purchaseOrders}
-                    onLink={handleLinkToPO}
-                    onCreateNew={handleCreateNewPO}
-                    onSkip={handleSkipLinkPO}
-                />
-            )}
 
             <BulkPriceModal
                 open={bulkPriceOpen}

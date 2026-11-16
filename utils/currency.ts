@@ -77,6 +77,13 @@ export const isCashMethod = (
     return (method?.name || name).toLowerCase().includes('cash');
 };
 
+/**
+ * Is this a mobile-money tender (MTN, Airtel, Lenco…)? These carry a payer
+ * number and an operator transaction ID rather than cash given.
+ */
+export const isMobileMoneyMethod = (name: string | undefined | null): boolean =>
+    ['mobile', 'lenco', 'mtn', 'airtel'].some(k => (name || '').toLowerCase().includes(k));
+
 export const formatCurrency =(amount: number | string | undefined, settings: StoreSettings): string => {
     // Convert string to number if needed
     const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;

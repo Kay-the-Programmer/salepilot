@@ -17,6 +17,7 @@ import {
     TruckIcon,
 } from '@/components/icons';
 import { ProductPlaceholderIcon, productImageUrl } from './productImage';
+import InlineNumberEdit from './detail/InlineNumberEdit';
 
 const asNumber = (val: any) => {
   const n = typeof val === 'number' ? val : parseFloat(val);
@@ -35,6 +36,8 @@ const ProductDetailView: React.FC<{
   onPrintLabel: (product: Product) => void;
   onAdjustStock: (product: Product) => void;
   onPersonalUse?: (product: Product) => void;
+  /** Saves a single field in place (price, cost, reorder level). Omit to make them read-only. */
+  onQuickEdit?: (patch: Partial<Product>) => Promise<void>;
   onBack?: () => void;
 }> = ({
   product,
@@ -48,6 +51,7 @@ const ProductDetailView: React.FC<{
   onPrintLabel,
   onAdjustStock,
   onPersonalUse,
+  onQuickEdit,
   onBack
 }) => {
   // Superadmin counts as a manager — in Store Mode they act as the store's admin.
@@ -125,6 +129,9 @@ const ProductDetailView: React.FC<{
             {/* Identity */}
             <div className="md:col-span-7 lg:col-span-8 flex flex-col">
               <div className="flex flex-wrap gap-2 mb-3">
+                {!isActive && (
+                  <span className="bg-warning-muted text-warning px-2.5 py-0.5 rounded-md text-[11px] font-semibold">Archived</span>
+                )}
                 {category && (
                   <span className="bg-success-muted text-primary px-2.5 py-0.5 rounded-md text-[11px] font-semibold">{category.name}</span>
                 )}
@@ -139,19 +146,43 @@ const ProductDetailView: React.FC<{
               {/* Stat grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
                 <StatTile label="Retail Price">
-                  <p className="text-xl font-bold text-primary tabular-nums">{formatCurrency(price, storeSettings)}</p>
+                  <InlineNumberEdit
+                    label="Retail price"
+                    value={price}
+                    disabled={!(!!onQuickEdit && canManage)}
+                    onSave={(v) => onQuickEdit!({ price: v })}
+                    display={<span className="text-xl font-bold text-primary tabular-nums">{formatCurrency(price, storeSettings)}</span>}
+                  />
                 </StatTile>
                 <StatTile label="In Stock">
-                  <p className={`text-xl font-bold tabular-nums ${statTone}`}>{stock} <span className="text-xs font-semibold text-brand-text-muted">{unit}</span></p>
+                  <button
+                    type="button"
+                    onClick={() => canManage && onAdjustStock(product)}
+                    disabled={!canManage}
+                    aria-label={`In stock: ${stock} ${unit}. Tap to change stock`}
+                    className="text-left rounded-md -mx-1 px-1 hover:bg-surface/70 disabled:cursor-default"
+                  >
+                    <span className={`text-xl font-bold tabular-nums ${statTone}`}>{stock} <span className="text-xs font-semibold text-brand-text-muted">{unit}</span></span>
+                  </button>
                 </StatTile>
-                <StatTile label={cost > 0 ? 'Cost Price' : 'Reorder At'}>
-                  <p className="text-xl font-bold text-brand-text tabular-nums">{cost > 0 ? formatCurrency(cost, storeSettings) : `${reorder}`}</p>
+                <StatTile label="Cost Price">
+                  <InlineNumberEdit
+                    label="Cost price"
+                    value={cost}
+                    disabled={!(!!onQuickEdit && canManage)}
+                    onSave={(v) => onQuickEdit!({ costPrice: v })}
+                    display={<span className="text-xl font-bold text-brand-text tabular-nums">{cost > 0 ? formatCurrency(cost, storeSettings) : '—'}</span>}
+                  />
                 </StatTile>
-                <StatTile label="Status">
-                  <span className={`inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-warning'}`}>
-                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-primary' : 'bg-warning'}`} />
-                    <span className="text-sm font-bold">{isActive ? 'Active' : 'Archived'}</span>
-                  </span>
+                <StatTile label="Reorder At">
+                  <InlineNumberEdit
+                    label="Reorder point"
+                    value={reorder}
+                    decimals={product.unitOfMeasure === 'kg' ? 2 : 0}
+                    disabled={!(!!onQuickEdit && canManage)}
+                    onSave={(v) => onQuickEdit!({ reorderPoint: v })}
+                    display={<span className="text-xl font-bold text-brand-text tabular-nums">{reorder} <span className="text-xs font-semibold text-brand-text-muted">{unit}</span></span>}
+                  />
                 </StatTile>
               </div>
 
@@ -163,7 +194,7 @@ const ProductDetailView: React.FC<{
                     className="bg-primary hover:bg-primary/90 text-white active:scale-95 transition-colors px-5 py-3 rounded-lg text-sm font-semibold flex items-center gap-2"
                   >
                     <AdjustmentsHorizontalIcon className="w-5 h-5" />
-                    Adjust Stock
+                    + Stock
                   </button>
                   <button
                     onClick={() => onEdit(product)}

@@ -6,13 +6,15 @@ import { buildAssetUrl } from '../services/api';
 import UnifiedListGrid from './ui/UnifiedListGrid';
 import { asNumber, stockStatus } from './inventory/stockStatus';
 import { ProductPlaceholderIcon, productImageUrl } from './products/productImage';
+import QuickStockButton from './inventory/QuickStockButton';
 
 interface Props {
   products: Product[];
   categories: Category[];
   onSelectProduct: (product: Product) => void;
   onStockChange: (productId: string, newStock: number) => void;
-  onAdjustStock: (product: Product) => void;
+  /** Opens the stock sheet from the row; omit to hide the + Stock button. */
+  onAdjustStock?: (product: Product) => void;
   isLoading: boolean;
   error: string | null;
   storeSettings: StoreSettings;
@@ -54,7 +56,8 @@ const ProductCard: React.FC<{
   isSelected?: boolean;
   bulkChecked?: boolean;
   onToggleBulk?: () => void;
-}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk }) => {
+  onQuickStock?: () => void;
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk, onQuickStock }) => {
   const [imgError, setImgError] = React.useState(false);
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
 
@@ -119,10 +122,13 @@ const ProductCard: React.FC<{
         <h3 className={`line-clamp-2 text-sm font-semibold leading-snug ${isSelected ? 'text-primary' : 'text-brand-text'}`}>
           {product.name}
         </h3>
-        <p className="mt-2 text-right text-base font-bold tabular-nums text-brand-text">
+        <div className="mt-2 flex items-center justify-between gap-2">
+        {onQuickStock ? <QuickStockButton productName={product.name} onClick={onQuickStock} /> : <span />}
+        <p className="text-right text-base font-bold tabular-nums text-brand-text">
           {formatPrice(product.price)}
           {product.unitOfMeasure === 'kg' && <span className="ml-1 text-[11px] font-medium text-brand-text-muted">/kg</span>}
         </p>
+        </div>
       </div>
     </div>
   );
@@ -136,7 +142,8 @@ const ProductListRow: React.FC<{
   isSelected?: boolean;
   bulkChecked?: boolean;
   onToggleBulk?: () => void;
-}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk }) => {
+  onQuickStock?: () => void;
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk, onQuickStock }) => {
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
   const stock = asNumber(product.stock);
   const tone = stockStatus(product, storeSettings);
@@ -177,6 +184,8 @@ const ProductListRow: React.FC<{
         <p className="text-sm font-bold tabular-nums text-brand-text">{formatPrice(product.price)}</p>
         <p className="text-[11px] tabular-nums text-brand-text-muted">{stock} {product.unitOfMeasure === 'kg' ? 'kg' : 'units'}</p>
       </div>
+
+      {onQuickStock && <QuickStockButton productName={product.name} onClick={onQuickStock} />}
     </div>
   );
 });
@@ -193,6 +202,7 @@ const ProductList: React.FC<Props> = React.memo(({
   onAddProduct,
   bulkSelectedIds,
   onToggleBulkSelect,
+  onAdjustStock,
 }) => {
   // Category is optional, so an unset one reads as "Uncategorized" rather than
   // a bare dash — matching the mobile shell and the reports.
@@ -224,6 +234,7 @@ const ProductList: React.FC<Props> = React.memo(({
           isSelected={isSelected}
           bulkChecked={bulkSelectedIds?.has(product.id)}
           onToggleBulk={onToggleBulkSelect ? () => onToggleBulkSelect(product.id) : undefined}
+          onQuickStock={onAdjustStock ? () => onAdjustStock(product) : undefined}
         />
       )}
       renderListItem={(product, _index, isSelected) => (
@@ -235,6 +246,7 @@ const ProductList: React.FC<Props> = React.memo(({
           isSelected={isSelected}
           bulkChecked={bulkSelectedIds?.has(product.id)}
           onToggleBulk={onToggleBulkSelect ? () => onToggleBulkSelect(product.id) : undefined}
+          onQuickStock={onAdjustStock ? () => onAdjustStock(product) : undefined}
         />
       )}
     />

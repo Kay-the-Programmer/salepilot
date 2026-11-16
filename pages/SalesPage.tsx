@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
 import { api } from '@/services/api';
-import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '../utils/currency';
+import { formatCurrency, isCashMethod as isCashTender, isMobileMoneyMethod, paymentMethodsOf } from '../utils/currency';
 import TourGuide, { hasSeenPosTour } from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
@@ -45,6 +45,20 @@ import AppSwitcher from '../components/standalone/AppSwitcher';
 import { useNavigate } from 'react-router-dom';
 import { setPendingNewProduct } from '../utils/pendingProduct';
 import './sale-v2.css';
+
+/**
+ * Reference for a mobile-money sale the store collected on its own till.
+ * The operator transaction ID is kept verbatim for reconciliation, except that
+ * a `ref-` prefix is reserved for gateway references the server re-verifies
+ * against Lenco, so a typed one is namespaced away from it. With no ID typed,
+ * a MANUAL- stamp marks it as still to be matched.
+ */
+const manualMobileMoneyReference = (typedId?: string): string => {
+    const typed = (typedId || '').trim();
+    return typed && !typed.toLowerCase().startsWith('ref-')
+        ? typed
+        : `MANUAL-${typed || Date.now()}`;
+};
 
 /**
  * Ceiling on how many product cards the register grid renders at once.
@@ -131,16 +145,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (type === 'invoice') {
             showToast(`Invoice created for ${selectedCustomer?.name}`, 'success');
         } else {
-            // Fill receipt-only fields the server/offline queue may omit.
+            // Fill receipt-only fields the server/offline queue may omit. The
+            // server does not store cash given or change, so without these the
+            // receipt and the sale-complete notice could not show the change.
             const completed: Sale = {
                 ...newSale,
                 customerName: newSale.customerName || selectedCustomer?.name,
                 attendedBy: newSale.attendedBy || user?.name,
+                cashReceived: newSale.cashReceived ?? saleData.cashReceived,
+                changeDue: newSale.changeDue ?? saleData.changeDue,
             };
             setLastSale(completed);
             await handleReceiptForSale(completed);
         }
-        clearCart();
+        resetSale();
         // Put the cashier back on the search box for the next customer, so the
         // till is ready to be typed into (or scanned into) without a click.
         focusSearch();
@@ -157,7 +175,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const handleReceiptForSale = async (sale: Sale) => {
         const behaviour = getReceiptBehaviour();
 
-        if (behaviour === 'skip') return;
+        // The till is already free for the next customer, so the outcome is a
+        // toast, not a dialog that must be dismissed. Change due leads it —
+        // it is the one number the cashier still has to act on.
+        const announce = (withReceiptButton: boolean) => {
+            const change = sale.changeDue || 0;
+            showToast(
+                change > 0
+                    ? `Sale complete · Give change ${formatCurrency(change, storeSettings)}`
+                    : 'Sale complete',
+                'success',
+                {
+                    ...(withReceiptButton
+                        ? { action: { label: 'Receipt', onClick: () => setShowReceiptModal(true) } }
+                        : {}),
+                    // Long enough to read the change out, even with no button.
+                    ...(change > 0 ? { duration: 8000 } : {}),
+                },
+            );
+        };
+
+        if (behaviour === 'skip') {
+            announce(false);
+            return;
+        }
 
         if (behaviour === 'print') {
             const printer = await getPrinterStatus().catch(() => null);
@@ -171,6 +212,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         paperWidth: getPaperWidth(),
                         openDrawer: getOpenDrawer(),
                     }));
+                    announce(false);
                     return;
                 } catch (err) {
                     // The sale is already banked — say so, then fall through to
@@ -181,9 +223,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     );
                 }
             }
+            // This till wants paper on every sale, so the dialog is the way to it.
+            setShowReceiptModal(true);
+            return;
         }
 
-        setShowReceiptModal(true);
+        // 'ask': offer the receipt without stopping the till for it.
+        announce(true);
     };
 
     const [pendingApproval, setPendingApproval] = useState<
@@ -245,6 +291,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
     const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
+    // Operator transaction ID from the mobile-money SMS. Optional: a tap on the
+    // MTN/Airtel tile records the sale without it.
+    const [mobileMoneyTxnId, setMobileMoneyTxnId] = useState('');
 
     // Scan Action State
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
@@ -293,10 +342,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (!stillOffered) setSelectedPaymentMethod(allMethods[0].name);
     }, [storeSettings, selectedPaymentMethod]);
 
-    // Reset cash when payment method changes
+    // Reset cash when payment method changes. The mobile-money fields are not
+    // reset here: a tile tap changes the method in the same click that records
+    // the sale, and clearCart wipes them once it has gone through.
     useEffect(() => {
         setCashReceived('');
-        setMobileMoneyNumber('');
     }, [selectedPaymentMethod]);
 
     // An empty cart can never be in the payment step, and the mobile sheet should close.
@@ -399,8 +449,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
             : item));
     }, [cart, roundQty, removeFromCart, showToast]);
 
-    const clearCart = useCallback(() => {
-        if (cart.length === 0) return;
+    /** Empty the till for the next customer, without announcing it. */
+    const resetSale = useCallback(() => {
         setCart([]);
         setDiscount('0');
         setDiscountType('amount');
@@ -408,13 +458,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setCustomerPhone('');
         setAppliedStoreCredit(0);
         setCashReceived('');
+        setMobileMoneyNumber('');
+        setMobileMoneyTxnId('');
+    }, []);
+
+    const clearCart = useCallback(() => {
+        if (cart.length === 0) return;
+        resetSale();
         showToast('Cart cleared', 'info');
-    }, [cart.length]);
+    }, [cart.length, resetSale]);
 
     const handleHoldSale = () => {
         if (cart.length === 0) return;
         setHeldSales([...heldSales, cart]);
-        clearCart();
+        resetSale();
         showToast('Sale held for later', 'info');
     };
 
@@ -601,13 +658,40 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     };
 
-    const processTransaction = async (type: 'paid' | 'invoice', reference?: string) => {
+    /**
+     * Record the sale.
+     *
+     * `tender` is what the cashier tapped on the payment step — the method and,
+     * for cash, the amount handed over. It is passed in rather than read from
+     * state because the tap that picks the tender is the same tap that
+     * completes the sale, before any state update has rendered. Without it the
+     * till's current selection is used (Ctrl+Enter, the typed-cash path, the
+     * mobile-money gateway callbacks).
+     */
+    const processTransaction = async (
+        type: 'paid' | 'invoice',
+        reference?: string,
+        tender?: { method: string; cashReceived?: number },
+    ) => {
         if (cart.length === 0) {
             showToast('Cart is empty', 'error');
             return;
         }
 
         if (isProcessing) return;
+
+        const method = tender?.method ?? selectedPaymentMethod;
+        const isCash = isCashTender(method, storeSettings);
+        // A tapped cash tile with no amount means exact cash.
+        const cashGiven = tender
+            ? (tender.cashReceived ?? total)
+            : cashReceivedNumber;
+        if (type === 'paid' && isCash && cashGiven < total) {
+            showToast('Cash received is less than the total', 'error');
+            return;
+        }
+        const change = isCash ? Math.max(0, cashGiven - total) : 0;
+        if (tender) setSelectedPaymentMethod(tender.method);
         // Declared out here so the catch can hold it while a manager is asked.
         let saleData: Partial<Sale> | undefined;
         setIsProcessing(true);
@@ -635,8 +719,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 customerPhone: (customerPhone.trim() || mobileMoneyNumber.trim()) || undefined,
                 attendedBy: user?.name,
                 refundStatus: 'none' as const,
-                cashReceived: isCashMethod ? cashReceivedNumber : undefined,
-                changeDue: isCashMethod ? changeDue : undefined,
+                cashReceived: isCash ? cashGiven : undefined,
+                changeDue: isCash ? change : undefined,
             };
 
             saleData = {} as Partial<Sale>;
@@ -654,24 +738,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     payments: [],
                 };
             } else {
-                // Intercept Mobile Money → show the Confirm Payment step (inline page, not a modal)
-                if (!reference) {
-                    const isMobileMoney = (selectedPaymentMethod || '').toLowerCase().includes('mobile') ||
-                        (selectedPaymentMethod || '').toLowerCase().includes('lenco') ||
-                        (selectedPaymentMethod || '').toLowerCase().includes('mtn') ||
-                        (selectedPaymentMethod || '').toLowerCase().includes('airtel');
-
-                    if (isMobileMoney) {
-                        // Every store can take MTN/Airtel money — the customer sends it to
-                        // the store's own till and the cashier records it. A connected Lenco
-                        // account only adds the automated prompt on top; its absence must
-                        // never block the sale. Funds always settle to the MERCHANT, so a
-                        // till sale is never routed through the platform account.
-                        setLencoReference(storeSettings.lencoPublicKey ? `SP-${Date.now()}` : undefined);
-                        setCartView('confirm');
-                        setIsProcessing(false);
-                        return;
-                    }
+                // Mobile money is recorded on the tap, like any other tender: the
+                // customer has sent it to the store's own till. The operator's
+                // transaction ID goes on the sale when the cashier typed one
+                // (More options); otherwise it is stamped MANUAL- so it can be
+                // matched up later. The automated Lenco prompt is still offered
+                // from More options and arrives here with its own reference.
+                if (!reference && isMobileMoneyMethod(method)) {
+                    reference = manualMobileMoneyReference(mobileMoneyTxnId);
                 }
 
                 saleData = {
@@ -680,7 +754,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     amountPaid: total,
                     payments: [{
                         amount: total,
-                        method: selectedPaymentMethod,
+                        method,
                         id: Date.now().toString(),
                         date: saleTimestamp,
                         reference: reference
@@ -748,16 +822,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     }, [processTransaction, showToast]);
 
-    // Manual mobile-money confirmation — the store collected on its own till.
-    // The operator transaction ID is kept verbatim on the sale for reconciliation,
-    // except that a `ref-` prefix is reserved for gateway references the server
-    // re-verifies against Lenco, so a typed one is namespaced away from it.
+    // Manual confirmation from the prompt step — the store collected on its own till.
     const handleManualMobileMoneyConfirm = (manualRef?: string) => {
-        const typed = (manualRef || '').trim();
-        const reference = typed && !typed.toLowerCase().startsWith('ref-')
-            ? typed
-            : `MANUAL-${typed || Date.now()}`;
-        processTransaction('paid', reference);
+        processTransaction('paid', manualMobileMoneyReference(manualRef));
+    };
+
+    /** Open the automated Lenco prompt step for a mobile-money tender. */
+    const openPaymentPrompt = (method: string) => {
+        setSelectedPaymentMethod(method);
+        setLencoReference(storeSettings.lencoPublicKey ? `SP-${Date.now()}` : undefined);
+        setCartView('confirm');
     };
 
     const handleCancelVerification = async () => {
@@ -1082,14 +1156,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 finalAppliedCredit={finalAppliedCredit}
                                 selectedCustomer={selectedCustomer}
                                 onApplyStoreCredit={handleApplyStoreCredit}
-                                selectedPaymentMethod={selectedPaymentMethod}
-                                setSelectedPaymentMethod={setSelectedPaymentMethod}
                                 cashReceived={cashReceived}
                                 setCashReceived={setCashReceived}
                                 cashInputRef={cashInputRef as React.RefObject<HTMLInputElement>}
                                 changeDue={changeDue}
                                 mobileMoneyNumber={mobileMoneyNumber}
                                 setMobileMoneyNumber={setMobileMoneyNumber}
+                                mobileMoneyTxnId={mobileMoneyTxnId}
+                                setMobileMoneyTxnId={setMobileMoneyTxnId}
+                                onOpenPaymentPrompt={openPaymentPrompt}
                                 processTransaction={processTransaction}
                                 isProcessing={isProcessing}
                                 onBack={() => setCartView('cart')}
@@ -1224,19 +1299,27 @@ const SalesPage: React.FC<SalesPageProps> = ({
             {/* ── Mobile cart bar — opens the cart sheet ── */}
             {posView === 'sell' && cart.length > 0 && !mobileCartOpen && (
                 <div className="sale__cartbar">
-                    <div className="sale__cartbar-info">
+                    {/* Tapping the summary reviews the order; the button goes
+                        straight to payment, so a phone sale is still two taps. */}
+                    <button
+                        type="button"
+                        className="sale__cartbar-info"
+                        onClick={() => { setCartView('cart'); setMobileCartOpen(true); }}
+                        aria-label="View order"
+                    >
                         <span className="sale__cartbar-count">
-                            {cart.length} {cart.length === 1 ? 'item' : 'items'} in cart
+                            {cart.length} {cart.length === 1 ? 'item' : 'items'} · View order
                         </span>
                         <span className="sale__cartbar-total tnum">{formatCurrency(total, storeSettings)}</span>
-                    </div>
+                    </button>
                     <button
                         type="button"
                         className="sale__cartbar-btn"
-                        onClick={() => setMobileCartOpen(true)}
+                        disabled={total < 0}
+                        onClick={() => { setCartView('payment'); setMobileCartOpen(true); }}
                     >
-                        <PosIcon name="shopping_cart" size={20} fill={1} />
-                        View Order
+                        <PosIcon name="point_of_sale" size={20} fill={1} />
+                        Pay
                     </button>
                 </div>
             )}

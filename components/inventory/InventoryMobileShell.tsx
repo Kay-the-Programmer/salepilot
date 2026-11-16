@@ -4,6 +4,7 @@ import { Product, Category, StoreSettings, User } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { asNumber, stockStatus } from './stockStatus';
 import Logo from '../../assets/logo.png';
+import QuickStockButton from './QuickStockButton';
 
 interface InventoryMobileShellProps {
     products: Product[]; // already filtered + sorted
@@ -20,6 +21,8 @@ interface InventoryMobileShellProps {
     selectedProductId?: string | null;
     onAddProduct: () => void;
     onScan: () => void;
+    /** Opens the stock sheet from a card; omit to hide the + Stock button. */
+    onQuickStock?: (product: Product) => void;
     canManage: boolean;
     isLoading: boolean;
     /** When rendered inside the standalone Inventory app (which already has a top
@@ -38,7 +41,8 @@ const ProductCard: React.FC<{
     storeSettings: StoreSettings;
     isSelected: boolean;
     onSelect: () => void;
-}> = ({ product, categoryName, storeSettings, isSelected, onSelect }) => {
+    onQuickStock?: () => void;
+}> = ({ product, categoryName, storeSettings, isSelected, onSelect, onQuickStock }) => {
     const stock = asNumber(product.stock);
     const status = stockStatus(product, storeSettings);
     const unit = product.unitOfMeasure === 'kg' ? 'kg' : 'units';
@@ -69,8 +73,11 @@ const ProductCard: React.FC<{
                     {status.label}
                 </span>
             </div>
-            <div className="mt-3 flex items-end justify-between">
-                <p className="text-xs text-brand-text-muted tabular-nums">{stock} {unit} in stock</p>
+            <div className="mt-3 flex items-end justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    {onQuickStock && <QuickStockButton productName={product.name} onClick={onQuickStock} />}
+                    <p className="text-xs text-brand-text-muted tabular-nums">{stock} {unit} in stock</p>
+                </div>
                 <p className="text-lg font-bold text-brand-text tabular-nums">{formatCurrency(product.price, storeSettings)}</p>
             </div>
         </article>
@@ -90,6 +97,7 @@ export const InventoryMobileShell: React.FC<InventoryMobileShellProps> = ({
     selectedProductId,
     onAddProduct,
     onScan,
+    onQuickStock,
     canManage,
     isLoading,
     embedded = false,
@@ -201,6 +209,7 @@ export const InventoryMobileShell: React.FC<InventoryMobileShellProps> = ({
                             storeSettings={storeSettings}
                             isSelected={selectedProductId === p.id}
                             onSelect={() => onSelectProduct(p)}
+                            onQuickStock={onQuickStock ? () => onQuickStock(p) : undefined}
                         />
                     ))
                 )}

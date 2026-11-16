@@ -1410,6 +1410,80 @@
   gap: var(--v2-space-3);
 }
 
+/* ---------- Two-tap tenders: every tile completes the sale ---------- */
+.cart__method--tender {
+  min-height: 64px;
+}
+
+.cart__method--tender:active:not(:disabled) {
+  transform: scale(0.97);
+  background: var(--v2-color-primary);
+  border-color: var(--v2-color-primary);
+  color: var(--v2-color-on-primary);
+}
+
+.cart__method--tender:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cart__method-sub {
+  font-size: 10px;
+  font-weight: var(--v2-weight-semibold);
+  color: var(--v2-color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pay__cashrow {
+  display: flex;
+  gap: var(--v2-space-2);
+}
+
+.pay__cashrow .v2-btn {
+  flex-shrink: 0;
+  height: 44px;
+}
+
+.pay__more {
+  border-top: 1px solid var(--v2-color-divider);
+  padding-top: var(--v2-space-3);
+}
+
+.pay__more > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--v2-space-2);
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--v2-text-sm);
+  font-weight: var(--v2-weight-bold);
+  color: var(--v2-color-text-muted);
+  padding: var(--v2-space-1) 0;
+}
+
+.pay__more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pay__more[open] > summary {
+  color: var(--v2-color-primary);
+}
+
+.pay__more-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--v2-color-accent);
+}
+
+.pay__more-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-space-4);
+  padding-top: var(--v2-space-3);
+}
+
 /* ---------- Confirm payment step (gateway vs manual) ---------- */
 .confirm__lead {
   font-size: var(--v2-text-sm);
@@ -2033,7 +2107,14 @@
   .sale__cartbar-info {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     line-height: 1.2;
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 
   .sale__cartbar-count {
