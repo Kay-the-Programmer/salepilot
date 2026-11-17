@@ -1,6 +1,7 @@
-import { User } from '../../types';
+import { User, StoreSettings } from '../../types';
 import { ROLE_PAGES } from '../../utils/rbac';
 import { MODULES } from '../../utils/entitlements';
+import { BusinessMode, businessModeOf } from '../../utils/hospitality';
 
 /**
  * Canonical registry of the standalone "apps" that open from the SalePilot
@@ -32,6 +33,13 @@ export type AppDef = {
     group: AppGroup;
     module?: string;
     comingSoon?: boolean;
+    /**
+     * Restrict this app to one kind of business. A grocery has no use for a
+     * Menu tile and a restaurant shouldn't have to explain why it is there, so
+     * an app tagged 'hospitality' is listed only for stores in that mode.
+     * Undefined means every store, which is all of them today bar the Menu.
+     */
+    mode?: BusinessMode;
 };
 
 export const STANDALONE_APPS: AppDef[] = [
@@ -44,16 +52,15 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'Ask SalePilot', page: 'assistant', route: 'assistant', desc: 'Ask questions about your shop', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT, group: 'Money' },
     { name: 'Customers', page: 'crm', route: 'crm', desc: 'Customer list, loyalty and messages', iconName: 'diversity_3', requires: 'customers', group: 'Customers' },
     // Marketing Suite is withheld from launch — see MARKETING_ENABLED in utils/entitlements.
-    // { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Your shop link, QR code and sharing', iconName: 'storefront', requires: 'online-store', group: 'Sell' },
     { name: 'My Shops', page: 'businesses', route: 'businesses', desc: 'Run all your shops from one place', iconName: 'domain', requires: 'businesses', group: 'Setup' },
+    // Restaurants, bars and cafes only — see AppDef.mode.
+    { name: 'Menu', page: 'menu', route: 'menu', desc: 'Sections, dishes and drinks you sell', iconName: 'restaurant_menu', requires: 'menu', group: 'Sell', mode: 'hospitality' },
     { name: 'Stock', page: 'inv', route: 'inv', desc: 'What you have, what is running low', iconName: 'inventory_2', requires: 'inventory', group: 'Stock' },
     { name: 'Staff', page: 'team', route: 'team', desc: 'Who can use the shop and what they can do', iconName: 'manage_accounts', requires: 'users', group: 'Setup' },
     { name: 'Buy Stock', page: 'procure', route: 'procure', desc: 'Suppliers and orders you place', iconName: 'shopping_cart_checkout', requires: 'suppliers', group: 'Stock' },
-    // { name: 'Buy from Shops', page: 'directory', route: 'marketplace', desc: 'Order stock from other shops near you', iconName: 'local_mall', requires: 'directory', group: 'Stock' },
     { name: 'Books', page: 'books', route: 'books', desc: 'Money in, money out and statements', iconName: 'account_balance', requires: 'accounting', group: 'Money' },
     { name: 'Expenses', page: 'expenses', route: 'expenses', desc: 'Record what you spend for the shop', iconName: 'receipt_long', requires: 'expenses', group: 'Money' },
     { name: 'Quotes & Invoices', page: 'sales-docs', route: 'quotes', desc: 'Price offers and bills for customers', iconName: 'description', requires: 'sales-docs', group: 'Sell' },
-    // { name: 'Logistics', page: 'fleet', route: 'fleet', desc: 'Shipments, couriers & fleet', iconName: 'local_shipping', requires: 'logistics' },
     { name: 'Plan & Billing', page: 'subscription', route: 'subscription', desc: 'Your plan and payments', iconName: 'card_membership', requires: 'subscription', group: 'Setup' },
     { name: 'Settings', page: 'config', route: 'config', desc: 'Shop details, till and receipts', iconName: 'settings', requires: 'settings', group: 'Setup' },
     { name: 'Activity Log', page: 'audit', route: 'audit', desc: 'Who did what, and when', iconName: 'manage_search', requires: 'audit-trail', group: 'Setup' },
@@ -67,8 +74,19 @@ export const STANDALONE_APPS: AppDef[] = [
 const allowedPagesFor = (user: Pick<User, 'role'> | null | undefined): string[] =>
     user?.role === 'superadmin' ? [...ROLE_PAGES['admin'], 'superadmin'] : (ROLE_PAGES[user?.role as User['role']] || []);
 
-/** The standalone apps the given user may open, in registry order. */
-export const getLaunchableApps = (user: Pick<User, 'role'> | null | undefined): AppDef[] => {
+/**
+ * The standalone apps the given user may open, in registry order.
+ *
+ * `settings` is optional so every existing caller keeps working; without it,
+ * mode-specific apps are hidden rather than shown. A launcher that flashed a
+ * Menu tile at a grocery while settings loaded would be worse than one that
+ * shows it a moment late.
+ */
+export const getLaunchableApps = (
+    user: Pick<User, 'role'> | null | undefined,
+    settings?: Partial<StoreSettings> | null,
+): AppDef[] => {
     const allowed = allowedPagesFor(user);
-    return STANDALONE_APPS.filter(a => allowed.includes(a.requires));
+    const mode: BusinessMode = businessModeOf(settings);
+    return STANDALONE_APPS.filter(a => allowed.includes(a.requires) && (!a.mode || a.mode === mode));
 };

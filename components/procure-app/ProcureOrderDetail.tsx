@@ -73,7 +73,6 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
                     <div style={{ minWidth: 0 }}>
                         <div className="proc-prof-badges">
                             <PoStatusChip status={po.status} />
-                            {po.isMarketplaceOrder && <span className="crm-badge crm-badge--platinum"><Icon name="storefront" size={14} fill={1} /> Marketplace</span>}
                         </div>
                         <h2 className="proc-prof-name">{po.poNumber}</h2>
                         <div className="proc-prof-meta">

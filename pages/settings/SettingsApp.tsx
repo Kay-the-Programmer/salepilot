@@ -518,6 +518,24 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, onSave, onSet
             {active === 'pos' && (
               <>
                 <Card>
+                  {/* Set from the business type at registration, but changeable:
+                      a shop that adds a coffee counter shouldn't have to
+                      re-register to get a menu. */}
+                  <Field label="Till style">
+                    <select
+                      className={inputCls}
+                      name="businessMode"
+                      value={currentSettings.businessMode === 'hospitality' ? 'hospitality' : 'retail'}
+                      onChange={handleChange}
+                    >
+                      <option value="retail">Shop — product grid, pay as you go</option>
+                      <option value="hospitality">Restaurant, bar or cafe — menu and open bills</option>
+                    </select>
+                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                      The restaurant till sells from menu sections, lets you keep bills open and add to them,
+                      and prints a bill before payment. Switching adds the Menu app; nothing already sold changes.
+                    </p>
+                  </Field>
                   <Field label="Receipt footer message"><textarea className={`${inputCls} h-auto py-3`} rows={2} name="receiptMessage" value={currentSettings.receiptMessage || ''} onChange={handleChange} placeholder="Thank you for shopping with us!" /></Field>
                   <label className="flex items-center justify-between py-1 cursor-pointer">
                     <span className="text-sm font-semibold m3-text-on-surface">Enable store credit</span>

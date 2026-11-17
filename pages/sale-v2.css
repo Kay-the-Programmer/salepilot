@@ -2218,3 +2218,337 @@
   font-weight: var(--v2-weight-bold);
   color: var(--v2-color-text-muted);
 }
+
+/* ===================================================================== */
+/* Hospitality: menu sections, open bills, the bill bar                  */
+/* ===================================================================== */
+
+/*
+ * Menu section tabs.
+ *
+ * A restaurant till is navigated by section — Starters, Mains, Drinks — not by
+ * typing a dish name, so the sections sit directly above the grid and scroll
+ * sideways rather than wrapping into a wall of chips.
+ */
+.sale__sections {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+    margin-bottom: 4px;
+    scrollbar-width: none;
+}
+
+.sale__sections::-webkit-scrollbar { display: none; }
+
+.sale__section {
+    flex: none;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 0.75rem;
+    border: 1px solid var(--v2-color-border);
+    background: var(--v2-color-surface);
+    color: var(--v2-color-text);
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+
+.sale__section:hover { border-color: var(--v2-color-primary); }
+
+.sale__section--active {
+    background: var(--v2-color-primary);
+    border-color: var(--v2-color-primary);
+    color: #fff;
+}
+
+/* How many bills are running, on the POS menu entry. */
+.sale__menu-badge {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: 0.75rem;
+    background: var(--v2-color-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* --- The bill on the till --- */
+
+.cart__billbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--v2-color-border);
+    background: rgba(0, 43, 107, .06);
+    color: var(--v2-color-primary);
+}
+
+.cart__billbar-label { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; }
+
+.cart__billbar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0 10px;
+    border-radius: 0.5rem;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--v2-color-primary);
+}
+
+.cart__billbar button:hover { background: rgba(0, 43, 107, .1); }
+
+/* Saving the order to a bill is a venue's commonest action after taking it, so
+   it gets a full-width button of its own rather than a share of the row that
+   holds Clear Cart. Navy, not orange: orange is reserved for taking money. */
+.cart__savebill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 8px;
+    border-radius: 0.5rem;
+    border: 2px solid var(--v2-color-primary);
+    background: var(--v2-color-surface);
+    color: var(--v2-color-primary);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.cart__savebill:hover:not(:disabled) { background: rgba(0, 43, 107, .06); }
+
+.cart__savebill:disabled { opacity: .55; cursor: not-allowed; }
+
+/* --- Open bills view --- */
+
+.tabs-view {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px 24px 64px;
+}
+
+.tabs-view__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.tabs-view__title { font-size: 20px; font-weight: 800; color: var(--v2-color-text); }
+
+.tabs-view__sub { font-size: 14px; color: var(--v2-color-text-muted); margin-top: 2px; }
+
+.tabs-view__refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 0.5rem;
+    border: 1px solid var(--v2-color-border);
+    background: var(--v2-color-surface);
+    color: var(--v2-color-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.tabs-view__refresh:disabled { opacity: .6; }
+
+.tabs-view__error {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 0.5rem;
+    background: rgba(186, 26, 26, .06);
+    border: 1px solid rgba(186, 26, 26, .2);
+    color: var(--v2-color-text);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.tabs-view__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 56px 16px;
+    color: var(--v2-color-text-muted);
+    border: 1px dashed var(--v2-color-border);
+    border-radius: 0.5rem;
+    background: var(--v2-color-surface);
+}
+
+.tabs-view__list { display: flex; flex-direction: column; gap: 10px; }
+
+.tabs-view__void {
+    background: #ba1a1a;
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 800;
+}
+
+.tabcard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--v2-color-border);
+    border-radius: 0.5rem;
+    background: var(--v2-color-surface);
+}
+
+/* A bill another till is paying is dimmed and unopenable rather than hidden:
+   it is still on the floor, and a waiter needs to see where it went. */
+.tabcard--busy { opacity: .6; }
+
+.tabcard__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+    min-height: 48px;
+    justify-content: center;
+}
+
+.tabcard__main:disabled { cursor: not-allowed; }
+
+.tabcard__label { font-size: 16px; font-weight: 800; color: var(--v2-color-text); }
+
+.tabcard__meta { font-size: 12px; color: var(--v2-color-text-muted); }
+
+.tabcard__flag { font-size: 11px; font-weight: 700; color: #9b4500; }
+
+.tabcard__total {
+    font-size: 17px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--v2-color-text);
+    white-space: nowrap;
+}
+
+.tabcard__actions { display: flex; gap: 2px; flex: none; }
+
+.tabcard__actions button {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: var(--v2-color-text-muted);
+}
+
+.tabcard__actions button:hover:not(:disabled) {
+    background: rgba(0, 43, 107, .06);
+    color: var(--v2-color-primary);
+}
+
+.tabcard__actions button.is-danger:hover:not(:disabled) {
+    background: rgba(186, 26, 26, .08);
+    color: #ba1a1a;
+}
+
+.tabcard__actions button:disabled { opacity: .35; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+    .tabs-view { padding: 16px 16px 64px; }
+
+    /* The total drops under the name, so the print and void buttons keep their
+       full 44px on a 375px screen. */
+    .tabcard { flex-wrap: wrap; }
+
+    .tabcard__main { flex: 1 1 100%; }
+
+    .tabcard__total { flex: 1; }
+}
+
+/*
+ * Menu tiles.
+ *
+ * A menu has no photographs, so the picture block that makes a shop's product
+ * grid readable makes a restaurant's unreadable: a hundred identical grey
+ * placeholders with the dish name shrunk to a caption. The name is the whole
+ * tile here, with the price under it, and more of them fit on a screen.
+ */
+.menutile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 92px;
+    padding: 12px;
+    text-align: left;
+    border-radius: 0.5rem;
+    border: 1px solid var(--v2-color-border);
+    background: var(--v2-color-surface);
+    transition: border-color .15s, background-color .15s, transform .1s;
+}
+
+.menutile:hover:not(:disabled) { border-color: var(--v2-color-primary); }
+
+.menutile:active:not(:disabled) { transform: scale(.98); }
+
+.menutile--incart { border-color: var(--v2-color-primary); border-width: 2px; }
+
+.menutile--soldout { opacity: .45; cursor: not-allowed; }
+
+.menutile__name {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--v2-color-text);
+    /* Three lines, then ellipsis: a dish name can be long ("Grilled tilapia
+       with rice and vegetables") and truncating it to one line loses the dish. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.menutile__foot { display: flex; align-items: center; gap: 8px; }
+
+.menutile__price {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--v2-color-primary);
+}
+
+/* How many of this item are already on the order — the one thing a waiter
+   taking a repeat round needs to see without opening the cart. */
+.menutile__qty {
+    margin-left: auto;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: var(--v2-color-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.menutile__tag {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--v2-color-text-muted);
+}
+
+.menutile__tag--low { color: #9b4500; }

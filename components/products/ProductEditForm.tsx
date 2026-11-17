@@ -394,7 +394,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                             <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 px-5 py-4 rounded-lg border border-brand-border bg-surface hover:bg-surface-variant transition-colors [&::-webkit-details-marker]:hidden">
                                 <span>
                                     <span className="block text-sm font-bold text-brand-text">More details</span>
-                                    <span className="block text-xs text-brand-text-muted mt-0.5">Supplier, barcode &amp; SKU, cartons, tax, wholesale, reorder level, photos</span>
+                                    <span className="block text-xs text-brand-text-muted mt-0.5">Supplier, barcode &amp; SKU, cartons, tax, reorder level, photos</span>
                                 </span>
                                 <svg className="w-5 h-5 text-brand-text-muted transition-transform group-open/more:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                             </summary>
@@ -602,79 +602,6 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     </div>
                                 )}
 
-                                {/* ── Wholesale marketplace pricing ── */}
-                                <div className="pt-4 border-t border-brand-border">
-                                    <p className={`${labelCls} mb-1`}>Wholesale marketplace</p>
-                                    <p className="text-xs text-brand-text-muted mb-3">
-                                        Used when retailers buy from you on the SalePilot marketplace. Leave blank to sell at the selling price with no minimum.
-                                    </p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="wholesalePrice" className={labelCls}>Wholesale Price</label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
-                                                <input type="number" name="wholesalePrice" id="wholesalePrice" value={product.wholesalePrice ?? ''} onChange={handleChange} min="0.01" step="0.01" placeholder="0.00"
-                                                    className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label htmlFor="minOrderQuantity" className={labelCls}>Minimum Order Quantity</label>
-                                            <input type="number" name="minOrderQuantity" id="minOrderQuantity" value={product.minOrderQuantity ?? ''} onChange={handleChange} min="1" step="1" placeholder="e.g. 12"
-                                                className="w-full px-4 py-2.5 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
-                                        </div>
-                                    </div>
-
-                                    {/* Quantity-break tiers */}
-                                    <div className="mt-4">
-                                        <p className={labelCls}>Bulk pricing tiers <span className="font-normal text-brand-text-muted normal-case">(optional, up to 5)</span></p>
-                                        {(product.priceTiers || []).map((tier, i) => (
-                                            <div key={i} className="flex items-center gap-2 mb-2">
-                                                <input
-                                                    type="number" min="2" step="1" placeholder="Min qty"
-                                                    value={tier.minQty || ''}
-                                                    onChange={e => setProduct(prev => {
-                                                        const tiers = [...(prev.priceTiers || [])];
-                                                        tiers[i] = { ...tiers[i], minQty: parseInt(e.target.value) || 0 };
-                                                        return { ...prev, priceTiers: tiers };
-                                                    })}
-                                                    className="w-28 px-3 py-2 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary outline-none"
-                                                />
-                                                <span className="text-xs text-brand-text-muted">+ units →</span>
-                                                <div className="relative flex-1 max-w-[150px]">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary text-sm font-medium">{sym}</span>
-                                                    <input
-                                                        type="number" min="0.01" step="0.01" placeholder="Unit price"
-                                                        value={tier.price || ''}
-                                                        onChange={e => setProduct(prev => {
-                                                            const tiers = [...(prev.priceTiers || [])];
-                                                            tiers[i] = { ...tiers[i], price: parseFloat(e.target.value) || 0 };
-                                                            return { ...prev, priceTiers: tiers };
-                                                        })}
-                                                        className="w-full pl-7 pr-3 py-2 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary outline-none"
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    aria-label="Remove tier"
-                                                    onClick={() => setProduct(prev => ({ ...prev, priceTiers: (prev.priceTiers || []).filter((_, j) => j !== i) }))}
-                                                    className="w-8 h-8 rounded-lg text-brand-text-muted hover:text-danger hover:bg-danger/10 transition-colors"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        ))}
-                                        {(product.priceTiers || []).length < 5 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setProduct(prev => ({ ...prev, priceTiers: [...(prev.priceTiers || []), { minQty: 0, price: 0 }] }))}
-                                                className="text-sm font-semibold text-primary hover:underline"
-                                            >
-                                                + Add price tier
-                                            </button>
-                                        )}
-                                        <p className="text-xs text-brand-text-muted mt-1">Example: 12+ units at a lower unit price. Applies to signed-in marketplace buyers.</p>
-                                    </div>
-                                </div>
                             </div>
                         </section>
 

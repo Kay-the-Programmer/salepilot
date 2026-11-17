@@ -64,11 +64,10 @@ const TrialBanner: React.FC = () => {
         return null;
     }, [user?.subscriptionStatus, user?.subscriptionEndsAt]);
 
-    // Never in the way of the billing page itself, the storefront, or sign-in.
+    // Never in the way of the billing page itself, or sign-in.
     const path = location.pathname;
     const hidden = dismissed
         || path.startsWith('/subscription')
-        || path.startsWith('/shop/')
         || path.startsWith('/login')
         || path.startsWith('/register');
 

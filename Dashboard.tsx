@@ -1,27 +1,25 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
-import SocketService from './services/socketService';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
-import Logo from './assets/logo.png';
 import { lazy, Suspense } from 'react';
 
-import SupplierDashboard from './pages/supplier/SupplierDashboard';
-import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
-import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED } from './utils/entitlements';
+import { hasModule, MODULES, MARKETING_ENABLED } from './utils/entitlements';
 import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
+import { isHospitality, rememberBusinessMode } from './utils/hospitality';
 import { useConfirm } from './components/ui/useConfirm';
 import { ROLE_PAGES } from './utils/rbac';
+import RetiredAccountNotice from './components/RetiredAccountNotice';
 
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
 const StandaloneShell = lazy(() => import('@/components/standalone/StandaloneShell'));
 const PosShell = lazy(() => import('@/components/pos/PosShell'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
 const MarketingApp = lazy(() => import('@/components/marketing/MarketingApp'));
-const OnlineStoreApp = lazy(() => import('@/components/shop/OnlineStoreApp'));
 const MultiStoreApp = lazy(() => import('@/components/standalone/MultiStoreApp'));
 const DashboardApp = lazy(() => import('@/components/dash-app/DashboardApp'));
 const InventoryApp = lazy(() => import('@/components/inventory-app/InventoryApp'));
 const TeamApp = lazy(() => import('@/components/team-app/TeamApp'));
 const ProcureApp = lazy(() => import('@/components/procure-app/ProcureApp'));
+const MenuApp = lazy(() => import('@/components/menu-app/MenuApp'));
 const AssistantApp = lazy(() => import('@/pages/assistant/AssistantApp'));
 const AuditApp = lazy(() => import('@/pages/audit/AuditApp'));
 const NotificationsApp = lazy(() => import('@/pages/notifications/NotificationsApp'));
@@ -29,7 +27,6 @@ const ProfileApp = lazy(() => import('@/pages/profile/ProfileApp'));
 const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
 const ExpensesApp = lazy(() => import('@/components/expenses-app/ExpensesApp'));
 const SalesDocsApp = lazy(() => import('@/components/sales-docs/SalesDocsApp'));
-const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
@@ -39,10 +36,6 @@ const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 // The Super Admin platform pages now live inside a single standalone app shell
 // (its own navigation + brand chrome), opened from the app switcher like the other apps.
 const SuperAdminApp = lazy(() => import('@/components/superadmin-app/SuperAdminApp'));
-const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
-const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
-const CustomerOrdersPage = lazy(() => import('@/pages/customers/CustomerDashboard')); // The My Orders Page
-const MarketplaceRequestActionPage = lazy(() => import('@/pages/MarketplaceRequestActionPage'));
 const UserGuidePage = lazy(() => import('@/pages/UserGuidePage'));
 const SupportPage = lazy(() => import('@/pages/SupportPage'));
 
@@ -78,8 +71,10 @@ const DEFAULT_PAGES: Record<User['role'], string> = {
     admin: 'dash',
     staff: 'pos',
     inventory_manager: 'dash',
-    customer: 'customer/dashboard',
-    supplier: 'supplier/dashboard'
+    // Customer and supplier accounts never reach this map: they see the
+    // retired-account notice before any page is chosen.
+    customer: 'support',
+    supplier: 'support'
 };
 
 // Standalone app shells launched from the app switcher. Each opens in its own
@@ -90,6 +85,7 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     assistant: 'quick-view',
     dash: 'reports',
     crm: 'customers',
+    menu: 'menu',
     inv: 'inventory',
     team: 'users',
     procure: 'suppliers',
@@ -99,7 +95,6 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     books: 'accounting',
     expenses: 'expenses',
     quotes: 'sales-docs',
-    fleet: 'logistics',
     po: 'purchase-orders',
     config: 'settings',
     superadmin: 'superadmin',
@@ -267,22 +262,18 @@ export default function Dashboard() {
             setJournalEntries(mapResult(results[7], [] as JournalEntry[]));
             setSupplierInvoices(mapResult(results[8], [] as SupplierInvoice[]));
             setUsers(mapResult(results[9], [] as User[]));
-            setStoreSettings(mapResult(results[10], null as any));
+            const loadedSettings = mapResult(results[10], null as any);
+            setStoreSettings(loadedSettings);
+            // Remember whether this is a restaurant till, for the components
+            // mounted above this fetch (the app switcher) that have no settings
+            // to read. See utils/hospitality.ts.
+            rememberBusinessMode(loadedSettings, currentUser?.currentStoreId);
             setReturns(mapResult(results[11], [] as Return[]));
             setAuditLogs(mapResult(results[12], [] as AuditLog[]));
             setStockTakeSession(mapResult(results[13], null as any));
             setExpenses(mapResult(results[14], { items: [] as Expense[] } as any).items || []);
             setRecurringExpenses(mapResult(results[15], [] as RecurringExpense[]));
 
-
-            // Fetch pending marketplace matches separately to avoid blocking
-            /* 
-            if (currentUser?.currentStoreId) {
-                api.get<any[]>(`/marketplace/stores/${currentUser.currentStoreId}/matches`)
-                    .then(matches => setPendingMatches(matches || []))
-                    .catch(() => setPendingMatches([]));
-            }
-            */
 
             if (dbService && typeof dbService.updateLastSync === 'function') {
                 await dbService.updateLastSync();
@@ -398,41 +389,6 @@ export default function Dashboard() {
     }, []);
 
     // Notification Polling logic removed as it is now handled in NotificationContext.tsx
-
-    // Real-time Request Notifications (Sellers)
-    useEffect(() => {
-        if (!currentUser || currentUser.role === 'customer') return;
-
-        const socketService = SocketService.getInstance(); // Ensure import
-        const socket = socketService.getSocket();
-
-        // Join sellers room
-        socket.emit('join_sellers');
-
-        const handleNewRequest = (data: any) => {
-            // Only show if the notification is relevant to this store (if storeId is provided)
-            // If data.storeId is missing, it might be a global broadcast, so we show it (fallthrough)
-            // But if it is present, it must match our currentStoreId
-            if (data.storeId && currentUser?.currentStoreId && data.storeId !== currentUser.currentStoreId) {
-                return;
-            }
-
-            showToast(`New Request: ${data.title} - ${data.description?.substring(0, 30)}...`, 'info');
-            // Play notification sound if desired
-            if (Notification.permission === 'granted') {
-                new Notification('New Deal Request', {
-                    body: data.title,
-                    icon: Logo
-                });
-            }
-        };
-
-        socket.on('new_request', handleNewRequest);
-
-        return () => {
-            socket.off('new_request', handleNewRequest);
-        };
-    }, [currentUser, showToast]);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -584,6 +540,9 @@ export default function Dashboard() {
                 showToast('Offline: Settings change queued.', 'info');
             } else {
                 setStoreSettings(result);
+                // Switching till style takes effect across the app at once,
+                // not after the next reload.
+                rememberBusinessMode(result, currentUser?.currentStoreId);
                 showToast('Store settings updated successfully!', 'success');
                 fetchData();
             }
@@ -747,6 +706,11 @@ export default function Dashboard() {
                 setProducts(prev => prev.map(p => {
                     const line = pendingSale.cart.find(i => i.productId === p.id);
                     if (!line) return p;
+                    // Made-to-order menu items hold no stock, and the server
+                    // will not decrement them when this replays — so neither
+                    // does the optimistic copy, or the two would disagree until
+                    // the next full refetch.
+                    if (p.trackStock === false) return p;
                     const updated = { ...p, stock: p.stock - line.quantity };
                     changedProducts.push({ ...updated, storeId: currentStoreId ?? (p as any).storeId } as Product);
                     return updated;
@@ -1194,6 +1158,13 @@ export default function Dashboard() {
         return <LoginPage onLogin={handleLogin} />;
     }
 
+    // Customer and supplier accounts belonged to the online store and the
+    // supplier portal, both retired. Their records are kept, but the app has
+    // nowhere left to send them, so say so instead of redirecting in a loop.
+    if (currentUser && (currentUser.role === 'customer' || currentUser.role === 'supplier')) {
+        return <RetiredAccountNotice onSignOut={handleLogout} />;
+    }
+
     // Authenticated but store-less (e.g. first Google sign-in) → the SAME
     // registration surface, store-only (the account already exists). Superadmin
     // and customers are store-agnostic. Any non-/register URL redirects here.
@@ -1500,26 +1471,6 @@ export default function Dashboard() {
         return <Navigate to="/procure/lists" replace />;
     }
 
-    // ── Standalone Logistics app (/fleet) ──
-    const fleetParts = location.pathname.split('/');
-    if (fleetParts[1] === 'fleet' && currentUser) {
-        // Withheld from launch — see LOGISTICS_ENABLED. The app is complete
-        // enough to open but has no launcher tile, so reaching it by URL would
-        // be a half-launch.
-        if (!LOGISTICS_ENABLED) return <Navigate to="/" replace />;
-        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
-        if (!allowed.includes('logistics')) return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <LogisticsApp storeSettings={storeSettings!} />
-                    </Suspense>
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
-
     // ── Standalone Audit Trail app (/audit) ──
     const auditParts = location.pathname.split('/');
     if (auditParts[1] === 'audit' && currentUser) {
@@ -1650,7 +1601,7 @@ export default function Dashboard() {
     // ── Standalone Marketing Suite (/marketing) — Facebook Pages management ──
     const marketingParts = location.pathname.split('/');
     if (marketingParts[1] === 'marketing' && currentUser) {
-        // Withheld from launch — see MARKETING_ENABLED (same reasoning as /fleet).
+        // Withheld from launch — see MARKETING_ENABLED.
         if (!MARKETING_ENABLED) return <Navigate to="/" replace />;
         const mktAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
         if (!mktAllowedPages.includes('marketing')) {
@@ -1703,28 +1654,6 @@ export default function Dashboard() {
         );
     }
 
-    // ── Standalone Online Store app (/store) — storefront link, QR & catalog sharing ──
-    const storeParts = location.pathname.split('/');
-    if (storeParts[1] === 'store' && currentUser) {
-        const storeAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
-        if (!storeAllowedPages.includes('online-store')) {
-            return <Navigate to="/" replace />;
-        }
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <OnlineStoreApp
-                            user={currentUser}
-                            storeSettings={storeSettings}
-                            onLogout={handleLogout}
-                        />
-                    </Suspense>
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
-
     // ── Standalone Purchase Orders hub (/procure, /procure/suppliers, /procure/orders, /procure/lists) ──
     const procParts = location.pathname.split('/');
     if (procParts[1] === 'procure' && currentUser) {
@@ -1754,6 +1683,47 @@ export default function Dashboard() {
                             onSaveProduct={handleSaveProduct}
                             onRefresh={fetchData}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Menu app (/menu, /menu/import) — restaurants, bars, cafes ──
+    // Gated twice: on the page permission, and on the store actually being in
+    // hospitality mode. Without the second check a grocery could reach the
+    // Menu screen by typing the URL and be shown a tool that makes no sense
+    // for it.
+    const menuParts = location.pathname.split('/');
+    if (menuParts[1] === 'menu' && currentUser) {
+        const menuAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!menuAllowedPages.includes('menu') || !isHospitality(storeSettings)) {
+            return <Navigate to="/" replace />;
+        }
+        const menuSection = (menuParts[2] === 'import' ? 'import' : 'menu') as 'menu' | 'import';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <MenuApp
+                            section={menuSection}
+                            user={currentUser}
+                            products={products}
+                            categories={categories}
+                            storeSettings={storeSettings}
+                            onSaveProduct={handleSaveProduct}
+                            // The shared save handler is typed for an existing
+                            // record, but it decides create-vs-update from
+                            // whether `id` is set — so a new section (no id)
+                            // correctly POSTs. The cast is at this boundary
+                            // rather than loosening the handler for everyone.
+                            onSaveCategory={(c) => handleSaveCategory(c as Category)}
+                            onDeleteCategory={handleDeleteCategory}
+                            onRefresh={fetchData}
+                            onNavigate={(s) => navigate(s === 'menu' ? '/menu' : `/menu/${s}`)}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />
@@ -1960,55 +1930,6 @@ export default function Dashboard() {
                         </StandaloneShell>
                     </Suspense>
                     {accountOverlays}
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
-
-    // ── Marketplace / public store directory (/directory, /marketplace) ──
-    if (seg === 'directory' || seg === 'marketplace') {
-        if (!allowedPages.includes('directory')) return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={suspenseFallback}>
-                        {pathParts[2] === 'request' && pathParts[3]
-                            ? <MarketplaceRequestActionPage requestId={pathParts[3]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} />
-                            : <MarketplacePage />}
-                    </Suspense>
-                    {accountOverlays}
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
-
-    // ── Customer self-service portal (/customer/dashboard, /customer/orders) ──
-    if (seg === 'customer') {
-        if (currentUser.role !== 'customer' && currentUser.role !== 'superadmin') return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={suspenseFallback}>
-                        <StandaloneShell title={pathParts[2] === 'orders' ? 'My Orders' : 'Marketplace Portal'}>
-                            {pathParts[2] === 'orders' ? <CustomerOrdersPage /> : <MarketplaceDashboard />}
-                        </StandaloneShell>
-                    </Suspense>
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
-
-    // ── Supplier self-service portal (/supplier/dashboard, /supplier/orders) ──
-    if (seg === 'supplier') {
-        if (currentUser.role !== 'supplier' && currentUser.role !== 'superadmin') return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={suspenseFallback}>
-                        <StandaloneShell title="Supplier Portal">
-                            {pathParts[2] === 'orders' ? <SupplierOrdersPage /> : <SupplierDashboard />}
-                        </StandaloneShell>
-                    </Suspense>
                 </NotificationProvider>
             </OnboardingProvider>
         );

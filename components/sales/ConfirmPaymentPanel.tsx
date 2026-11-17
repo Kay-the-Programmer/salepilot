@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
-import LencoPayButton from '../shop/LencoPayButton';
+import LencoPayButton from '../payments/LencoPayButton';
 import PosIcon from './PosIcon';
 
 interface ConfirmPaymentPanelProps {

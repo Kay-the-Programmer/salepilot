@@ -43,19 +43,23 @@ export type Permission =
     | 'customers:manage'
     | 'reports:dashboard'
     | 'reports:sales'
-    | 'logistics:read'
-    | 'logistics:manage'
     | 'messaging:read'
     | 'messaging:send'
     | 'messaging:manage'
+    // Open bills (restaurants, bars, cafes). `operate` is the waiter's job;
+    // `void` writes an unpaid bill off, which stays with a manager.
+    | 'tabs:operate'
+    | 'tabs:void'
     | 'ai:use';
 
 const STORE_PERMISSIONS: Permission[] = [
     'users:manage', 'settings:read', 'settings:manage', 'accounting:manage', 'expenses:manage', 'expenses:record', 'sales_docs:create', 'sales_docs:manage',
     'billing:manage', 'audit:read', 'inventory:read', 'inventory:manage', 'suppliers:manage',
     'purchasing:manage', 'sales:read', 'sales:perform', 'returns:perform', 'customers:read',
-    'customers:create', 'customers:manage', 'reports:dashboard', 'reports:sales', 'logistics:read',
-    'logistics:manage', 'messaging:read', 'messaging:send', 'messaging:manage', 'ai:use',
+    'customers:create', 'customers:manage', 'reports:dashboard', 'reports:sales',
+    'messaging:read', 'messaging:send', 'messaging:manage',
+    'tabs:operate', 'tabs:void',
+    'ai:use',
 ];
 
 /** Capability matrix — kept identical to the backend. */
@@ -64,12 +68,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     admin: [...STORE_PERMISSIONS],
     inventory_manager: [
         'inventory:read', 'inventory:manage', 'suppliers:manage', 'purchasing:manage',
-        'reports:dashboard', 'settings:read', 'logistics:read', 'logistics:manage', 'ai:use',
+        'reports:dashboard', 'settings:read', 'ai:use',
     ],
     staff: [
         'inventory:read', 'sales:read', 'sales:perform', 'returns:perform', 'customers:read',
-        'customers:create', 'reports:sales', 'settings:read', 'logistics:read', 'logistics:manage',
-        'expenses:record', 'sales_docs:create',
+        'customers:create', 'reports:sales', 'settings:read',
+        'expenses:record', 'sales_docs:create', 'tabs:operate',
         'messaging:read', 'messaging:send', 'ai:use',
     ],
     customer: [],
@@ -106,6 +110,12 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
     'orders':                   ['admin', 'staff'],
     'returns':                  ['admin', 'staff'],
 
+    // Menu (restaurants, bars, cafes). Staff can read the menu to sell from it,
+    // but building it is a manager's job — a waiter should not be able to
+    // reprice the Mains mid-service. The Menu app itself only opens for stores
+    // in hospitality mode (see AppDef.mode in standaloneApps.ts).
+    'menu':                     ['admin', 'inventory_manager'],
+
     // Inventory & products
     'inventory':                ['admin', 'inventory_manager', 'staff'],
     'categories':               ['admin', 'inventory_manager'],
@@ -118,9 +128,6 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
 
     // Marketing (Facebook Pages suite)
     'marketing':                ['admin'],
-
-    // Online Store (storefront management)
-    'online-store':             ['admin'],
 
     // Multi-Store Manager (manage multiple businesses)
     'businesses':               ['admin'],
@@ -140,25 +147,11 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
     'audit-trail':              ['admin'],
     'settings':                 ['admin'],
 
-    // Logistics
-    'logistics':                ['admin', 'staff', 'inventory_manager'],
-
     // Comms & support
     'notifications':            ['admin', 'staff', 'inventory_manager', 'customer', 'supplier'],
     'support':                  ['admin'],
     'whatsapp/conversations':   [], // superadmin-only (wildcard)
     'whatsapp/settings':        [], // superadmin-only (wildcard)
-
-    // Marketplace / discovery
-    'directory':                ['admin', 'staff', 'inventory_manager', 'customer'],
-
-    // Customer self-service
-    'customer/dashboard':       ['customer'],
-    'customer/orders':          ['customer'],
-
-    // Supplier self-service
-    'supplier/dashboard':       ['supplier'],
-    'supplier/orders':          ['supplier'],
 
     // Universal
     'profile':                  ['admin', 'staff', 'inventory_manager', 'customer', 'supplier'],

@@ -22,7 +22,6 @@ const settings = {
     email: '',
     website: '',
     tpin: '1002003004',
-    isOnlineStoreEnabled: false,
     taxRate: 16,
     currency: { code: 'ZMW', symbol: 'K', position: 'before' },
     receiptMessage: 'Thank you for shopping with us.',

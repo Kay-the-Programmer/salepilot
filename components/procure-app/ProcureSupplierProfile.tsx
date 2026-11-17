@@ -79,9 +79,7 @@ export const ProcureSupplierProfile: React.FC<ProcureSupplierProfileProps> = ({
                     <div className="proc-prof-logo"><Avatar name={s.name} size={128} square /></div>
                     <div style={{ minWidth: 0 }}>
                         <div className="proc-prof-badges">
-                            {s.linkedStoreId
-                                ? <span className="crm-badge crm-badge--platinum"><Icon name="verified" size={14} fill={1} /> SalePilot Partner</span>
-                                : <span className="crm-badge crm-badge--gold"><Icon name="handshake" size={14} fill={1} /> Supplier</span>}
+                            <span className="crm-badge crm-badge--gold"><Icon name="handshake" size={14} fill={1} /> Supplier</span>
                             {s.paymentTerms && <span className="crm-badge crm-badge--silver">{s.paymentTerms}</span>}
                         </div>
                         <h2 className="proc-prof-name">{s.name}</h2>

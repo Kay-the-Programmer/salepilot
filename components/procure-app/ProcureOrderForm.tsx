@@ -50,7 +50,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
         return {
             supplierId: prefill?.id || '', supplierName: prefill?.name || '', status: 'draft',
             items: initialItems ? initialItems.map(i => ({ ...i })) : [], notes: '', subtotal: 0, shippingCost: 0, tax: 0, total: 0,
-            expectedAt: undefined, isMarketplaceOrder: !!prefill?.linkedStoreId,
+            expectedAt: undefined,
         };
     });
     const [supplierOpen, setSupplierOpen] = useState(false);
@@ -98,7 +98,6 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
             ...prev,
             supplierId: s?.id || '',
             supplierName: s?.name || '',
-            isMarketplaceOrder: !!s?.linkedStoreId,
         }));
         setSupplierOpen(false);
     };

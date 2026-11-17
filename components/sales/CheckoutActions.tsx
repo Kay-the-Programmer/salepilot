@@ -16,6 +16,20 @@ interface CheckoutActionsProps {
     onProcessPayment: () => void;
     onHoldSale: () => void;
     clearCart: () => void;
+    /**
+     * Hospitality only. Puts the order on an open bill instead of taking money
+     * now — the move a restaurant makes constantly, where Hold Sale (one
+     * device, one stack, no name) cannot help: the waiter who took the order is
+     * not the only person who will add to the bill or settle it.
+     *
+     * Undefined for a shop, which renders no such button.
+     */
+    onSaveToBill?: () => void;
+    /** What this venue calls a bill: "Table", "Tab" or "Order". */
+    billNoun?: string;
+    /** The bill this cart came off, if any — so Save reads as "add to it". */
+    activeBillLabel?: string | null;
+    savingToBill?: boolean;
 }
 
 /**
@@ -36,6 +50,10 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     onProcessPayment,
     onHoldSale,
     clearCart,
+    onSaveToBill,
+    billNoun = 'Table',
+    activeBillLabel,
+    savingToBill,
 }) => {
     return (
         <div className="cart__foot">
@@ -86,16 +104,40 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                 <span className="cart__charge-total tnum">{formatCurrency(total, storeSettings)}</span>
             </button>
 
+            {/* A venue's commonest action after taking an order is NOT taking
+                money — it is walking away with the bill left open. So it gets a
+                full-width button of its own above the shop's hold/clear pair,
+                rather than being squeezed in beside them. */}
+            {onSaveToBill && (
+                <button
+                    type="button"
+                    className="cart__savebill"
+                    disabled={!!savingToBill}
+                    onClick={onSaveToBill}
+                >
+                    <PosIcon name="table_restaurant" size={20} />
+                    {savingToBill
+                        ? 'Saving…'
+                        : activeBillLabel
+                            ? `Add to ${activeBillLabel}`
+                            : `Save to ${billNoun.toLowerCase()}`}
+                </button>
+            )}
+
             {/* Secondary: hold + clear */}
             <div className="cart__secondary">
-                <button
-                    id="pos-hold-btn"
-                    type="button"
-                    className="v2-btn v2-btn--secondary"
-                    onClick={onHoldSale}
-                >
-                    <PosIcon name="pause" size={18} /> Hold Sale
-                </button>
+                {/* Hold Sale is a shop's tool — one device, one stack, no name.
+                    A venue uses open bills instead, so it isn't offered both. */}
+                {!onSaveToBill && (
+                    <button
+                        id="pos-hold-btn"
+                        type="button"
+                        className="v2-btn v2-btn--secondary"
+                        onClick={onHoldSale}
+                    >
+                        <PosIcon name="pause" size={18} /> Hold Sale
+                    </button>
+                )}
                 <button
                     type="button"
                     className="v2-btn v2-btn--ghost"

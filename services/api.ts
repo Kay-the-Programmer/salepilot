@@ -418,12 +418,7 @@ const ENDPOINT_TO_STORE: Record<string, string> = {
   '/users': 'users',
   '/returns': 'returns',
   '/audit': 'auditLogs',
-  '/settings': 'settings',
-  '/shop/stores': 'marketStores',
-  '/shop/global-products': 'marketProducts',
-  '/marketplace/requests/recent': 'marketRequests',
-  '/logistics/couriers': 'couriers',
-  '/logistics/shipments': 'shipments'
+  '/settings': 'settings'
 };
 
 export const api = {
@@ -564,7 +559,16 @@ export const api = {
     }
   },
 
-  async patch<T>(endpoint: string, body?: any): Promise<T | (T & { offline: true })> {
+  /**
+   * `skipQueue` refuses to defer the call when offline, as on `post`. Use it
+   * for anything shared between devices: a queued edit to a bill another till
+   * has since settled would be replayed against a target that has moved on.
+   */
+  async patch<T>(
+    endpoint: string,
+    body?: any,
+    opts: { skipQueue?: boolean } = {},
+  ): Promise<T | (T & { offline: true })> {
     const options: RequestInit = {
       method: 'PATCH',
       body: body instanceof FormData ? body : JSON.stringify(body ?? {}),
@@ -573,6 +577,7 @@ export const api = {
     const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
+      if (opts.skipQueue) throw new NetworkError();
       const optimistic = await applyOptimisticUpdate(endpoint, 'PATCH', body);
       return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
     }
@@ -581,6 +586,7 @@ export const api = {
       return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
+        if (opts.skipQueue) throw err;
         const optimistic = await applyOptimisticUpdate(endpoint, 'PATCH', body);
         return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
       }

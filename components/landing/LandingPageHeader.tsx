@@ -21,7 +21,6 @@ const LandingPageHeader: React.FC<LandingPageHeaderProps> = ({ onLogin, onStartF
               <a href="#how-it-works" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">How It Works</a>
               <a href="#pricing" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">Pricing</a>
               <a href="#retailers" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">For Retailers</a>
-              <a href="#wholesalers" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">For Wholesalers</a>
               <a href="#support" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">Support</a>
             </nav> */}
           </div>

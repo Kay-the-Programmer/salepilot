@@ -4,6 +4,7 @@ import { login, register, verifyRegistration } from '../services/authService';
 import { User } from '../types';
 import Logo from '../assets/salepilot.png';
 import { StepArt, StepArtKey } from '../components/registration/StepArt';
+import { isHospitalityType } from '../utils/hospitality';
 import { useNavigate } from 'react-router-dom';
 import {
     HiOutlineBuildingStorefront,
@@ -28,11 +29,19 @@ interface StoreRegistrationPageProps {
 const MIN_LEN = 2;
 
 
+/**
+ * What kind of business this is. More than a label: picking Restaurant, Cafe or
+ * Bar puts the store in hospitality mode (see utils/hospitality.ts), which
+ * swaps the product-grid till for a menu and open bills. The list is split so a
+ * bar isn't forced to call itself a cafe.
+ */
 export const BUSINESS_TYPES = [
     { id: 'retail_grocery', label: 'Grocery & Supermarket', icon: '🛒' },
     { id: 'retail_fashion', label: 'Fashion & Apparel', icon: '👗' },
     { id: 'retail_electronics', label: 'Electronics & Gadgets', icon: '📱' },
-    { id: 'food_beverage', label: 'Restaurant / Cafe', icon: '☕' },
+    { id: 'food_beverage', label: 'Restaurant', icon: '🍽️' },
+    { id: 'cafe', label: 'Cafe / Coffee Shop', icon: '☕' },
+    { id: 'bar_pub', label: 'Bar / Pub', icon: '🍺' },
     { id: 'pharmacy', label: 'Pharmacy & Health', icon: '💊' },
     { id: 'hardware', label: 'Hardware & Auto', icon: '🔧' },
     { id: 'other', label: 'Other', icon: '✨' },
@@ -78,14 +87,6 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-    // Selling model: supplier registration (?type=supplier, the marketplace
-    // "Sell on SalePilot" path) pre-selects wholesale — the store is listed on
-    // the B2B marketplace from day one. Changeable later in the Online Store app.
-    const [isWholesale, setIsWholesale] = useState<boolean>(() => {
-        const t = new URLSearchParams(window.location.search).get('type');
-        return t === 'supplier' || t === 'wholesale';
-    });
-
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingName, setIsCheckingName] = useState(false);
     const [nameError, setNameError] = useState<string | null>(null);
@@ -178,7 +179,7 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
         setIsLoading(true);
         setError(null);
         try {
-            const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address, isWholesale);
+            const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address);
             showToast(`Store "${store.name}" created successfully! 🎉`, 'success');
             onCompleted(user);
         } catch (err: any) {
@@ -460,35 +461,7 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                     {/* Business Type Step */}
                     {currentKey === 'type' && (
                         <div className="space-y-4">
-                            <div>
-                                <p className="text-sm font-medium text-brand-text mb-2">Who do you sell to?</p>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {([
-                                        { v: false, title: 'Retail', body: 'I sell to customers' },
-                                        { v: true, title: 'Wholesale supplier', body: 'I supply retailers — list me on the marketplace' },
-                                    ] as const).map(opt => (
-                                        <button
-                                            key={String(opt.v)}
-                                            type="button"
-                                            onClick={() => setIsWholesale(opt.v)}
-                                            aria-pressed={isWholesale === opt.v}
-                                            className={`p-3 rounded-lg border-2 text-left transition-all ${isWholesale === opt.v
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-brand-border'
-                                                }`}
-                                        >
-                                            <div className={`text-sm font-semibold ${isWholesale === opt.v ? 'text-primary' : 'text-brand-text'}`}>{opt.title}</div>
-                                            <div className="text-xs text-brand-text-muted mt-0.5">{opt.body}</div>
-                                        </button>
-                                    ))}
-                                </div>
-                                {isWholesale && (
-                                    <p className="mt-2 text-xs text-brand-text-muted">
-                                        Your catalog will be listed on the SalePilot wholesale marketplace so retailers can order from you. You can turn this off anytime in the Online Store app.
-                                    </p>
-                                )}
-                            </div>
-                            <p className="text-sm text-brand-text-muted">Select all categories that describe your {isWholesale ? 'products' : 'store'}.</p>
+                            <p className="text-sm text-brand-text-muted">Select all categories that describe your store.</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {BUSINESS_TYPES.map((type) => {
                                     const active = selectedTypes.includes(type.id);
@@ -512,6 +485,14 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                             </div>
                             {selectedTypes.length === 0 && (
                                 <p className="text-xs text-warning">Please select at least one category.</p>
+                            )}
+                            {/* The choice changes the till itself, not just the
+                                seeded categories, so say so before they commit. */}
+                            {selectedTypes.some(isHospitalityType) && (
+                                <p className="text-xs text-brand-text-muted bg-surface-variant border border-brand-border rounded-lg p-3">
+                                    Your till will sell from a menu, with open bills you can add to and settle later.
+                                    You can change this later in Settings.
+                                </p>
                             )}
                         </div>
                     )}
@@ -545,10 +526,6 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                                     <div>
                                         <span className="text-brand-text-muted">Store: </span>
                                         <span className="font-medium text-brand-text">{name || '—'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-brand-text-muted">Selling model: </span>
-                                        <span className="font-medium text-brand-text">{isWholesale ? 'Wholesale supplier (listed on the marketplace)' : 'Retail'}</span>
                                     </div>
                                     <div>
                                         <span className="text-brand-text-muted">Type: </span>

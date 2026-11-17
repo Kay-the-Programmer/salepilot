@@ -59,11 +59,11 @@ const MOODS: { v: number; emoji: string; label: string }[] = [
     { v: 5, emoji: '😍', label: 'Love it' },
 ];
 
-// Routes where the floating trigger should stay hidden: unauthenticated flows,
-// the customer storefront, and the full-screen POS register.
+// Routes where the floating trigger should stay hidden: unauthenticated flows
+// and the legal pages.
 const HIDDEN_PREFIXES = [
     '/login', '/register', '/forgot', '/reset', '/verify', '/store-setup',
-    '/shop', '/track', '/privacy', '/terms',
+    '/privacy', '/terms',
 ];
 
 const STEP_ORDER: Step[] = ['mood', 'type', 'message'];

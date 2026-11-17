@@ -27,12 +27,13 @@ keep working.
 
 | Route | App | Notes |
 |-------|-----|-------|
-| `/pos`, `/pos/history`, `/pos/dashboard` | POS Terminal | `/pos/history` = Sales History & Refunds (returns live here). `/pos/inventory` redirects to `/inv/items`. |
+| `/pos`, `/pos/history`, `/pos/dashboard` | POS Terminal | `/pos/history` = Sales History & Refunds (returns live here). `/pos/inventory` redirects to `/inv/items`. In hospitality mode the same screen gains menu-section tabs, menu tiles, an "Open bills" view (`posView === 'tabs'`) and "Save to bill" in place of Hold. |
 | `/hustle` | — | **Withheld from launch** as a separate app (`HUSTLE_APP_ENABLED`). The same keypad is the POS's "Quick" mode, reachable from the mode toggle while selling, so this redirects to `/pos`. |
 | `/dash`, `/dash/sales`, `/dash/products` | Business Dashboard | |
 | `/reports` | — | **Retired.** Was a second analytics surface over the same `/reports/dashboard` data as the Business Dashboard, with no launcher tile. Permanent redirect to `/dash`. |
 | `/orders` | Orders | Online order management (Velocity-styled). |
 | `/crm`, `/crm/customers`, `/crm/loyalty`, `/crm/insights` | CRM | |
+| `/menu`, `/menu/import` | Menu | **Hospitality only.** Sections and the dishes/drinks in them, plus a spreadsheet upload. Gated twice — on the `menu` page permission (admin / inventory_manager) and on `storeSettings.businessMode === 'hospitality'` — so a shop that types the URL is redirected to its own default app. Sections *are* categories and items *are* products; this is a restaurant-shaped view of the one catalog, not a second one. |
 | `/inv`, `/inv/items`, `/inv/stock-takes`, `/inv/alerts` | Inventory Manager | Stock takes are a section of this app. |
 | `/procure`, `/procure/suppliers`, `/procure/orders`, `/procure/lists` | Purchase Orders | Suppliers + PO manager + Order Lists (merged former `/po` app). |
 | `/po` | → redirects to `/procure/lists` | Legacy Purchase Orders app, folded into the hub. |

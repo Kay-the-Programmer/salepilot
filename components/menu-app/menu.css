@@ -1,0 +1,301 @@
+/*
+ * Menu app (restaurants, bars, cafes).
+ *
+ * Follows DESIGN.md: flat white surfaces with a 1px border rather than shadows,
+ * navy for structure, orange reserved for conversion (which this screen has
+ * none of — nothing here takes money). Rows are 48px tall because this is used
+ * on a tablet with a thumb, not a mouse.
+ */
+
+.menu-app {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+}
+
+.menu-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* --- buttons --- */
+
+.menu-btn,
+.menu-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 0.5rem;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background-color .15s, border-color .15s, opacity .15s;
+}
+
+.menu-btn {
+    background: var(--c-primary);
+    color: #fff;
+    border: 1px solid transparent;
+}
+
+.menu-btn:hover:not(:disabled) { filter: brightness(1.1); }
+
+.menu-btn-ghost {
+    background: transparent;
+    color: var(--c-primary);
+    border: 1px solid var(--c-outline-variant);
+}
+
+.menu-btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--c-primary) 6%, transparent); }
+
+.menu-btn:disabled,
+.menu-btn-ghost:disabled { opacity: .5; cursor: not-allowed; }
+
+/* --- cards --- */
+
+.menu-card,
+.menu-section {
+    background: var(--c-surface-lowest);
+    border: 1px solid var(--c-outline-variant);
+    border-radius: 0.5rem;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.menu-add-section {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.menu-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--c-on-surface-variant);
+    background: var(--c-surface-lowest);
+    border: 1px dashed var(--c-outline-variant);
+    border-radius: 0.5rem;
+}
+
+/* --- sections --- */
+
+/* A hidden section is dimmed rather than removed: the owner needs to see that
+   it exists and why the till isn't showing it. */
+.menu-section.is-hidden { opacity: .62; }
+
+.menu-section-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--c-outline-variant);
+}
+
+.menu-section-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--c-on-bg);
+    min-height: 40px;
+}
+
+.menu-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 0.75rem;
+    background: var(--c-surface-high);
+    color: var(--c-on-surface-variant);
+}
+
+.menu-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-on-surface-variant);
+    min-width: 24px;
+    text-align: right;
+}
+
+.menu-section-actions { display: flex; gap: 2px; }
+
+.menu-section-actions button {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: var(--c-on-surface-variant);
+}
+
+.menu-section-actions button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--c-primary) 8%, transparent);
+    color: var(--c-primary);
+}
+
+.menu-section-actions button.is-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--c-error) 10%, transparent);
+    color: var(--c-error);
+}
+
+.menu-section-actions button:disabled { opacity: .35; cursor: not-allowed; }
+
+/* --- items --- */
+
+.menu-items { display: flex; flex-direction: column; }
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--c-outline-variant);
+}
+
+.menu-item:last-child { border-bottom: none; }
+
+/* The name and price are editable in place. They look like text until focused,
+   because a menu screen full of input boxes reads as a form to fill in rather
+   than a menu to glance at. */
+.menu-item-name,
+.menu-item-price {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    padding: 8px 10px;
+    font-size: 15px;
+    color: var(--c-on-bg);
+    min-height: 40px;
+}
+
+.menu-item-name { flex: 1; min-width: 0; font-weight: 600; }
+
+.menu-item-price { width: 104px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.menu-item-name:hover,
+.menu-item-price:hover { border-color: var(--c-outline-variant); }
+
+.menu-item-name:focus,
+.menu-item-price:focus {
+    outline: none;
+    background: var(--c-surface-lowest);
+    border-color: var(--c-primary);
+}
+
+.menu-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 0.75rem;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    background: var(--c-surface-high);
+    color: var(--c-on-surface-variant);
+}
+
+.menu-track.is-on {
+    background: color-mix(in srgb, var(--c-primary) 12%, transparent);
+    color: var(--c-primary);
+}
+
+.menu-item-remove {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    color: var(--c-on-surface-variant);
+    flex-shrink: 0;
+}
+
+.menu-item-remove:hover:not(:disabled) { background: color-mix(in srgb, var(--c-error) 10%, transparent); color: var(--c-error); }
+
+.menu-item-add {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-top: 12px;
+}
+
+.menu-item-add input[type="number"] { width: 112px; flex: none; }
+
+/* --- upload --- */
+
+.menu-upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.menu-upload-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+.menu-preview {
+    margin-top: 12px;
+    max-height: 340px;
+    overflow: auto;
+    border: 1px solid var(--c-outline-variant);
+    border-radius: 0.5rem;
+}
+
+.menu-preview table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+.menu-preview th,
+.menu-preview td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--c-outline-variant);
+}
+
+.menu-preview th {
+    position: sticky;
+    top: 0;
+    background: var(--c-surface-low);
+    font-weight: 700;
+    color: var(--c-on-surface-variant);
+}
+
+.menu-preview .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.menu-rejected {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--c-error) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-error) 24%, transparent);
+}
+
+.menu-rejected ul { margin-top: 6px; font-size: 13px; }
+
+.menu-rejected li { padding: 2px 0; }
+
+/* --- phone --- */
+
+@media (max-width: 600px) {
+    .menu-app { padding: 16px 16px 64px; }
+
+    /* Stacked, because five controls across a 375px screen means none of them
+       is tappable. */
+    .menu-item { flex-wrap: wrap; padding: 10px 0; }
+
+    .menu-item-name { flex: 1 1 100%; }
+
+    .menu-item-add { flex-wrap: wrap; }
+
+    .menu-item-add input:not([type="number"]) { flex: 1 1 100%; }
+
+    .menu-add-section { flex-wrap: wrap; }
+}

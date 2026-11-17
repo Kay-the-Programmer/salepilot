@@ -14,7 +14,6 @@ export const MODULES = {
     AI_ASSISTANT: 'ai_assistant',
     QUICK_IMPORT: 'quick_import',
     ADVANCED_REPORTS: 'advanced_reports',
-    PUBLIC_TRACKING: 'public_tracking',
     UNLIMITED_PRODUCTS: 'unlimited_products',
     PAYMENT_GATEWAY: 'payment_gateway',
 } as const;
@@ -35,15 +34,14 @@ export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !==
 /**
  * Apps withheld from the launch. Their tiles are already commented out of
  * `standaloneApps.ts`, but the router's catch-all sends any unmatched path to
- * `Dashboard`, which dispatches on the path — so without these flags `/marketing`
- * and `/fleet` still opened the full apps for anyone who typed the URL. That is
- * a half-launch: unadvertised, unsupported and untested surface area.
+ * `Dashboard`, which dispatches on the path — so without this flag `/marketing`
+ * still opened the full app for anyone who typed the URL. That is a half-launch:
+ * unadvertised, unsupported and untested surface area.
  *
- * Set `VITE_MARKETING_ENABLED=true` / `VITE_LOGISTICS_ENABLED=true` to bring
- * either back (tile line in `standaloneApps.ts` must be uncommented too).
+ * Set `VITE_MARKETING_ENABLED=true` to bring it back (tile line in
+ * `standaloneApps.ts` must be uncommented too).
  */
 export const MARKETING_ENABLED = (import.meta.env?.VITE_MARKETING_ENABLED ?? 'false') !== 'false';
-export const LOGISTICS_ENABLED = (import.meta.env?.VITE_LOGISTICS_ENABLED ?? 'false') !== 'false';
 
 /* Hustle POS is gone, not flagged off. It was a second till — its own keypad,
    cart and printing path — and the "Quick mode" it was folded into has since

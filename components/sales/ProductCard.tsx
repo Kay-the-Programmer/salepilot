@@ -18,17 +18,56 @@ interface ProductCardProps {
     updateQuantity?: (productId: string, quantity: number) => void;
     onLowStockAlert: (product: Product) => void;
     variant: 'grid' | 'list' | 'mobile';
+    /**
+     * Render as a MENU tile: the dish name large, the price beside it, and no
+     * picture.
+     *
+     * A menu has no photographs. Left as the ordinary product tile, a
+     * restaurant's grid is a hundred identical grey placeholder squares with
+     * the one thing that matters — the name — shrunk into a caption underneath.
+     */
+    menuStyle?: boolean;
 }
 
 // Shared helpers
 const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
 
+/**
+ * Does this item count stock?
+ *
+ * A made-to-order menu item sits at zero forever, and every card here treats
+ * zero as sold out — so without this a restaurant's whole menu would render
+ * greyed out and unclickable. Nothing to count also means nothing to warn
+ * about, so the low-stock bell is withheld too.
+ */
+const tracksStock = (product: Product): boolean => product.trackStock !== false;
+
 // ─── Grid Variant (salepilot_web_v2 .prodcard) ─────────────────────────────────
-const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart, onLowStockAlert }) => {
+const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart, onLowStockAlert, menuStyle }) => {
     const numericStock = parseFloat(String((product as any).stock)) || 0;
-    const isSoldOut = numericStock === 0;
-    const isLowStock = numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
+    const counted = tracksStock(product);
+    const isSoldOut = counted && numericStock === 0;
+    const isLowStock = counted && numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
     const img = productImageUrl(product);
+
+    if (menuStyle) {
+        return (
+            <button
+                type="button"
+                onClick={() => !isSoldOut && addToCart(product)}
+                disabled={isSoldOut}
+                className={`menutile${cartItem ? ' menutile--incart' : ''}${isSoldOut ? ' menutile--soldout' : ''}`}
+            >
+                <span className="menutile__name">{product.name}</span>
+                <span className="menutile__foot">
+                    <span className="menutile__price tnum">{formatCurrency(product.price, storeSettings)}</span>
+                    {cartItem && <span className="menutile__qty">{cartItem.quantity}</span>}
+                    {isSoldOut && <span className="menutile__tag">Sold out</span>}
+                    {isLowStock && <span className="menutile__tag menutile__tag--low">{numericStock} left</span>}
+                </span>
+            </button>
+        );
+    }
 
     return (
         <button
@@ -76,8 +115,9 @@ const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
 const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart, updateQuantity, onLowStockAlert }) => {
     const img = productImageUrl(product);
     const numericStock = parseFloat(String((product as any).stock)) || 0;
-    const isSoldOut = numericStock === 0;
-    const isLowStock = numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
+    const counted = tracksStock(product);
+    const isSoldOut = counted && numericStock === 0;
+    const isLowStock = counted && numericStock > 0 && numericStock <= (product.reorderPoint || storeSettings.lowStockThreshold);
     const step = getStepFor(product.unitOfMeasure);
 
     return (
@@ -125,8 +165,10 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
                                 <BellAlertIcon className="w-2 h-2" />
                             </button>
                         </>
-                    ) : (
+                    ) : counted ? (
                         <span className="text-[11px] text-slate-400 dark:text-slate-500">{numericStock} in stock</span>
+                    ) : (
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500">Made to order</span>
                     )}
                 </div>
             </div>
@@ -164,7 +206,7 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
 const MobileCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings, addToCart }) => {
     const img = productImageUrl(product);
     const numericStock = parseFloat(String((product as any).stock)) || 0;
-    const isSoldOut = numericStock === 0;
+    const isSoldOut = tracksStock(product) && numericStock === 0;
     const [isTapping, setIsTapping] = React.useState(false);
 
     const handleTap = () => {

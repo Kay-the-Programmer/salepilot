@@ -15,6 +15,7 @@
 import { User } from '../types';
 import { api, API_BASE_URL, cookieSessionWorks, getCsrfHeader } from './api';
 import { firebaseSignOut } from './firebase/auth';
+import { forgetBusinessMode } from '../utils/hospitality';
 
 const CURRENT_USER_KEY = 'salePilotUser';
 
@@ -138,6 +139,9 @@ export const loginWithGoogle = async (
  */
 export const logout = (): void => {
     localStorage.removeItem(CURRENT_USER_KEY);
+    // The remembered till style belongs to the shop that just signed out, not
+    // to whoever signs in next on this machine.
+    forgetBusinessMode();
     // The session cookie is httpOnly, so the client cannot delete it — only the
     // server can, and it has to be asked. Without this, "log out" would clear
     // the local copy while leaving a usable 30-day cookie in the browser.

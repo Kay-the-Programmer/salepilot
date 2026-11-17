@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
-import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
+import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return, OpenTab } from '../types';
 import { api } from '@/services/api';
 import { formatCurrency, isCashMethod as isCashTender, isMobileMoneyMethod, paymentMethodsOf } from '../utils/currency';
 import TourGuide, { hasSeenPosTour } from '../components/TourGuide';
@@ -38,6 +38,22 @@ import {
     reconnect,
 } from '../services/thermalPrinter';
 import { buildReceiptBytes } from '../utils/receiptEscPos';
+import { buildBillBytes } from '../utils/billEscPos';
+import { isHospitality, billNounFor } from '../utils/hospitality';
+import { can } from '../utils/rbac';
+import { sortSections } from '../components/menu-app/menuModel';
+import OpenTabsView from '../components/sales/OpenTabsView';
+import { Modal } from '../components/ui/Modal';
+import {
+    addToTab,
+    claimTab,
+    closeTab,
+    listTabs,
+    openTab,
+    releaseTab,
+    tabErrorMessage,
+    voidTab,
+} from '../services/tabs';
 import { useToast } from '../contexts/ToastContext';
 import { restoreAt } from '../utils/listRestore';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) is fetched only when the
@@ -68,6 +84,16 @@ const manualMobileMoneyReference = (typedId?: string): string => {
  * Comfortably more than fills a till screen, far short of a large catalog.
  */
 const POS_GRID_LIMIT = 100;
+
+/**
+ * The quantity ceiling for an item that does not count stock.
+ *
+ * Finite on purpose: the cart is persisted to localStorage, and JSON turns
+ * Infinity into null, which the clamp on reload would read as zero and use to
+ * empty the line. No till ever rings up nine thousand of anything, so this is a
+ * ceiling in name only.
+ */
+const UNCOUNTED_CAP = 9999;
 
 interface SalesPageProps {
     user: User;
@@ -109,7 +135,22 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const { showToast } = useToast();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory] = useState('All Items');
+    /**
+     * Which menu section the grid is showing. 'All Items' is everything.
+     *
+     * A restaurant till is navigated by section — Starters, Mains, Drinks —
+     * not by typing a dish name, so the setter drives a tab strip above the
+     * grid. A shop has no tabs and stays on 'All Items', exactly as before.
+     */
+    const [activeCategory, setActiveCategory] = useState('All Items');
+    /** Restaurant, bar or cafe: menu sections, open bills, bill before receipt. */
+    const hospitality = isHospitality(storeSettings);
+    /**
+     * What this venue calls a bill. A bar says "Tab", a restaurant "Table" —
+     * one word, and it is the difference between software that fits the room
+     * and software the staff have to translate in their heads.
+     */
+    const billNoun = useMemo(() => billNounFor(storeSettings?.businessTypes), [storeSettings]);
     const [discount, setDiscount] = useState<string>('0');
     const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
     // A held sale keeps everything about the customer, not just the items.
@@ -152,10 +193,76 @@ const SalesPage: React.FC<SalesPageProps> = ({
     }, [storeSettings, tourSeen]);
     // A sale the server refused for want of a manager, held so it can be sent
     // again with the approval rather than rung up a second time.
-    /** Send a sale and, if it lands, deal with the receipt and clear the till. */
+    /**
+     * Send a sale and, if it lands, deal with the receipt and clear the till.
+     *
+     * When the cart came off an open bill there are two extra steps, and their
+     * order is the whole safety of the thing:
+     *
+     *   claim → post the sale → close the bill
+     *
+     * The claim is taken BEFORE any money is recorded. Two waiters who both tap
+     * Pay on Table 4 would otherwise each post a correct-looking sale and the
+     * table would be charged twice with two valid receipts; the server hands
+     * the claim to one of them and refuses the other. It also means a till with
+     * no connection is stopped here, before the sale, rather than queueing a
+     * payment for a bill other devices can still add to.
+     */
     const submitSale = async (saleData: Sale, type?: string) => {
-        const newSale = await onProcessSale(saleData);
-        if (!newSale) return;
+        const settlingTab = activeTab;
+        if (settlingTab) {
+            try {
+                await claimTab(settlingTab.id);
+            } catch (err: any) {
+                showToast(
+                    tabErrorMessage(err, 'Could not take payment for this bill — try again in a moment.'),
+                    'error',
+                );
+                await refreshTabs();
+                return;
+            }
+        }
+
+        let newSale: Sale | null;
+        try {
+            newSale = await onProcessSale(saleData);
+        } catch (err) {
+            // Hand the bill back so it is not stranded mid-payment, then let
+            // the caller deal with the error (it may be a manager override).
+            if (settlingTab) await releaseTab(settlingTab.id).catch(() => { });
+            throw err;
+        }
+
+        if (!newSale) {
+            if (settlingTab) await releaseTab(settlingTab.id).catch(() => { });
+            return;
+        }
+
+        if (settlingTab) {
+            // The money is taken; the bill must not stay on the floor. Retried
+            // a couple of times because a blip here leaves a paid table looking
+            // unpaid, and the close is idempotent for the same sale.
+            let closed = false;
+            for (let attempt = 0; attempt < 3 && !closed; attempt++) {
+                try {
+                    await closeTab(settlingTab.id, newSale.transactionId);
+                    closed = true;
+                } catch {
+                    await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
+                }
+            }
+            if (!closed) {
+                // Named, with the sale, so it can be finished by hand rather
+                // than guessed at.
+                showToast(
+                    `Paid, but ${settlingTab.label} is still showing as open. Open it again and settle it against sale ${newSale.transactionId}.`,
+                    'error',
+                    { duration: 12000 },
+                );
+            }
+            refreshTabs();
+        }
+
         if (type === 'invoice') {
             showToast(`Invoice created for ${selectedCustomer?.name}`, 'success');
         } else {
@@ -265,11 +372,48 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [cartView, setCartView] = useState<'cart' | 'payment' | 'confirm'>('cart');
     // Mobile: cart aside opens as a full-screen sheet
     const [mobileCartOpen, setMobileCartOpen] = useState(false);
-    // POS top-level view + menu (Sell vs Sales History & Refunds)
-    const [posView, setPosView] = useState<'sell' | 'history'>(initialView || 'sell');
+    // POS top-level view + menu (Sell, Open bills, Sales History & Refunds)
+    const [posView, setPosView] = useState<'sell' | 'history' | 'tabs'>(initialView || 'sell');
     // Keep the view in sync when the route flips between /pos and /pos/history
     // (same component instance, different prop).
     useEffect(() => { setPosView(initialView || 'sell'); }, [initialView]);
+
+    /**
+     * Open bills.
+     *
+     * The bill a table is drinking against lives on the SERVER, not in this
+     * browser, which is the whole point: the waiter who opened Table 4 is not
+     * the only person who will add to it or take its money. Held sales (below)
+     * stay device-local and stay as they are — they are a different thing, for
+     * a shop whose customer has gone back for a forgotten item.
+     */
+    const [openTabs, setOpenTabs] = useState<OpenTab[]>([]);
+    const [tabsLoading, setTabsLoading] = useState(false);
+    const [tabsError, setTabsError] = useState<string | null>(null);
+    /** The bill this cart belongs to, if it came off one. */
+    const [activeTab, setActiveTab] = useState<{ id: string; label: string } | null>(null);
+    const [savingToTab, setSavingToTab] = useState(false);
+    const [billLabelPrompt, setBillLabelPrompt] = useState<string | null>(null);
+
+    const refreshTabs = useCallback(async () => {
+        if (!hospitality) return;
+        setTabsLoading(true);
+        try {
+            setOpenTabs(await listTabs('live'));
+            setTabsError(null);
+        } catch (err: any) {
+            // Bills are deliberately online-only (services/tabs.ts explains
+            // why), so say so plainly instead of showing an empty floor.
+            setTabsError(tabErrorMessage(err, 'Could not load the open bills.'));
+        } finally {
+            setTabsLoading(false);
+        }
+    }, [hospitality]);
+
+    // Loaded on arrival and whenever the bills view is opened, so the count on
+    // the menu button is honest.
+    useEffect(() => { refreshTabs(); }, [refreshTabs]);
+    useEffect(() => { if (posView === 'tabs') refreshTabs(); }, [posView, refreshTabs]);
 
     /**
      * Sales rung up with no open till belong to no shift, so they never reach
@@ -426,9 +570,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
         const existingItem = cart.find(item => item.productId === product.id);
         const step = getStepFor(product.unitOfMeasure);
         const stockInCart = existingItem ? existingItem.quantity : 0;
-        const availableStock = typeof (product as any).stock === 'number'
+        const realStock = typeof (product as any).stock === 'number'
             ? (product as any).stock
             : (parseFloat(String((product as any).stock)) || 0);
+        // A made-to-order item has no stock to run out of. The kitchen keeps
+        // cooking as long as there are ingredients, and nobody counts steaks
+        // between tables — so treating it as a counted good would mean the till
+        // refusing to sell food that is plainly available.
+        //
+        // The cap is a large finite number rather than Infinity because the
+        // cart is written to localStorage: JSON turns Infinity into null, and
+        // the clamp on reload would then read it as zero and silently empty the
+        // line. `stock` keeps the product's real figure either way.
+        const unlimited = product.trackStock === false;
+        const availableStock = unlimited ? UNCOUNTED_CAP : realStock;
 
         if (stockInCart + step <= availableStock + 1e-9) {
             if (existingItem) {
@@ -449,6 +604,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         price: product.price,
                         quantity: step,
                         stock: availableStock,
+                        // Carried on the line so the clamp survives a reload:
+                        // the cart is restored from localStorage without the
+                        // product beside it.
+                        trackStock: !unlimited,
                         unitOfMeasure: product.unitOfMeasure,
                         costPrice: product.costPrice,
                         taxClass: product.taxClass,
@@ -491,7 +650,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
         const itemToUpdate = cart.find(item => item.productId === productId);
         if (!itemToUpdate) return;
 
-        const clamped = Math.max(0, Math.min(itemToUpdate.stock, roundQty(newQuantity)));
+        // A made-to-order line has no ceiling to hit.
+        const ceiling = itemToUpdate.trackStock === false ? UNCOUNTED_CAP : itemToUpdate.stock;
+        const clamped = Math.max(0, Math.min(ceiling, roundQty(newQuantity)));
 
         // Counting a line down to zero is a removal, so it goes through the same
         // path — and gets the same Undo.
@@ -499,7 +660,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             removeFromCart(productId);
             return;
         }
-        if (clamped > itemToUpdate.stock + 1e-9) {
+        if (clamped > ceiling + 1e-9) {
             showToast(`Cannot exceed available stock of ${itemToUpdate.stock}`, 'error');
             return;
         }
@@ -519,7 +680,106 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setCashReceived('');
         setMobileMoneyNumber('');
         setMobileMoneyTxnId('');
+        setActiveTab(null);
     }, []);
+
+    // --- Open bills ------------------------------------------------------
+
+    /**
+     * Put what's in the cart onto a bill and clear the till.
+     *
+     * This is the move a restaurant makes constantly: the order is taken, it
+     * goes on the table's bill, and the waiter walks away to the next table.
+     * Adding to the bill the cart came from needs no name; a fresh bill asks
+     * for one.
+     */
+    const saveCartToBill = async (label?: string) => {
+        if (cart.length === 0) {
+            showToast('Nothing to put on a bill yet.', 'warning');
+            return;
+        }
+        const lines = cart.map(i => ({ productId: i.productId, quantity: i.quantity }));
+        setSavingToTab(true);
+        try {
+            const tab = activeTab
+                ? await addToTab(activeTab.id, lines)
+                : await openTab({ label: (label || '').trim(), items: lines });
+            setBillLabelPrompt(null);
+            resetSale();
+            await refreshTabs();
+            showToast(`Saved to ${tab.label}.`, 'success');
+        } catch (err: any) {
+            showToast(tabErrorMessage(err, 'Could not save to the bill.'), 'error');
+        } finally {
+            setSavingToTab(false);
+        }
+    };
+
+    /**
+     * Bring a bill back to the till to add to it or settle it.
+     *
+     * Prices come off the BILL, not the catalog: the line was frozen when it
+     * was ordered, so a menu reprice since then doesn't change what this table
+     * is charged. Only the stock figure is read fresh, since that is the one
+     * thing that genuinely moved.
+     */
+    const recallBill = (tab: OpenTab) => {
+        if (cart.length > 0) {
+            showToast('Finish or clear the current sale first.', 'warning');
+            return;
+        }
+        if (tab.status !== 'open') {
+            showToast('Another till is taking payment for this bill.', 'warning');
+            return;
+        }
+        setCart(tab.items.map(line => {
+            const product = products.find(p => p.id === line.productId);
+            const tracks = line.trackStock !== false;
+            return {
+                productId: line.productId || '',
+                name: line.name,
+                sku: line.sku || product?.sku || '',
+                price: line.price,
+                quantity: line.quantity,
+                stock: tracks ? (product?.stock ?? line.quantity) : UNCOUNTED_CAP,
+                trackStock: tracks,
+                unitOfMeasure: (line.unitOfMeasure as 'unit' | 'kg') || product?.unitOfMeasure,
+                costPrice: line.costPrice ?? product?.costPrice,
+                taxClass: (line.taxClass as CartItem['taxClass']) ?? product?.taxClass,
+            } as CartItem;
+        }));
+        setActiveTab({ id: tab.id, label: tab.label });
+        setPosView('sell');
+        setCartView('cart');
+        showToast(`${tab.label} is on the till.`, 'success');
+    };
+
+    /**
+     * Print the bill — what is owed, before any money changes hands.
+     *
+     * A restaurant's two-step: the table asks for the bill, reads it, then
+     * pays. Printing the paid receipt at that point would be a receipt for a
+     * payment that hasn't happened.
+     */
+    const printBill = async (tab: OpenTab) => {
+        try {
+            await printBytes(buildBillBytes(tab, storeSettings, { paperWidth: getPaperWidth() }));
+            showToast(`Bill printed for ${tab.label}.`, 'success');
+        } catch (err: any) {
+            showToast(err?.message || 'Could not print the bill.', 'error');
+        }
+    };
+
+    const voidBill = async (tab: OpenTab, reason: string) => {
+        try {
+            await voidTab(tab.id, reason);
+            if (activeTab?.id === tab.id) setActiveTab(null);
+            await refreshTabs();
+            showToast(`${tab.label} written off.`, 'info');
+        } catch (err: any) {
+            showToast(tabErrorMessage(err, 'Could not write that bill off.'), 'error');
+        }
+    };
 
     /**
      * Keep the cart and held sales on this device, per shop, so a refresh, a
@@ -578,14 +838,44 @@ const SalesPage: React.FC<SalesPageProps> = ({
         showToast(h.customer ? `${h.customer.name}'s sale is back` : `Held sale #${index + 1} recalled`, 'success');
     };
 
+    /**
+     * The menu sections shown as tabs, in the order the owner arranged them.
+     *
+     * Only sections that actually have something sellable in them: a tab that
+     * opens onto an empty grid is a dead end, and a menu accumulates sections
+     * for things that are off today.
+     */
+    const menuSections = useMemo(() => {
+        if (!hospitality) return [];
+        const sellable = new Set(
+            products
+                .filter(p => p.status === 'active' && Number(p.price) > 0 && p.categoryId)
+                .map(p => p.categoryId as string),
+        );
+        return sortSections(categories).filter(c => !c.isHidden && sellable.has(c.id));
+    }, [hospitality, products, categories]);
+
+    // A section the owner hid, or deleted, must not keep filtering the grid.
+    useEffect(() => {
+        if (!hospitality || activeCategory === 'All Items') return;
+        if (!menuSections.some(c => c.name === activeCategory)) setActiveCategory('All Items');
+    }, [hospitality, activeCategory, menuSections]);
+
     const filteredProducts = useMemo(() => {
         const term = searchTerm.toLowerCase();
         const catObj = activeCategory !== 'All Items'
             ? categories.find(c => c.name === activeCategory)
             : undefined;
+        // Sections the owner has taken off the till (a seasonal menu, a kitchen
+        // that is closed). Searching still finds the item, so a regular's
+        // "the usual" can be rung up — it is just not browsable.
+        const hiddenSectionIds = hospitality
+            ? new Set(categories.filter(c => c.isHidden).map(c => c.id))
+            : null;
 
         return products.filter(p => {
             if (p.status !== 'active') return false;
+            if (hiddenSectionIds && !term && p.categoryId && hiddenSectionIds.has(p.categoryId)) return false;
             // Products recorded but not yet priced are catalogue entries, not
             // sellable goods — keep them off the register until they're priced,
             // so nothing can be rung up for nothing.
@@ -598,7 +888,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 (p.barcode && p.barcode.toLowerCase().includes(term))
             );
         });
-    }, [products, searchTerm, activeCategory, categories]);
+    }, [products, searchTerm, activeCategory, categories, hospitality]);
 
     /**
      * How many product cards the grid will actually build.
@@ -814,6 +1104,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 refundStatus: 'none' as const,
                 cashReceived: isCash ? cashGiven : undefined,
                 changeDue: isCash ? change : undefined,
+                // Which bill this came off, frozen onto the sale so the receipt
+                // and the sales history still say "Table 4" long after the bill
+                // itself has been settled and put away.
+                tabLabel: activeTab?.label,
             };
 
             saleData = {} as Partial<Sale>;
@@ -1008,6 +1302,24 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         Point of Sale
                                         {posView === 'sell' && <PosIcon name="check" size={18} className="sale__menu-check" />}
                                     </button>
+                                    {/* The bills on the floor — the screen a waiter
+                                        works from, so it sits directly under Point
+                                        of Sale rather than below the printer settings. */}
+                                    {hospitality && (
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            className={`sale__menu-item${posView === 'tabs' ? ' sale__menu-item--active' : ''}`}
+                                            onClick={() => { setPosView('tabs'); setMobileCartOpen(false); setPosMenuOpen(false); }}
+                                        >
+                                            <PosIcon name="table_restaurant" size={20} fill={posView === 'tabs' ? 1 : 0} />
+                                            Open {billNoun.many}
+                                            {openTabs.length > 0 && (
+                                                <span className="sale__menu-badge">{openTabs.length}</span>
+                                            )}
+                                            {posView === 'tabs' && <PosIcon name="check" size={18} className="sale__menu-check" />}
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         role="menuitem"
@@ -1162,10 +1474,53 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     userRole={user?.role}
                     onSaleChanged={onSaleChanged}
                 />
+            ) : posView === 'tabs' ? (
+                <OpenTabsView
+                    tabs={openTabs}
+                    loading={tabsLoading}
+                    error={tabsError}
+                    storeSettings={storeSettings}
+                    noun={billNoun}
+                    canVoid={can(user?.role, 'tabs:void')}
+                    onRefresh={refreshTabs}
+                    onOpenBill={recallBill}
+                    onPrintBill={printBill}
+                    onVoidBill={voidBill}
+                    onStartSelling={() => setPosView('sell')}
+                />
             ) : (
                 <div className="sale__body">
                     {/* ── Browse ── */}
                     <main className="sale__browse">
+                        {/* Menu sections, in the order the owner arranged them.
+                            A restaurant till is navigated by section, not by
+                            typing a dish name. A shop has no sections and this
+                            strip never renders. */}
+                        {hospitality && menuSections.length > 0 && (
+                            <div className="sale__sections" role="tablist" aria-label="Menu sections">
+                                <button
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={activeCategory === 'All Items'}
+                                    className={`sale__section${activeCategory === 'All Items' ? ' sale__section--active' : ''}`}
+                                    onClick={() => setActiveCategory('All Items')}
+                                >
+                                    All
+                                </button>
+                                {menuSections.map(c => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeCategory === c.name}
+                                        className={`sale__section${activeCategory === c.name ? ' sale__section--active' : ''}`}
+                                        onClick={() => setActiveCategory(c.name)}
+                                    >
+                                        {c.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         <div className="sale__grid" id="pos-product-list" role="region" aria-label="Product catalog">
                             {isLoading ? (
                                 Array.from({ length: 10 }).map((_, i) => (
@@ -1213,6 +1568,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 setShowLowStockAlert(true);
                                             }}
                                             variant="grid"
+                                            menuStyle={hospitality}
                                         />
                                     );
                                 })
@@ -1228,6 +1584,33 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                     {/* ── Cart / Payment (progressive disclosure) ── */}
                     <aside id="pos-cart" className={`cart${mobileCartOpen ? ' cart--open' : ''}`} aria-label="Current sale">
+                        {/* Which bill is on the till. Stated at the top of the
+                            cart because every button below it — Charge included
+                            — now applies to this table, and a cashier must
+                            never have to remember that. */}
+                        {activeTab && (
+                            <div className="cart__billbar">
+                                <PosIcon name="table_restaurant" size={18} />
+                                <span className="cart__billbar-label">{activeTab.label}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const tab = openTabs.find(t => t.id === activeTab.id);
+                                        if (tab) printBill(tab);
+                                        else showToast('Reload the bills, then print.', 'warning');
+                                    }}
+                                >
+                                    <PosIcon name="print" size={18} /> Bill
+                                </button>
+                                <button
+                                    type="button"
+                                    title="Leave this bill open and clear the till"
+                                    onClick={() => { resetSale(); refreshTabs(); }}
+                                >
+                                    <PosIcon name="close" size={18} />
+                                </button>
+                            </div>
+                        )}
                         {cartView === 'confirm' ? (
                             <ConfirmPaymentPanel
                                 storeSettings={storeSettings}
@@ -1403,6 +1786,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         onProcessPayment={() => setCartView('payment')}
                                         onHoldSale={handleHoldSale}
                                         clearCart={clearCart}
+                                        onSaveToBill={hospitality
+                                            ? () => {
+                                                // Adding to the bill the cart came
+                                                // from needs no name; a fresh one
+                                                // has to be told which table.
+                                                if (activeTab) saveCartToBill();
+                                                else setBillLabelPrompt('');
+                                            }
+                                            : undefined}
+                                        billNoun={billNoun.one}
+                                        activeBillLabel={activeTab?.label}
+                                        savingToBill={savingToTab}
                                     />
                                 )}
                             </>
@@ -1471,6 +1866,54 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 startOfDay={tillStartOfDay}
                 onOpened={() => { tillJustOpenedRef.current = true; setTillOpen(true); }}
             />
+
+            {/* Naming a new bill. A table number typed in a hurry, so it is one
+                field and Enter saves — nothing a waiter has to read. */}
+            <Modal
+                open={billLabelPrompt !== null}
+                onClose={() => setBillLabelPrompt(null)}
+                size="sm"
+                title={`New ${billNoun.one.toLowerCase()}`}
+                // Above the cart sheet (z-index 80 on a phone-width till),
+                // which is where this is opened FROM — at the default z-50 the
+                // dialog renders behind it and the waiter is left tapping a
+                // button that appears to do nothing.
+                zIndexClass="z-[210]"
+                sheet
+            >
+                <p className="text-sm text-brand-text-muted">
+                    Give it a name so anyone can find it — a table number, or the customer’s name.
+                </p>
+                <input
+                    className="w-full mt-3 bg-surface border border-brand-border rounded-lg px-3 py-3 text-base text-brand-text outline-none focus:border-primary"
+                    placeholder={`${billNoun.one} 4`}
+                    value={billLabelPrompt ?? ''}
+                    onChange={e => setBillLabelPrompt(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter' && (billLabelPrompt || '').trim()) saveCartToBill(billLabelPrompt || '');
+                    }}
+                    autoFocus
+                />
+                <div className="flex gap-2 mt-5">
+                    <button
+                        type="button"
+                        className="v2-btn v2-btn--primary flex-1"
+                        style={{ minHeight: 48 }}
+                        disabled={!(billLabelPrompt || '').trim() || savingToTab}
+                        onClick={() => saveCartToBill(billLabelPrompt || '')}
+                    >
+                        {savingToTab ? 'Saving…' : 'Save the order'}
+                    </button>
+                    <button
+                        type="button"
+                        className="v2-btn v2-btn--ghost"
+                        style={{ minHeight: 48 }}
+                        onClick={() => setBillLabelPrompt(null)}
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </Modal>
 
             <ManagerOverrideModal
                 isOpen={!!pendingApproval}

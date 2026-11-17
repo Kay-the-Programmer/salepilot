@@ -17,22 +17,11 @@ import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 const Dashboard = lazy(() => import('@/Dashboard'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionApp'));
 const DownloadsPage = lazy(() => import('@/pages/downloads/DownloadsApp'));
-const TrackShipmentPage = lazy(() => import('@/pages/logistics/TrackShipmentPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage'));
-// Public customer-facing storefront (the "Online Store").
-const ShopLayout = lazy(() => import('@/pages/shop/ShopLayout'));
-const ShopHomePage = lazy(() => import('@/pages/shop/ShopHomePage'));
-const ShopProductList = lazy(() => import('@/pages/shop/ShopProductList'));
-const ShopProductDetail = lazy(() => import('@/pages/shop/ShopProductDetail'));
-const CartPage = lazy(() => import('@/pages/shop/CartPage'));
-const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
-const OrderStatusPage = lazy(() => import('@/pages/shop/OrderStatusPage'));
-// Cross-store marketplace (public discovery + B2B request/offer hub).
-const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -122,12 +111,9 @@ export default function App() {
                                 <Route path="/expenses" element={<Dashboard />} />
                                 {/* Customer quotations & invoices */}
                                 <Route path="/quotes" element={<Dashboard />} />
-                                <Route path="/fleet" element={<Dashboard />} />
                                 <Route path="/po" element={<Dashboard />} />
                                 <Route path="/hustle" element={<Dashboard />} />
                                 <Route path="/config" element={<Dashboard />} />
-                                {/* Owner-facing Online Store hub (storefront link, QR & sharing) */}
-                                <Route path="/store" element={<Dashboard />} />
 
                                 {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Stock Takes / Alerts / Closing Report) */}
                                 <Route path="/inv" element={<Dashboard />} />
@@ -145,6 +131,11 @@ export default function App() {
                                 <Route path="/procure/suppliers" element={<Dashboard />} />
                                 <Route path="/procure/orders" element={<Dashboard />} />
                                 <Route path="/procure/lists" element={<Dashboard />} />
+
+                                {/* Menu (restaurants, bars, cafes) — only reachable for a
+                                    store in hospitality mode; Dashboard redirects otherwise. */}
+                                <Route path="/menu" element={<Dashboard />} />
+                                <Route path="/menu/import" element={<Dashboard />} />
 
                                 {/* Standalone pages that replaced the legacy admin shell */}
                                 {/* The Reports app is retired: it was a second analytics
@@ -179,7 +170,6 @@ export default function App() {
                                 <Route path="/notifications" element={<Navigate to="/notify" replace />} />
                                 <Route path="/profile" element={<Navigate to="/account" replace />} />
                                 <Route path="/settings" element={<Navigate to="/config" replace />} />
-                                <Route path="/logistics" element={<Navigate to="/fleet" replace />} />
                                 <Route path="/quick-view" element={<Navigate to="/assistant" replace />} />
                                 <Route path="/whatsapp/conversations" element={<Navigate to="/superadmin/whatsapp" replace />} />
                                 <Route path="/whatsapp/settings" element={<Navigate to="/superadmin/whatsapp-settings" replace />} />
@@ -198,41 +188,7 @@ export default function App() {
                                 <Route path="/superadmin/downloads" element={<Dashboard />} />
 
 
-                                {/* <Route path="/directory" element={<MarketplacePage />} />
-                                <Route path="/directory/request/:requestId" element={<Dashboard />} />
-                                <Route path="/marketplace" element={<MarketplacePage />} />
-                                <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} /> */}
-
-                                {/* Public shipment tracking — no auth, for customers with a tracking number */}
-                                <Route path="/track" element={<TrackShipmentPage />} />
-                                <Route path="/track/:trackingNumber" element={<TrackShipmentPage />} />
-
-                                {/* Customer Dashboard - Protected by Dashboard logic */}
-                                {/* <Route path="/customer/login" element={<Dashboard />} />
-                                <Route path="/customer/register" element={<Dashboard />} />
-                                <Route path="/customer/dashboard" element={<Dashboard />} />
-                                <Route path="/customer/orders" element={<Dashboard />} />
-                                <Route path="/register-supplier" element={<SupplierRegisterPage />} /> */}
-
-                                {/* Supplier Routes - Protected by Dashboard logic */}
-                                <Route path="/supplier/dashboard" element={<Dashboard />} />
-                                <Route path="/supplier/orders" element={<Dashboard />} />
-
                                 {/* Fallback */}
-                                {/* Public Online Store (customer-facing storefront) */}
-                                <Route path="/shop/:storeId" element={<ShopLayout />}>
-                                    <Route index element={<ShopHomePage />} />
-                                    <Route path="products" element={<ShopProductList />} />
-                                    <Route path="product/:productId" element={<ShopProductDetail />} />
-                                    <Route path="cart" element={<CartPage />} />
-                                    <Route path="checkout" element={<CheckoutPage />} />
-                                    <Route path="order/:orderId" element={<OrderStatusPage />} />
-                                </Route>
-
-                                {/* Public cross-store marketplace */}
-                                <Route path="/marketplace" element={<MarketplacePage />} />
-                                <Route path="/directory" element={<Navigate to="/marketplace" replace />} />
-
                                 <Route path="*" element={<Dashboard />} />
                             </Routes>
                         </Suspense>

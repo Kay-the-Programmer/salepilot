@@ -33,6 +33,17 @@ export interface Product {
     taxClass?: 'standard' | 'zero' | 'exempt';
     costPrice?: number;
     stock: number;
+    /**
+     * Does this item hold stock?
+     *
+     * False for made-to-order menu items: a kitchen can keep serving steak
+     * without anyone counting steaks, so the till must never refuse the sale
+     * and the sale must never decrement anything. Bottled drinks stay tracked.
+     *
+     * Absent means tracked — which is what every product did before the field
+     * existed, and what a shop expects.
+     */
+    trackStock?: boolean;
     unitOfMeasure?: 'unit' | 'kg';
     imageUrls: string[];
     supplierId?: string;
@@ -50,14 +61,6 @@ export interface Product {
     cartonPrice?: number;     // Total price of one carton/box
     unitsPerCarton?: number;  // Number of sellable units per carton
     cartonsReceived?: number; // Total cartons received (for reference)
-    // B2B wholesale marketplace fields
-    wholesalePrice?: number | null;    // Per-unit price for retailer buyers (null = retail price)
-    minOrderQuantity?: number | null;  // Minimum quantity per online order line
-    // Denormalized review aggregates (maintained on review write)
-    ratingAvg?: number | null;
-    ratingCount?: number;
-    // Wholesale quantity-break tiers (sorted asc by minQty)
-    priceTiers?: { minQty: number; price: number }[] | null;
 }
 
 export interface User {
@@ -82,6 +85,14 @@ export interface User {
     discountBalance?: number;
 }
 
+/**
+ * A line on the current sale.
+ *
+ * `trackStock` is carried on the line, not looked up from the product, because
+ * the cart is restored from localStorage with no catalog beside it — and a
+ * restored made-to-order line that lost the flag would be clamped to a stock
+ * figure of zero and silently vanish.
+ */
 export interface CartItem {
     productId: string;
     name: string;
@@ -89,6 +100,8 @@ export interface CartItem {
     price: number;
     quantity: number;
     stock: number; // To check against when increasing quantity
+    /** False for a made-to-order item: no stock ceiling, nothing decremented. */
+    trackStock?: boolean;
     unitOfMeasure?: 'unit' | 'kg';
     returnedQuantity?: number;
     costPrice?: number; // Cost of the item at the time of sale
@@ -115,8 +128,6 @@ export interface Customer {
     createdAt: string;
     storeCredit: number;
     accountBalance: number; // A/R Balance
-    /** Trade-credit cap on the outstanding balance; null/undefined = no credit line. */
-    creditLimit?: number | null;
 }
 
 export interface Payment {
@@ -168,6 +179,12 @@ export interface Sale {
     customerName?: string;
     /** Phone number collected at the POS; the backend auto-saves it to the customer record. */
     customerPhone?: string;
+    /**
+     * The open bill this sale settled ("Table 4"), copied onto the sale so a
+     * receipt and the sales history can still name it once the bill row has
+     * been closed and forgotten. Descriptive only.
+     */
+    tabLabel?: string | null;
     /** Cashier who processed the sale — shown on the receipt ("Attended by"). */
     attendedBy?: string;
     attendedById?: string;
@@ -216,6 +233,11 @@ export interface CustomAttribute {
     name: string;
 }
 
+/**
+ * A category doubles as a MENU SECTION in hospitality mode, which is why it
+ * carries a display order: a menu reads Starters → Desserts, never
+ * alphabetically. Retail stores leave sortOrder at 0 and keep sorting by name.
+ */
 export interface Category {
     id: string;
     name: string;
@@ -223,6 +245,64 @@ export interface Category {
     attributes: CustomAttribute[];
     revenueAccountId?: string;
     cogsAccountId?: string;
+    /** Position on the menu. Lower comes first; 0 falls back to name order. */
+    sortOrder?: number;
+    /** Kept off the till — a seasonal section, or one not being served today. */
+    isHidden?: boolean;
+}
+
+// --- Open bills (restaurants, bars, cafes) ---
+
+/**
+ * A line on an open bill. `name` and `price` are SNAPSHOTS taken when the item
+ * was ordered, not a live read of the product — a menu reprice at seven must
+ * not rewrite the bill a table has been drinking against since five.
+ */
+export interface OpenTabItem {
+    id: string;
+    tabId: string;
+    productId: string | null;
+    name: string;
+    sku?: string | null;
+    price: number;
+    costPrice?: number;
+    quantity: number;
+    unitOfMeasure?: 'unit' | 'kg' | null;
+    taxClass?: 'standard' | 'zero' | 'exempt' | null;
+    trackStock?: boolean;
+    addedBy?: string | null;
+    createdAt?: string;
+}
+
+/**
+ * A bill that stays open while a table keeps ordering.
+ *
+ * `status` carries the concurrency: 'settling' means a till has claimed this
+ * bill and is posting its sale, which is what stops two tills charging the same
+ * table twice.
+ */
+export interface OpenTab {
+    id: string;
+    label: string;
+    status: 'open' | 'settling' | 'closed' | 'void';
+    customerId?: string | null;
+    note?: string | null;
+    openedBy?: string | null;
+    openedByName?: string | null;
+    openedAt: string;
+    updatedAt?: string;
+    closedAt?: string | null;
+    closedBy?: string | null;
+    saleId?: string | null;
+    voidReason?: string | null;
+    items: OpenTabItem[];
+    /** Line count, for the bills list. */
+    itemCount: number;
+    /**
+     * Sum of the frozen line prices — a running figure for the list, NOT a
+     * quote. Discounts and tax are applied by the sale, server-side.
+     */
+    subtotal: number;
 }
 
 export interface CountedItem {
@@ -251,7 +331,6 @@ export interface Supplier {
     paymentTerms?: string;
     bankingDetails?: string;
     notes?: string;
-    linkedStoreId?: string; // If this supplier is a registered store in the system
 }
 
 export interface POItem {
@@ -290,8 +369,6 @@ export interface PurchaseOrder {
     tax: number;
     total: number;
     receptions?: ReceptionEvent[];
-    isMarketplaceOrder?: boolean;
-    marketplaceOrderId?: string; // ID of the Sale in the supplier's store
 }
 
 /**
@@ -331,13 +408,12 @@ export interface StoreSettings {
     phone: string;
     email: string;
     website: string;
-    /** Company logo (store_settings.logo_url) — heads quotations, invoices and the storefront. */
+    /** Company logo (store_settings.logo_url) — heads quotations and invoices. */
     logoUrl?: string | null;
     /** Taxpayer ID printed on receipts, delivery notes, quotations and invoices. */
     tpin?: string | null;
     /** Trading line under the business name, e.g. "Office Furniture & Stationery". */
     businessTagline?: string | null;
-    isOnlineStoreEnabled: boolean;
     /**
      * How the store identifies itself in an SMS. Every store shares one
      * Africa's Talking account, so the display name is prepended to every
@@ -392,6 +468,23 @@ export interface StoreSettings {
     enableStoreCredit: boolean;
     paymentMethods: { id: string; name: string; }[];
     supplierPaymentMethods: { id: string; name: string; }[];
+    /**
+     * Which till this store runs. 'hospitality' (restaurant, bar, cafe) sells
+     * from a menu onto open bills; 'retail' is the product-grid till every
+     * store had before the field existed, and remains the default. Set from the
+     * business type at registration, changeable in Settings.
+     *
+     * Read it through `isHospitality()` in utils/hospitality.ts rather than
+     * comparing here, so the condition lives in exactly one place.
+     */
+    businessMode?: 'retail' | 'hospitality';
+    /**
+     * The business types picked at registration (`stores.business_types`),
+     * served alongside the settings because this is the store-shaped object
+     * every screen already holds. Used for the venue's own wording — a bar's
+     * bills are tabs, a restaurant's are tables.
+     */
+    businessTypes?: string[] | null;
     /** Printed on invoices under "Payment details". */
     bankAccounts?: BankAccount[];
 
@@ -547,31 +640,6 @@ export interface Announcement {
     link?: string;
 }
 
-export interface MarketplaceRequest {
-    id: string;
-    customerName: string;
-    customerEmail: string;
-    query: string;
-    targetPrice: number;
-    status: 'open' | 'matched' | 'completed' | 'cancelled';
-    createdAt: string;
-    offers?: MarketplaceOffer[];
-}
-
-export interface MarketplaceOffer {
-    id: string;
-    requestId: string;
-    storeId: string;
-    storeName: string;
-    storePhone?: string;
-    storeEmail?: string;
-    storeAddress?: string;
-    productId?: string;
-    sellerPrice: number;
-    status: 'pending' | 'accepted' | 'declined';
-    createdAt: string;
-}
-
 // --- System Types ---
 
 export interface AuditLog {
@@ -584,45 +652,6 @@ export interface AuditLog {
     storeId?: string; // tenant scope
 }
 
-
-export interface Courier {
-    id: string;
-    company_name: string;
-    contact_details?: string;
-    receipt_details?: string;
-    isActive: boolean;
-    created_at?: string;
-}
-
-export interface Bus {
-    id: string;
-    driver_name: string;
-    vehicle_name?: string;
-    number_plate: string;
-    contact_phone?: string;
-    isActive: boolean;
-    created_at?: string;
-}
-
-export interface Shipment {
-    id: string;
-    tracking_number: string;
-    method: 'courier' | 'bus';
-    courier_id?: string;
-    bus_id?: string;
-    sale_id?: string;
-    status: 'pending' | 'confirmed' | 'shipped' | 'in_transit' | 'delivered' | 'failed' | 'returned';
-    recipient_name?: string;
-    recipient_phone?: string;
-    recipient_address?: string;
-    destination?: string;
-    shipping_cost: number;
-    image_urls?: string[];
-    notes?: string;
-    created_at: string;
-    updated_at: string;
-    store_id: string;
-}
 
 // --- WhatsApp Integration ---
 
