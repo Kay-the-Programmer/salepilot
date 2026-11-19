@@ -80,7 +80,20 @@ export const setStoredCurrentStore = (storeId: string): User | null => updateSto
  */
 const persistSession = async (normalized: User): Promise<User> => {
     let session = normalized;
-    if (await cookieSessionWorks()) {
+    // Both halves have to work, not just the one we can probe.
+    //
+    // Dropping the token commits this session to cookie auth, and a
+    // cookie-authenticated WRITE must also echo the readable `sp_csrf` cookie.
+    // Where the API sets that cookie host-only (no Domain attribute) it is
+    // invisible to us no matter how dependably the session cookie travels —
+    // api.salepilot.space's cookie cannot be read from salepilot.space — so
+    // the probe below would pass, the token would go, and every write would
+    // then 403 with CSRF_TOKEN_MISSING while sign-in still looked healthy.
+    // Checking that we can actually read the CSRF cookie first keeps the
+    // bearer token in that deployment instead of locking the app out of its
+    // own writes.
+    const csrfReadable = Object.keys(getCsrfHeader()).length > 0;
+    if (csrfReadable && await cookieSessionWorks()) {
         const { token, ...withoutToken } = normalized as User & { token?: string };
         session = withoutToken as User;
     }
